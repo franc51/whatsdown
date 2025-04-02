@@ -3,8 +3,6 @@ import "./homepage.css";
 import { useState } from "react";
 
 export default function Homepage() {
-  const [activeTab, setActiveTab] = useState("chats"); // default tab is chats
-
   return (
     <div className="homepage">
       <div className="homepage_user">
