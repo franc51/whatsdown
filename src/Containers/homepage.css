@@ -45,7 +45,20 @@ body {
   margin-bottom: 2rem;
 }
 .homepage_searchBtn {
-  background-image: url("/Images/search.png");
+  background-image: url("/public/Images/search.png");
+}
+.searchMenuBtn_style {
+  padding: 0.5rem 1.2rem;
+  background-color: rgba(180, 180, 48, 0.096);
+  background-position: center;
+  background-size: 1.5rem;
+  background-repeat: no-repeat;
+  border: 1px solid rgb(194, 194, 194);
+  border-radius: 50%;
+}
+.homepage_menuBtn {
+  margin-left: 0.5rem;
+  background-image: url("/public/Images/menu.png");
 }
 .active_link {
   background-color: rgb(68, 68, 160);
@@ -77,6 +90,4 @@ a {
   gap: 1rem;
   margin-block-start: 0;
   margin-inline-end: 0;
-}
-.homepage_chat_profile {
 }
