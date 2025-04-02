@@ -14,12 +14,16 @@ export default function Homepage() {
             className="homepage_searchBtn searchMenuBtn_style"
             id="homepage_searchBtn"
             href="blanl.html"
-          ></a>
+          >
+            S
+          </a>
           <a
             className="homepage_menuBtn searchMenuBtn_style"
             id="homepage_menuBtn"
             href="blanl.html"
-          ></a>
+          >
+            M
+          </a>
         </div>
       </div>
 
