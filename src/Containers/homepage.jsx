@@ -1,52 +1,53 @@
 import React from "react";
 import "./homepage.css";
+import { useState } from "react";
 
 export default function Homepage() {
+  const [activeTab, setActiveTab] = useState("chats"); // Default tab is chats
+
   return (
     <div className="homepage">
       <div className="homepage_user">
         <div>
           <p className="homepage_greeting">Hello,</p>
-          <h3 className="homepage_user_greeting">Francisc</h3>
+          <h3 className="homepage_user_greeting">Sunshine</h3>
         </div>
         <div>
-          <a
+          <button
             className="homepage_searchBtn searchMenuBtn_style"
             id="homepage_searchBtn"
-            href="blanl.html"
-          >
-            S
-          </a>
-          <a
+            href="blank.html"
+          />
+          <button
             className="homepage_menuBtn searchMenuBtn_style"
             id="homepage_menuBtn"
-            href="blanl.html"
-          >
-            M
-          </a>
+            href="blank.html"
+          />
         </div>
       </div>
 
       <div className="homepage_nav">
         <a
-          className="homepage_chats active_link link"
-          id="homepage_chats"
-          href="blanl.html"
+          className={`homepage_chats link ${
+            activeTab === "chats" ? "active_link" : ""
+          }`}
+          onClick={() => setActiveTab("chats")}
         >
           All Chats
         </a>
         <a
-          className="homepage_groups link"
-          id="homepage_groups"
-          href="blanl.html"
+          className={`homepage_groups link ${
+            activeTab === "groups" ? "active_link" : ""
+          }`}
+          onClick={() => setActiveTab("groups")}
         >
           Groups
         </a>
         <a
-          className="homepage_contacts link"
-          id="homepage_contacts
-        "
-          href="blanl.html"
+          className={`homepage_contacts link ${
+            activeTab === "contacts" ? "active_link" : ""
+          }`}
+          onClick={() => setActiveTab("contacts")}
         >
           Contacts
         </a>
@@ -58,16 +59,50 @@ export default function Homepage() {
             <img
               className="homepage_chat_profileImg"
               alt="profileImg"
-              src="/logo192.png"
+              src="/Images/human.png"
             ></img>
             <div className="homepage_chat_profile">
-              <h4 className="homepage_chat_profile_name">Puppy Muffet</h4>
-              <p className="homepage_chat_profile_lastMessage">
-                hey mf whatsdown
-              </p>
+              <h4 className="homepage_chat_profile_name">Andy</h4>
+              <p className="homepage_chat_profile_lastMessage">ce faci coae</p>
             </div>
           </div>
           <p className="homepage_chat_profile_messageTime">09:44 AM</p>
+        </div>
+
+        <div className="homepage_chat_list_item">
+          <div className="picAndName">
+            <img
+              className="homepage_chat_profileImg"
+              alt="profileImg"
+              src="/Images/human.png"
+            ></img>
+            <div className="homepage_chat_profile">
+              <h4 className="homepage_chat_profile_name">
+                Radu Maria Antoaneta
+              </h4>
+              <p className="homepage_chat_profile_lastMessage">
+                te iubesc viata mea
+              </p>
+            </div>
+          </div>
+          <p className="homepage_chat_profile_messageTime">20:56 AM</p>
+        </div>
+
+        <div className="homepage_chat_list_item">
+          <div className="picAndName">
+            <img
+              className="homepage_chat_profileImg"
+              alt="profileImg"
+              src="/Images/human.png"
+            ></img>
+            <div className="homepage_chat_profile">
+              <h4 className="homepage_chat_profile_name">Ludovico Einaudi</h4>
+              <p className="homepage_chat_profile_lastMessage">
+                hello mr francisc
+              </p>
+            </div>
+          </div>
+          <p className="homepage_chat_profile_messageTime">17:42 AM</p>
         </div>
       </div>
     </div>
