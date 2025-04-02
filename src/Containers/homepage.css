@@ -1,57 +1,82 @@
-h1, h2, h3, h4, h5, h6, p {
-    margin-block-start: 0;
-    margin-block-end: 0;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block-start: 0;
+  margin-block-end: 0;
+}
+p {
+  color: gray;
 }
 
 body {
-    margin: 0;
-    box-sizing: border-box;
-    padding: 2rem 1rem;
-    background-color: rgba(245, 197, 255, 0.295);
+  margin: 0;
+  box-sizing: border-box;
+  padding: 2rem 1rem;
+  background-color: rgba(245, 197, 255, 0.295);
 }
 .homepage {
-    background-color: white;
-    border-radius: 2rem;
-    padding: 0 1rem;
+  background-color: white;
+  border-radius: 2rem;
+  padding: 2rem 1rem;
 }
 .homepage_user {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.homepage_greeting {
+  color: gray;
+}
+.homepage_user_greeting {
+  font-size: 1.3rem;
+  font-weight: 900;
 }
 .homepage_nav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4rem;
-    padding: 0.8rem;
-    background-color: rgb(243, 243, 243);
-    border-radius: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgb(243, 243, 243);
+  border-radius: 2rem;
+  margin-bottom: 2rem;
 }
-
+.homepage_searchBtn {
+  background-image: url("/Images/search.png");
+}
 .active_link {
-    background-color: blue;
+  background-color: rgb(68, 68, 160);
+  color: white;
+}
+.link {
+  padding: 0.8rem 1.7rem;
+  border-radius: 5rem;
 }
 a {
-   all: unset;
+  all: unset;
+  cursor: pointer;
+  color: gray;
 }
 .homepage_chat_list_item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .homepage_chat_profileImg {
-    border-radius: 50%;
-    height: 4rem;
+  border-radius: 50%;
+  height: 4rem;
 }
 .picAndName {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin-block-start: 0;
-    margin-inline-end: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-block-start: 0;
+  margin-inline-end: 0;
 }
 .homepage_chat_profile {
 }
