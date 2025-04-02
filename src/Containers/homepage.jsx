@@ -28,6 +28,7 @@ export default function Homepage() {
 
       <div className="homepage_nav">
         <a
+          href="#"
           className={`homepage_chats link ${
             activeTab === "chats" ? "active_link" : ""
           }`}
@@ -36,6 +37,7 @@ export default function Homepage() {
           All Chats
         </a>
         <a
+          href="#"
           className={`homepage_groups link ${
             activeTab === "groups" ? "active_link" : ""
           }`}
@@ -44,6 +46,7 @@ export default function Homepage() {
           Groups
         </a>
         <a
+          href="#"
           className={`homepage_contacts link ${
             activeTab === "contacts" ? "active_link" : ""
           }`}
