@@ -1,6 +1,5 @@
 import React from "react";
 import "./homepage.css";
-import { useState } from "react";
 
 export default function Homepage() {
   return (
