@@ -14,7 +14,10 @@ export default function Login() {
             <div className="login_container">
               <label>Password</label>
               <input type="password" placeholder="your super strong password" required></input>
-              <a className="login_forgotPassword" href="blank.html">Forgot your password?</a>
+              <a className="login_forgotPassword" href="blank.html" onClick={(e) => {
+                e.preventDefault();
+                alert("Goodluck finding it.");
+              }}>Forgot your password?</a>
             </div>
             <input type="submit" className="login_button_submit" value="Log In"></input>
           </div>
