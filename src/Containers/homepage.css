@@ -1,0 +1,55 @@
+h1, h2, h3, h4, h5, h6, p {
+    margin-block-start: 0;
+    margin-block-end: 0;
+}
+
+body {
+    margin: 0;
+    box-sizing: border-box;
+    padding: 2rem 1rem;
+    background-color: rgba(245, 197, 255, 0.295);
+}
+.homepage {
+    background-color: white;
+    border-radius: 2rem;
+    padding: 0 1rem;
+}
+.homepage_user {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.homepage_nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4rem;
+    padding: 0.8rem;
+    background-color: rgb(243, 243, 243);
+    border-radius: 2rem;
+}
+
+.active_link {
+    background-color: blue;
+}
+a {
+   all: unset;
+}
+.homepage_chat_list_item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.homepage_chat_profileImg {
+    border-radius: 50%;
+    height: 4rem;
+}
+.picAndName {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-block-start: 0;
+    margin-inline-end: 0;
+}
