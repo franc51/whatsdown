@@ -18,7 +18,7 @@ export default function SignUp() {
       <label>Password</label>
       <input type="password" placeholder="your super strong password" required></input>
     </div>
-    <input type="submit" className="login_button_submit" value="Sign Up"></input>
+    <input type="submit" className="signup_button_submit" value="Sign Up"></input>
   </div>
     </form>
 </div>;

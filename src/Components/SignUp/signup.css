@@ -8,26 +8,30 @@ label {
     color: gray;
 }
 input {
-    height: 2rem;
+    height: 1.6rem;
     border: none;
     background-color: rgb(243, 243, 243);
-    font-size: 1.2rem;
     padding: 0.8rem;
+    color: black;
+    font-weight: 600;
+}
+input::placeholder {
+    font-weight: 100;
 }
 .login_forgotPassword {
     color: rgb(68, 68, 160);
     text-align: center;
     margin: 1rem 0;
 }
-.login_button_submit {
+.signup_button_submit {
     border: none;
     border-radius: 2rem;
     background-color: rgb(68, 68, 160);
     color: white;
     font-size: 1rem;
     font-weight: 900;
-    padding-bottom: 2.5rem;
-    margin: 2rem;
+    padding-bottom: 2.4rem;
+    margin: 1rem 6rem;
 }
 .error {
     color: red;
