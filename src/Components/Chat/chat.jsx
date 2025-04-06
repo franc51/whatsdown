@@ -56,7 +56,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="homepage">
+    <div className="homepage_chat_list">
       <div className="homepage_user">
         <div className="picAndName">
           <img
@@ -78,7 +78,7 @@ export default function Chat() {
       <div className="chat_and_sender">
         <div className="chat_container">
           {messages.map((msg, idx) => (
-            <p key={idx}>{msg}</p> // Display each message
+            <p key={idx}>{msg}</p>
           ))}
         </div>
 

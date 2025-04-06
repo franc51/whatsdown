@@ -8,9 +8,6 @@ p {
   margin-block-start: 0;
   margin-block-end: 0;
 }
-p {
-  color: gray;
-}
 
 body {
   margin: 0;
@@ -18,17 +15,16 @@ body {
   padding: 1rem;
   background-image: linear-gradient(
     to bottom,
-    rgba(68, 68, 160, 0.692),
-    rgba(255, 0, 0, 0.644)
+    rgba(0, 0, 255, 0.692),
+    rgba(255, 0, 0, 0.397)
   );
   height: 100vh;
 }
 .homepage {
-  height: 88vh;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0);
   border-radius: 2rem;
   padding: 2rem 1rem;
-  box-shadow: 1px 1px 10px 2px rgba(128, 0, 128, 0.329);
+  box-shadow: unset;
 }
 .homepage_user {
   display: flex;
@@ -38,6 +34,7 @@ body {
 }
 .homepage_greeting {
   color: gray;
+  background-color: unset;
 }
 .homepage_user_greeting {
   font-size: 1.3rem;
@@ -114,4 +111,14 @@ a {
 .homepage_chat_profile_name {
   color: rgb(0, 0, 0);
   font-weight: 500;
+}
+p {
+  color: gray;
+}
+.newChat_addFriend {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
