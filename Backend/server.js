@@ -1,19 +1,28 @@
-const express = require("express");
-const cors = require("cors");
-
-const app = express();
-const PORT = 5000;
-
-// Middleware
-app.use(cors()); // Allows requests from the frontend
-app.use(express.json()); // Parses JSON data
-
-
-app.get("/api/message", (req, res) => {
-  res.json({ message: "Server is runnnig" });
+const WebSocket = require("ws");
+const server = new WebSocket.Server({
+  port: 8080,
+  clientTracking: true,
+  handleProtocols: (protocols) => protocols[0], // Optional: handling protocols
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+server.on("connection", (socket) => {
+  console.log("Client connected");
+
+  // Handle messages from the client
+  socket.on("message", (message) => {
+    console.log("Received:", message);
+    // Send to all connected clients
+    server.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  });
+
+  // Handle connection closing
+  socket.on("close", () => {
+    console.log("Client disconnected");
+  });
 });
+
+console.log("WebSocket server is running at ws://localhost:8081");

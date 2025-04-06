@@ -7,7 +7,6 @@ import Chat from "./Components/Chat/chat.jsx";
 
 function App() {
   const [isPageLoading, setIsPageLoading] = useState(true);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const handleLoad = () => setIsPageLoading(false);
@@ -21,13 +20,6 @@ function App() {
     return () => window.removeEventListener("load", handleLoad);
   }, []);
 
-  useEffect(() => {
-    fetch("http://localhost:5000/api/message")
-      .then((response) => response.json())
-      .then((data) => setMessage(data.message))
-      .catch((error) => console.log("Error fetching data:", error));
-  }, []);
-
   if (isPageLoading) {
     return <Loader />;
   }
@@ -35,7 +27,6 @@ function App() {
   return (
     <>
       <Chat />
-      <h2>{message}</h2>
     </>
   );
 }
