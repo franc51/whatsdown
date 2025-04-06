@@ -1,0 +1,109 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block-start: 0;
+  margin-block-end: 0;
+}
+p {
+  color: gray;
+}
+
+body {
+  margin: 0;
+  box-sizing: border-box;
+  padding: 1rem;
+  background-image: linear-gradient(
+    to bottom,
+    rgba(68, 68, 160, 0.692),
+    rgba(255, 0, 0, 0.644)
+  );
+  height: 100vh;
+}
+.homepage {
+  height: 88vh;
+  background-color: white;
+  border-radius: 2rem;
+  padding: 2rem 1rem;
+  box-shadow: 1px 1px 10px 2px rgba(128, 0, 128, 0.329);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.homepage_user {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.homepage_greeting {
+  color: gray;
+}
+.homepage_user_greeting {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+.homepage_nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgb(243, 243, 243);
+  border-radius: 2rem;
+  margin-bottom: 2rem;
+}
+.searchMenuBtn_style {
+  padding: 1.2rem;
+  background-color: white;
+  background-position: center;
+  background-size: 1.5rem;
+  background-repeat: no-repeat;
+  border: 1px solid rgba(68, 68, 160, 0.685);
+  border-radius: 50%;
+}
+.homepage_menuBtn {
+  margin-left: 0.5rem;
+  background-image: url("/public/Images/menu.png");
+}
+.homepage_searchBtn {
+  background-image: url("/public/Images/search.png");
+  background-size: 1.2rem;
+}
+.active_link {
+  background-color: rgb(68, 68, 160);
+  color: rgb(223, 223, 223);
+}
+.link {
+  padding: 0.6rem 1.4rem;
+  border-radius: 5rem;
+  transition: 0.5s ease;
+}
+a {
+  all: unset;
+  cursor: pointer;
+  color: gray;
+}
+.chat_container {
+  text-align: right;
+}
+.chat_sender {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.chat_sender_input {
+  border-radius: 2rem;
+  width: 75%;
+}
+.chat_sender_submit {
+  border: none;
+  background-color: white;
+  background-image: url("/public/Images/send.png");
+  background-size: 3rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 3rem;
+  height: 3rem;
+}
