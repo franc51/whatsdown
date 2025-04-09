@@ -152,7 +152,7 @@ app.post("/addFriend", async (req, res) => {
 
     // Add friend to the user's friend list (store friend's ObjectId)
     await db.collection("users").updateOne(
-      { _id: ObjectId(userId) },
+      { _id: userId },
       { $addToSet: { friends: friend._id } } // Using $addToSet to avoid duplicates
     );
 
@@ -184,7 +184,7 @@ app.get("/getFriends", async (req, res) => {
     const friends = await db
       .collection("users")
       .find({
-        _id: { $in: user.friends.map((friendId) => new ObjectId(friendId)) },
+        _id: { $in: user.friends.map((friendId) => (friendId)) },
       })
       .toArray();
 

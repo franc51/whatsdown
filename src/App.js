@@ -1,8 +1,10 @@
 import "./App.css";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { useEffect, useState } from "react";
 import WelcomePage from "./Components/Welcome-page/welcome-page.jsx";
 import Loader from "./Components/Loader/loader.jsx";
-import Homepage from "./Components/Homepage/homepage.jsx";
+import AllChats from "./Components/AllChats/allchats.jsx";
+import Chat from "./Components/Chat/chat.jsx";
 
 function App() {
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -35,7 +37,12 @@ function App() {
   if (isLoggedIn) {
     return (
       <div>
-        <Homepage /> {/* Optionally show the chat component */}
+      <Router>
+      <Switch>
+      <Route exact path="/" Component={AllChats}></Route>
+      <Route exact path="/chat/:friendId" Component={Chat}></Route>
+      </Switch>
+      </Router>
       </div>
     );
   }

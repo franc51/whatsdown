@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
+import Chat from '../Chat/chat.jsx'; 
+import { useHistory } from "react-router-dom"; // Hook to navigate
 
 export default function AllChats() {
   const [friends, setFriends] = useState([]);
   const [message, setMessage] = useState("");
+  const [selectedFriend, setSelectedFriend] = useState(null); 
+  const history = useHistory(); // Get the history object for navigation
 
-  // Fetch friends list when the component mounts
   useEffect(() => {
     const fetchFriends = async () => {
       try {
         const token = localStorage.getItem("token");
-
         if (!token) {
           setMessage("You must be logged in to see your friends.");
           return;
@@ -18,7 +20,7 @@ export default function AllChats() {
         const response = await fetch("http://localhost:3002/getFriends", {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -37,26 +39,45 @@ export default function AllChats() {
     fetchFriends();
   }, []);
 
+  // Function to navigate to the chat page for a specific friend
+  const goToChat = (friendId) => {
+    history.push(`/chat/${friendId}`);
+  };
+
+  // 👇 Show chat if one is selected
+  if (selectedFriend) {
+    return (
+     <Chat
+      friend={selectedFriend}
+      onBack={() => setSelectedFriend(null)}
+      />
+    );
+  }
+
   return (
     <div className="homepage_chat_list">
       {message && <p>{message}</p>}
 
       {friends.length > 0 ? (
         friends.map((friend) => (
-          <div className="homepage_chat_list_item" key={friend._id}>
+          <div
+            className="homepage_chat_list_item"
+            key={friend._id}
+            onClick={() => goToChat(friend._id)} // Navigate to the specific friend's chat page
+            style={{ cursor: "pointer" }} // Optional: improve UX with pointer cursor
+          >
             <div className="picAndName">
               <img
                 className="homepage_chat_profileImg"
                 alt="profileImg"
-                src="/Images/human.png" // You can modify this to show friend's profile image if available
+                src="/Images/human.png"
               />
               <div className="homepage_chat_profile">
                 <h4 className="homepage_chat_profile_name">
                   {friend.nickname}
                 </h4>
                 <p className="homepage_chat_profile_lastMessage">
-                  {friend.phone}{" "}
-                  {/* Placeholder for last message, modify as needed */}
+                  {friend.phone}
                 </p>
               </div>
             </div>
