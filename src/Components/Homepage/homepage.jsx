@@ -51,7 +51,7 @@ export default function Homepage() {
       <div className="homepage_user">
         <div>
           <p className="homepage_greeting">Hello,</p>
-          <h3 className="homepage_user_greeting">{user}</h3>
+          <h3 className="homepage_user_greeting">Sunshine</h3>
         </div>
         <div>
           <button

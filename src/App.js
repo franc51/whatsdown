@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import WelcomePage from "./Components/Welcome-page/welcome-page.jsx";
 import Loader from "./Components/Loader/loader.jsx";
 import Homepage from "./Components/Homepage/homepage.jsx";
-import Chat from "./Components/Chat/chat.jsx"; // Assuming you'll use this for the chat
 
 function App() {
   const [isPageLoading, setIsPageLoading] = useState(true);

@@ -18,14 +18,14 @@ body {
   padding: 1rem;
   background-image: linear-gradient(
     to bottom,
-    rgba(0, 0, 255, 0.692),
+    rgba(0, 0, 255, 0.164),
     rgba(255, 0, 0, 0.644)
   );
   height: 100vh;
 }
 .homepage {
   height: 88vh;
-  background-color: white;
+  background-color: rgb(255, 255, 255);
   border-radius: 2rem;
   padding: 2rem 1rem;
   box-shadow: 1px 1px 10px 2px rgba(128, 0, 128, 0.329);
