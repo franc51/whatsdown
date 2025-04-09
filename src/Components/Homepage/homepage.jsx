@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./homepage.css";
 import AllChats from "../AllChats/allchats";
 
@@ -6,6 +6,41 @@ export default function Homepage() {
   const [activeTab, setActiveTab] = useState("chats"); // Default tab is chats
   const [friendPhone, setFriendPhone] = useState(""); // To store phone number input
   const [message, setMessage] = useState(""); // For showing success/error messages
+  const [user, setUser] = useState(""); // To store user information
+
+  // Fetch user information when the component mounts
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = localStorage.getItem("token"); // Retrieve token from localStorage
+
+        if (!token) {
+          setMessage("You must be logged in to see your information.");
+          return;
+        }
+
+        const response = await fetch("http://localhost:3002/getUserInfo", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setUser(data.user); // Store user info
+          console.log(data);
+        } else {
+          setMessage(data.message || "An error occurred. Please try again.");
+        }
+      } catch (err) {
+        setMessage("An error occurred. Please try again.");
+      }
+    };
+
+    fetchUserInfo();
+  }, []); // Empty dependency array means it runs once when the component mounts
 
   // Function to prevent page reload
   const handleTabChange = (e, tabName) => {
@@ -15,6 +50,11 @@ export default function Homepage() {
 
   // Handle the "Add Friend" button click
   const handleAddFriend = async () => {
+    if (friendPhone.length !== 10 || !/^\d+$/.test(friendPhone)) {
+      setMessage("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token"); // Retrieve token from localStorage
 
@@ -38,12 +78,16 @@ export default function Homepage() {
 
       if (response.ok) {
         setMessage("Friend added successfully!");
+        setFriendPhone(""); // Clear the input after success
       } else {
-        setMessage(data.message);
+        setMessage(data.message || "An error occurred. Please try again.");
       }
     } catch (err) {
       setMessage("An error occurred. Please try again.");
     }
+
+    // Clear message after 5 seconds
+    setTimeout(() => setMessage(""), 5000);
   };
 
   return (
@@ -51,50 +95,39 @@ export default function Homepage() {
       <div className="homepage_user">
         <div>
           <p className="homepage_greeting">Hello,</p>
-          <h3 className="homepage_user_greeting">Sunshine</h3>
+          <h3 className="homepage_user_greeting">{user.nickname}</h3>
         </div>
         <div>
-          <button
-            className="homepage_searchBtn searchMenuBtn_style"
-            id="homepage_searchBtn"
-            href="blank.html"
-          />
-          <button
-            className="homepage_menuBtn searchMenuBtn_style"
-            id="homepage_menuBtn"
-            href="blank.html"
-          />
+          <button className="homepage_searchBtn searchMenuBtn_style" />
+          <button className="homepage_menuBtn searchMenuBtn_style" />
         </div>
       </div>
 
       <div className="homepage_nav">
-        <a
-          href="blank.html"
+        <button
           className={`homepage_chats link ${
             activeTab === "chats" ? "active_link" : ""
           }`}
           onClick={(e) => handleTabChange(e, "chats")}
         >
           All Chats
-        </a>
-        <a
-          href="blank.html"
+        </button>
+        <button
           className={`homepage_groups link ${
             activeTab === "groups" ? "active_link" : ""
           }`}
           onClick={(e) => handleTabChange(e, "groups")}
         >
           Groups
-        </a>
-        <a
-          href="addChat"
+        </button>
+        <button
           className={`homepage_contacts link ${
             activeTab === "addChat" ? "active_link" : ""
           }`}
           onClick={(e) => handleTabChange(e, "addChat")}
         >
           New Chat
-        </a>
+        </button>
       </div>
 
       {/* Conditional Rendering of Components */}
@@ -105,11 +138,11 @@ export default function Homepage() {
           <div className="newChat_addFriend">
             <label>Phone</label>
             <input
-              type="number"
+              type="text"
               placeholder="Phone number"
               value={friendPhone}
               onChange={(e) => setFriendPhone(e.target.value)}
-              minLength={10}
+              maxLength={10}
             />
             <button onClick={handleAddFriend}>Add Friend</button>
             {message && <p>{message}</p>}

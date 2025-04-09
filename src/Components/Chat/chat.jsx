@@ -1,15 +1,33 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./chat.css";
+import { useLocation } from "react-router-dom";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [yourUserId, setYourUserId] = useState(null);
+
   const socketRef = useRef(null);
+  const location = useLocation();
+
+  const { friendId, nickname } = location.state || {};
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const decoded = JSON.parse(atob(token.split(".")[1]));
+      setYourUserId(decoded.userId);
+    } catch (e) {
+      console.error("Error decoding token", e);
+    }
+  }, []);
 
   // Set up the WebSocket connection
   useEffect(() => {
     // Create WebSocket connection when the component mounts
-    socketRef.current = new WebSocket("ws://localhost:8080");
+    socketRef.current = new WebSocket("ws://localhost:8081");
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected!");
@@ -22,19 +40,29 @@ export default function Chat() {
     // Listen for incoming messages
     socketRef.current.onmessage = (event) => {
       const message = event.data;
-
+      console.log("Received message:", message);
       // Check if message is a Blob (binary object)
       if (message instanceof Blob) {
         // Convert Blob to string using FileReader
         const reader = new FileReader();
         reader.onload = () => {
           const textMessage = reader.result;
-          setMessages((prevMessages) => [...prevMessages, textMessage]);
+          try {
+            const parsed = JSON.parse(textMessage);
+            setMessages((prevMessages) => [...prevMessages, parsed]);
+            console.log("Updated messages:", parsed);
+          } catch (e) {
+            console.log("Error parsing message blob:", e);
+          }
         };
         reader.readAsText(message);
       } else {
-        // If it's a string, just add it directly
-        setMessages((prevMessages) => [...prevMessages, message]);
+        try {
+          const parsed = JSON.parse(message);
+          setMessages((prevMessages) => [...prevMessages, parsed]);
+        } catch (e) {
+          console.log("Error parsing message:", e);
+        }
       }
     };
 
@@ -48,10 +76,19 @@ export default function Chat() {
   }, []); // Empty dependency array means it runs once when the component mounts
 
   const sendMessage = () => {
-    if (input.trim() === "") return; // Don't send empty messages
+    if (input.trim() === "") return;
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    const messageData = {
+      text: input,
+      receiverId: friendId,
+      token, // you can decode this server-side to get the senderId
+    };
+
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(input); // Send message to WebSocket server
-      setInput(""); // Clear input field
+      socketRef.current.send(JSON.stringify(messageData));
+      setInput("");
     }
   };
 
@@ -65,7 +102,7 @@ export default function Chat() {
             src="/Images/human.png"
           />
           <div className="homepage_chat_profile">
-            <h4 className="homepage_chat_profile_name">Marcelino</h4>
+            <h4 className="homepage_chat_profile_name">{nickname}</h4>
             <p className="homepage_chat_profile_lastMessage">Online</p>
           </div>
         </div>
@@ -78,7 +115,16 @@ export default function Chat() {
       <div className="chat_and_sender">
         <div className="chat_container">
           {messages.map((msg, idx) => (
-            <p key={idx}>{msg}</p>
+            <p
+              key={idx}
+              className={`messageBubble ${
+                yourUserId && msg.senderId === yourUserId
+                  ? "outgoing"
+                  : "incoming"
+              }`}
+            >
+              <strong>{msg.senderNickname || "Friend"}:</strong> {msg.text}
+            </p>
           ))}
         </div>
 

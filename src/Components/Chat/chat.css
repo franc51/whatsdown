@@ -63,13 +63,7 @@ body {
   overflow-y: auto;
   min-height: 0;
 }
-p {
-  background-color: #8d4bce;
-  padding: 0.7rem;
-  border-radius: 1rem;
-  max-width: fit-content;
-  color: white;
-}
+
 .chat_sender {
   display: flex;
   align-items: center;
@@ -107,11 +101,38 @@ p {
   gap: 1rem;
 }
 .homepage_chat_profile_lastMessage {
-  color: gray;
-  background-color: white;
+  color: gray !important;
+  background-color: rgba(255, 255, 255, 0) !important;
   padding: 0;
 }
 .chat_timeStamp {
   font-size: 0.6rem;
   padding: 12rem 0;
+}
+img {
+  height: 3rem;
+}
+p {
+  background-color: #8d4bce;
+  padding: 0.7rem;
+  border-radius: 1rem;
+  max-width: fit-content;
+  color: white !important;
+}
+.messageBubble {
+  padding: 10px;
+  margin: 8px;
+  border-radius: 12px;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.incoming {
+  background-color: #e0e0e0;
+  align-self: flex-start;
+}
+
+.outgoing {
+  background-color: #aee1f9;
+  align-self: flex-end;
 }

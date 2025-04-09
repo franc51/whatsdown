@@ -1,9 +1,11 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import "./App.css";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { useEffect, useState } from "react";
 import WelcomePage from "./Components/Welcome-page/welcome-page.jsx";
 import Loader from "./Components/Loader/loader.jsx";
 import AllChats from "./Components/AllChats/allchats.jsx";
+import Homepage from "./Components/Homepage/homepage.jsx";
 import Chat from "./Components/Chat/chat.jsx";
 
 function App() {
@@ -37,12 +39,12 @@ function App() {
   if (isLoggedIn) {
     return (
       <div>
-      <Router>
-      <Switch>
-      <Route exact path="/" Component={AllChats}></Route>
-      <Route exact path="/chat/:friendId" Component={Chat}></Route>
-      </Switch>
-      </Router>
+        <Router>
+          <Routes>
+            <Route exact path="/" element={<Homepage></Homepage>}></Route>
+            <Route exact path="/chat/:friendId" element={<Chat></Chat>}></Route>
+          </Routes>
+        </Router>
       </div>
     );
   }

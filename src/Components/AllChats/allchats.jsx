@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import Chat from '../Chat/chat.jsx'; 
-import { useHistory } from "react-router-dom"; // Hook to navigate
+import Chat from "../Chat/chat.jsx";
+import { useNavigate } from "react-router-dom"; // Hook to navigate
 
 export default function AllChats() {
   const [friends, setFriends] = useState([]);
   const [message, setMessage] = useState("");
-  const [selectedFriend, setSelectedFriend] = useState(null); 
-  const history = useHistory(); // Get the history object for navigation
+  const [selectedFriend, setSelectedFriend] = useState(null);
+  const navigate = useNavigate(); // Get the history object for navigation
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -27,7 +27,7 @@ export default function AllChats() {
         const data = await response.json();
 
         if (response.ok) {
-          setFriends(data.friends);
+          setFriends(data.friends, data.nickname);
         } else {
           setMessage(data.message || "Unable to fetch friends.");
         }
@@ -40,17 +40,19 @@ export default function AllChats() {
   }, []);
 
   // Function to navigate to the chat page for a specific friend
-  const goToChat = (friendId) => {
-    history.push(`/chat/${friendId}`);
+  const goToChat = (friendId, nickname) => {
+    navigate(`/chat/${friendId}`, {
+      state: {
+        friendId,
+        nickname,
+      },
+    });
   };
 
   // 👇 Show chat if one is selected
   if (selectedFriend) {
     return (
-     <Chat
-      friend={selectedFriend}
-      onBack={() => setSelectedFriend(null)}
-      />
+      <Chat friend={selectedFriend} onBack={() => setSelectedFriend(null)} />
     );
   }
 
@@ -63,7 +65,7 @@ export default function AllChats() {
           <div
             className="homepage_chat_list_item"
             key={friend._id}
-            onClick={() => goToChat(friend._id)} // Navigate to the specific friend's chat page
+            onClick={() => goToChat(friend._id, friend.nickname)} // Navigate to the specific friend's chat page
             style={{ cursor: "pointer" }} // Optional: improve UX with pointer cursor
           >
             <div className="picAndName">

@@ -184,13 +184,37 @@ app.get("/getFriends", async (req, res) => {
     const friends = await db
       .collection("users")
       .find({
-        _id: { $in: user.friends.map((friendId) => (friendId)) },
+        _id: { $in: user.friends.map((friendId) => friendId) },
       })
       .toArray();
 
     res.status(200).json({ friends });
   } catch (err) {
     console.error("Error fetching friends:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get User's Info Route
+app.get("/getUserInfo", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1]; // Get token from the Authorization header
+    if (!token) {
+      return res.status(403).json({ message: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = new ObjectId(decoded.userId);
+
+    const user = await db.collection("users").findOne({ _id: userId });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ user });
+  } catch (err) {
+    console.error("Error fetching user info:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
