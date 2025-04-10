@@ -31,6 +31,12 @@ export default function Chat() {
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected!");
+  
+      const token = localStorage.getItem("token");
+      if (token) {
+        // Register user with the server immediately
+        socketRef.current.send(JSON.stringify({ type: "register", token }));
+      }
     };
 
     socketRef.current.onerror = (error) => {

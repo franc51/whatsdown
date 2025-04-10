@@ -125,6 +125,7 @@ p {
   border-radius: 12px;
   max-width: 70%;
   word-wrap: break-word;
+  background-color: #8d4bce !important;
 }
 
 .incoming {
@@ -133,6 +134,6 @@ p {
 }
 
 .outgoing {
-  background-color: #aee1f9;
+  background-color: #ff000054 !important;
   align-self: flex-end;
 }

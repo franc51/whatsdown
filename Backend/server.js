@@ -16,29 +16,43 @@ wss.on("connection", (socket) => {
   socket.on("message", (data) => {
     try {
       const parsed = JSON.parse(data);
+  
+      // Handle initial registration
+      if (parsed.type === "register" && parsed.token) {
+        const decoded = jwt.verify(parsed.token, process.env.JWT_SECRET);
+        const userId = decoded.userId;
+        connectedUsers[userId] = socket;
+        console.log(`✅ Registered user ${userId}`);
+        return;
+      }
+  
       const { token, text, receiverId } = parsed;
       if (!token) return;
-
-      // Decode the sender's ID from the token
+  
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const senderId = decoded.userId;
       const senderNickname = decoded.nickname;
-
-      // Save this socket under sender's ID
+  
       connectedUsers[senderId] = socket;
-
-      // Compose message
+  
       const messageToSend = JSON.stringify({
         senderId,
-        senderNickname: decoded.nickname,
+        senderNickname,
         text,
       });
-
-      // Send message to the receiver if connected
+  
+      console.log("➡️ Sending to recipient:", messageToSend);
+  
       const recipientSocket = connectedUsers[receiverId];
       if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
         recipientSocket.send(messageToSend);
+      } else {
+        console.log(`⚠️ User ${receiverId} not connected`);
       }
+      // Also send the message back to the sender
+if (socket.readyState === WebSocket.OPEN) {
+  socket.send(messageToSend);
+}
     } catch (err) {
       console.error("Error processing message:", err.message);
     }
