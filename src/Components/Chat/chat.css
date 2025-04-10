@@ -62,7 +62,6 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   align-items: flex-end;
   padding: 0.5rem 0.2rem;
   overflow-y: auto;
@@ -110,11 +109,6 @@ body {
   background-color: rgba(255, 255, 255, 0) !important;
   padding: 0;
 }
-.timeStamp {
-  font-size: 0.7rem;
-  margin-left: 0.5rem;
-  margin-top: 0.5rem;
-}
 img {
   height: 3rem;
 }
@@ -126,22 +120,29 @@ p {
   color: white !important;
 }
 .messageBubble {
-  padding: 0.6rem 1rem;
-  margin: 8px;
-  border-radius: 3rem;
+  position: relative;
+  padding: 0.4rem 1rem;
+  padding-right: 4rem;
+  margin: 0.3rem;
+  border-radius: 0.8rem;
   max-width: 70%;
   word-wrap: break-word;
   background-color: #8d4bce !important;
 }
-
+.timeStamp {
+  position: absolute;
+  bottom: 0.3rem;
+  right: 0.6rem;
+  font-size: 0.7rem;
+}
 .incoming {
-  background-color: #e0e0e0;
+  background-color: #eb050591;
   align-self: flex-start;
   border-top-left-radius: 0;
 }
 
 .outgoing {
-  background-color: #ff000054 !important;
+  background-color: #ff0000a9 !important;
   align-self: flex-end;
   border-top-right-radius: 0;
 }
@@ -154,9 +155,4 @@ p {
   background-position: center;
   width: 2rem;
   height: 2rem;
-}
-.chatText_and_chatTimeStamp {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
 }

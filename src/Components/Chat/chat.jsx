@@ -101,15 +101,36 @@ export default function Chat() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    if (!token) return;
+
+    if (!yourUserId || !friendId) {
+      console.warn("Waiting for userId or friendId...", {
+        yourUserId,
+        friendId,
+      });
+      return;
+    }
+
     const fetchMessages = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3002/messages/${yourUserId}/${friendId}`
+          `http://localhost:3002/messages/${yourUserId}/${friendId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
+
+        if (!response.ok) {
+          throw new Error(`Fetch failed with status ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log("💬 Fetched messages:", data);
         setMessages(data);
       } catch (err) {
-        console.error("Error fetching message history:", err);
+        console.error("❌ Error fetching message history:", err);
       }
     };
 
@@ -152,6 +173,14 @@ export default function Chat() {
               }`}
             >
               {msg.text}
+              <span className="timeStamp">
+                {msg.createdAt && !isNaN(new Date(msg.createdAt))
+                  ? new Date(msg.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : ""}
+              </span>
             </p>
           ))}
         </div>
