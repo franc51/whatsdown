@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import {jwtDecode} from "jwt-decode"; // you'll need to install this
+import { jwtDecode } from "jwt-decode";
 
 import "./App.css";
 import { useEffect, useState } from "react";
@@ -18,7 +18,7 @@ function App() {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-  
+
         // Check if the token is expired
         const isExpired = decoded.exp * 1000 < Date.now();
         if (isExpired) {

@@ -108,7 +108,6 @@ app.post("/login", async (req, res) => {
 });
 
 // Add Friend Route
-
 app.post("/addFriend", async (req, res) => {
   const { friendPhoneNumber } = req.body;
 
@@ -117,23 +116,19 @@ app.post("/addFriend", async (req, res) => {
   }
 
   try {
-    // Extract user information from the JWT token
-    const token = req.headers.authorization?.split(" ")[1]; // Get token from the Authorization header
+    const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       return res.status(403).json({ message: "No token provided" });
     }
 
-    // Verify the JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = new ObjectId(decoded.userId);
 
-    // Find the user from the token (use ObjectId for querying)
     const user = await db.collection("users").findOne({ _id: userId });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Find the friend by phone number
     const friend = await db
       .collection("users")
       .findOne({ phone: friendPhoneNumber });
@@ -141,20 +136,38 @@ app.post("/addFriend", async (req, res) => {
       return res.status(404).json({ message: "Friend not found" });
     }
 
-    // Check if the friend's ObjectId is already in the user's friends array
-    const isFriendAlready = user.friends.some(
-      (friendId) => friendId.toString() === friend._id.toString()
+    const isFriendAlready = user.friends?.some(
+      (f) => f._id.toString() === friend._id.toString()
     );
 
     if (isFriendAlready) {
       return res.status(400).json({ message: "You are already friends" });
     }
 
-    // Add friend to the user's friend list (store friend's ObjectId)
-    await db.collection("users").updateOne(
-      { _id: userId },
-      { $addToSet: { friends: friend._id } } // Using $addToSet to avoid duplicates
-    );
+    // Construct friend objects
+    const friendInfo = {
+      _id: friend._id,
+      nickname: friend.nickname,
+      lastMessage: "",
+      lastMessageTime: null,
+    };
+
+    const userInfo = {
+      _id: user._id,
+      nickname: user.nickname,
+      lastMessage: "",
+      lastMessageTime: null,
+    };
+
+    // Add friend to user
+    await db
+      .collection("users")
+      .updateOne({ _id: user._id }, { $addToSet: { friends: friendInfo } });
+
+    // Add user to friend
+    await db
+      .collection("users")
+      .updateOne({ _id: friend._id }, { $addToSet: { friends: userInfo } });
 
     res.status(200).json({ message: "Friend added successfully" });
   } catch (err) {
@@ -184,10 +197,9 @@ app.get("/getFriends", async (req, res) => {
     const friends = await db
       .collection("users")
       .find({
-        _id: { $in: user.friends.map((friendId) => friendId) },
+        _id: { $in: user.friends.map((friend) => friend._id) },
       })
       .toArray();
-
     // Fetch the last message for each friend
     const friendsWithLastMessage = await Promise.all(
       friends.map(async (friend) => {
@@ -204,14 +216,14 @@ app.get("/getFriends", async (req, res) => {
           .limit(1)
           .toArray();
 
-      // Attach the last message to the friend's data
-      return {
-        ...friend,
-        lastMessage: lastMessage[0] ? lastMessage[0].message : null, // If a message exists
-        lastMessageTime: lastMessage[0] ? lastMessage[0].createdAt : null, // Time of the last message
-      };
-    })
-  );
+        // Attach the last message to the friend's data
+        return {
+          ...friend,
+          lastMessage: lastMessage[0] ? lastMessage[0].message : null, // If a message exists
+          lastMessageTime: lastMessage[0] ? lastMessage[0].createdAt : null, // Time of the last message
+        };
+      })
+    );
 
     res.status(200).json({ friends: friendsWithLastMessage });
   } catch (err) {
@@ -265,7 +277,6 @@ app.get("/messages/:user1/:user2", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Auth server running at http://localhost:${port}`);

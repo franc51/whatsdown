@@ -30,7 +30,6 @@ export default function Homepage() {
 
         if (response.ok) {
           setUser(data.user); // Store user info
-          console.log(data);
         } else {
           setMessage(data.message || "An error occurred. Please try again.");
         }
@@ -145,8 +144,8 @@ export default function Homepage() {
               maxLength={10}
             />
             <div>
-            <button onClick={handleAddFriend}>Add Friend</button>
-            <button onClick={handleAddFriend}>Delete Friend</button>
+              <button onClick={handleAddFriend}>Add Friend</button>
+              <button>Delete Friend</button>
             </div>
             {message && <p>{message}</p>}
           </div>

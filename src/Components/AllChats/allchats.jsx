@@ -83,7 +83,9 @@ export default function AllChats() {
                 </p>
               </div>
             </div>
-            <p className="homepage_chat_profile_messageTime">09:44 AM</p>
+            <p className="homepage_chat_profile_messageTime">
+              {friend.lastMessageTime}
+            </p>
           </div>
         ))
       ) : (

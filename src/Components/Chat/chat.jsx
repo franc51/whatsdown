@@ -11,7 +11,6 @@ export default function Chat() {
   const location = useLocation();
   const navigate = useNavigate();
 
-
   const { friendId, nickname } = location.state || {};
 
   useEffect(() => {
@@ -33,7 +32,7 @@ export default function Chat() {
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected!");
-  
+
       const token = localStorage.getItem("token");
       if (token) {
         // Register user with the server immediately
@@ -102,8 +101,6 @@ export default function Chat() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token || !friendId || !yourUserId) return;
-  
     const fetchMessages = async () => {
       try {
         const response = await fetch(
@@ -115,17 +112,18 @@ export default function Chat() {
         console.error("Error fetching message history:", err);
       }
     };
-  
+
     fetchMessages();
   }, [yourUserId, friendId]);
-  
 
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="homepage_user">
-      
         <div className="picAndName">
-        <button className="homepage_goBackToAllChats" onClick={() => navigate("/")}></button>
+          <button
+            className="homepage_goBackToAllChats"
+            onClick={() => navigate("/")}
+          ></button>
           <img
             className="homepage_chat_profileImg"
             alt="profileImg"
@@ -153,7 +151,7 @@ export default function Chat() {
                   : "incoming"
               }`}
             >
-               {msg.text}
+              {msg.text}
             </p>
           ))}
         </div>
