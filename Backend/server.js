@@ -7,6 +7,17 @@ dotenv.config();
 const wss = new WebSocket.Server({ port: 8081 });
 console.log("✅ WebSocket server is listening on ws://localhost:8081");
 
+const { MongoClient } = require("mongodb");
+const client = new MongoClient(process.env.MONGO_URI, {
+  useUnifiedTopology: true,
+});
+
+let db;
+client.connect().then(() => {
+  db = client.db("WhatsDown");
+  console.log("✅ WebSocket server connected to MongoDB");
+});
+
 const connectedUsers = {}; // { userId: socket }
 
 wss.on("connection", (socket) => {
@@ -40,6 +51,15 @@ wss.on("connection", (socket) => {
         senderNickname,
         text,
       });
+      
+      // Store message in MongoDB
+db.collection("messages").insertOne({
+  senderId,
+  receiverId,
+  senderNickname,
+  text,
+  createdAt: new Date(),
+});
   
       console.log("➡️ Sending to recipient:", messageToSend);
   

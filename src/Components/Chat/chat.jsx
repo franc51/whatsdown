@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./chat.css";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
@@ -9,6 +9,8 @@ export default function Chat() {
 
   const socketRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
+
 
   const { friendId, nickname } = location.state || {};
 
@@ -98,10 +100,32 @@ export default function Chat() {
     }
   };
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token || !friendId || !yourUserId) return;
+  
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3002/messages/${yourUserId}/${friendId}`
+        );
+        const data = await response.json();
+        setMessages(data);
+      } catch (err) {
+        console.error("Error fetching message history:", err);
+      }
+    };
+  
+    fetchMessages();
+  }, [yourUserId, friendId]);
+  
+
   return (
-    <div className="homepage_chat_list">
+    <div className="homepage_chat_list_openedChat">
       <div className="homepage_user">
+      
         <div className="picAndName">
+        <button className="homepage_goBackToAllChats" onClick={() => navigate("/")}></button>
           <img
             className="homepage_chat_profileImg"
             alt="profileImg"
@@ -113,8 +137,8 @@ export default function Chat() {
           </div>
         </div>
         <div>
-          <button className="homepage_searchBtn searchMenuBtn_style" />
-          <button className="homepage_menuBtn searchMenuBtn_style" />
+          <button className="chat_videoCall searchMenuBtn_style" />
+          <button className="chat_account searchMenuBtn_style" />
         </div>
       </div>
 
@@ -129,7 +153,7 @@ export default function Chat() {
                   : "incoming"
               }`}
             >
-              <strong>{msg.senderNickname || "Friend"}:</strong> {msg.text}
+               {msg.text}
             </p>
           ))}
         </div>

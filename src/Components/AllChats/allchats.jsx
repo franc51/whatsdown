@@ -27,7 +27,7 @@ export default function AllChats() {
         const data = await response.json();
 
         if (response.ok) {
-          setFriends(data.friends, data.nickname);
+          setFriends(data.friends);
         } else {
           setMessage(data.message || "Unable to fetch friends.");
         }
@@ -79,7 +79,7 @@ export default function AllChats() {
                   {friend.nickname}
                 </h4>
                 <p className="homepage_chat_profile_lastMessage">
-                  {friend.phone}
+                  {friend.lastMessage}
                 </p>
               </div>
             </div>

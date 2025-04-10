@@ -21,7 +21,7 @@ body {
     rgba(234, 0, 255, 0.356)
   );
 }
-.homepage_chat_list {
+.homepage_chat_list_openedChat {
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -45,13 +45,18 @@ body {
   border: 1px solid rgba(68, 68, 160, 0.685);
   border-radius: 50%;
 }
-.homepage_menuBtn {
+.chat_account {
   margin-left: 0.5rem;
-  background-image: url("/public/Images/menu.png");
+  background-image: url("/public/Images/user.png");
+  background-size: 1.7rem;
+  border: 2px solid purple;
 }
-.homepage_searchBtn {
-  background-image: url("/public/Images/search.png");
-  background-size: 1.2rem;
+.chat_videoCall {
+  background-image: url("/public/Images/video-calling.png");
+  background-size: 2.5rem;
+  height: 2rem;
+  width: 3rem;
+  border: none;
 }
 .chat_container {
   flex: 1;
@@ -136,4 +141,14 @@ p {
 .outgoing {
   background-color: #ff000054 !important;
   align-self: flex-end;
+}
+.homepage_goBackToAllChats {
+  border: none;
+  background-color: #8d4bce00;
+  background-image: url("/public/Images/left.png");
+  background-size: 2rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 2rem;
+  height: 2rem;
 }

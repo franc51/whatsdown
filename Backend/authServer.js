@@ -188,7 +188,32 @@ app.get("/getFriends", async (req, res) => {
       })
       .toArray();
 
-    res.status(200).json({ friends });
+    // Fetch the last message for each friend
+    const friendsWithLastMessage = await Promise.all(
+      friends.map(async (friend) => {
+        // Get the last message between the user and this friend
+        const lastMessage = await db
+          .collection("messages")
+          .find({
+            $or: [
+              { senderId: userId, receiverId: friend._id },
+              { senderId: friend._id, receiverId: userId },
+            ],
+          })
+          .sort({ createdAt: -1 }) // Sort messages by createdAt, descending order (most recent first)
+          .limit(1)
+          .toArray();
+
+      // Attach the last message to the friend's data
+      return {
+        ...friend,
+        lastMessage: lastMessage[0] ? lastMessage[0].message : null, // If a message exists
+        lastMessageTime: lastMessage[0] ? lastMessage[0].createdAt : null, // Time of the last message
+      };
+    })
+  );
+
+    res.status(200).json({ friends: friendsWithLastMessage });
   } catch (err) {
     console.error("Error fetching friends:", err);
     res.status(500).json({ message: "Server error" });
@@ -218,6 +243,29 @@ app.get("/getUserInfo", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+app.get("/messages/:user1/:user2", async (req, res) => {
+  const { user1, user2 } = req.params;
+
+  try {
+    const messages = await db
+      .collection("messages")
+      .find({
+        $or: [
+          { senderId: user1, receiverId: user2 },
+          { senderId: user2, receiverId: user1 },
+        ],
+      })
+      .sort({ createdAt: 1 })
+      .toArray();
+
+    res.status(200).json(messages);
+  } catch (err) {
+    console.error("Error fetching messages:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Auth server running at http://localhost:${port}`);

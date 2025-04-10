@@ -126,7 +126,7 @@ export default function Homepage() {
           }`}
           onClick={(e) => handleTabChange(e, "addChat")}
         >
-          New Chat
+          Settings
         </button>
       </div>
 
@@ -136,7 +136,7 @@ export default function Homepage() {
         {activeTab === "groups" && <p>Groups</p>}
         {activeTab === "addChat" && (
           <div className="newChat_addFriend">
-            <label>Phone</label>
+            <label>Add or remove friend</label>
             <input
               type="text"
               placeholder="Phone number"
@@ -144,7 +144,10 @@ export default function Homepage() {
               onChange={(e) => setFriendPhone(e.target.value)}
               maxLength={10}
             />
+            <div>
             <button onClick={handleAddFriend}>Add Friend</button>
+            <button onClick={handleAddFriend}>Delete Friend</button>
+            </div>
             {message && <p>{message}</p>}
           </div>
         )}

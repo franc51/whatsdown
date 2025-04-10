@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {jwtDecode} from "jwt-decode"; // you'll need to install this
 
 import "./App.css";
 import { useEffect, useState } from "react";
 import WelcomePage from "./Components/Welcome-page/welcome-page.jsx";
 import Loader from "./Components/Loader/loader.jsx";
-import AllChats from "./Components/AllChats/allchats.jsx";
 import Homepage from "./Components/Homepage/homepage.jsx";
 import Chat from "./Components/Chat/chat.jsx";
 
@@ -16,7 +16,22 @@ function App() {
     // Check if there's a token in localStorage to determine if the user is logged in
     const token = localStorage.getItem("token");
     if (token) {
-      setIsLoggedIn(true); // If there's a token, assume the user is logged in
+      try {
+        const decoded = jwtDecode(token);
+  
+        // Check if the token is expired
+        const isExpired = decoded.exp * 1000 < Date.now();
+        if (isExpired) {
+          localStorage.removeItem("token");
+          setIsLoggedIn(false);
+        } else {
+          setIsLoggedIn(true);
+        }
+      } catch (e) {
+        console.error("Invalid token");
+        localStorage.removeItem("token");
+        setIsLoggedIn(false);
+      }
     }
 
     const handleLoad = () => setIsPageLoading(false);
