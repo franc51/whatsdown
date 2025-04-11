@@ -1,0 +1,8 @@
+.account_settings_backBtn {
+    display: flex;
+}
+.account_changeNickname {
+    display: flex;
+    flex-direction: column;
+    
+}

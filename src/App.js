@@ -7,6 +7,7 @@ import WelcomePage from "./Components/Welcome-page/welcome-page.jsx";
 import Loader from "./Components/Loader/loader.jsx";
 import Homepage from "./Components/Homepage/homepage.jsx";
 import Chat from "./Components/Chat/chat.jsx";
+import Account from "./Components/Account/account.jsx";
 
 function App() {
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -58,6 +59,7 @@ function App() {
           <Routes>
             <Route exact path="/" element={<Homepage></Homepage>}></Route>
             <Route exact path="/chat/:friendId" element={<Chat></Chat>}></Route>
+            <Route exact path="/account" element={<Account></Account>}></Route>
           </Routes>
         </Router>
       </div>

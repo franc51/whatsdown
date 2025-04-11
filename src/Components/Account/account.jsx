@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import "./homepage.css";
 import AllChats from "../AllChats/allchats";
 import { useNavigate } from "react-router-dom";
+import "./account.css";
 
 export default function Homepage() {
   const [activeTab, setActiveTab] = useState("chats"); // Default tab is chats
@@ -95,9 +95,12 @@ export default function Homepage() {
   return (
     <div className="homepage">
       <div className="homepage_user">
-        <div>
-          <p className="homepage_greeting">Hello,</p>
-          <h3 className="homepage_user_greeting">{user.nickname}</h3>
+        <div className="account_settings_backBtn">
+        <button
+            className="homepage_goBackToAllChats"
+            onClick={() => navigate("/")}
+          ></button>
+          <h3 className="homepage_user_greeting">Account Settings</h3>
         </div>
         <div>
           <button className="homepage_searchBtn searchMenuBtn_style" />
@@ -112,7 +115,7 @@ export default function Homepage() {
           }`}
           onClick={(e) => handleTabChange(e, "chats")}
         >
-          All Chats
+          User
         </button>
         <button
           className={`homepage_groups link ${
@@ -120,7 +123,7 @@ export default function Homepage() {
           }`}
           onClick={(e) => handleTabChange(e, "groups")}
         >
-          Groups
+        Chat
         </button>
         <button
           className={`homepage_contacts link ${
@@ -128,29 +131,28 @@ export default function Homepage() {
           }`}
           onClick={(e) => handleTabChange(e, "addChat")}
         >
-          Chat Settings
+          Style
         </button>
       </div>
 
       {/* Conditional Rendering of Components */}
       <div className="homepage_content">
-        {activeTab === "chats" && <AllChats />}
-        {activeTab === "groups" && <p>Groups</p>}
-        {activeTab === "addChat" && (
-          <div className="newChat_addFriend">
-            <label>Add or remove friend</label>
+        {activeTab === "chats" &&   
+        <div className="account_changeNickname">
+            <label>Change your nickname</label>
+            <div>
             <input
               type="text"
-              placeholder="Phone number"
-              value={friendPhone}
-              onChange={(e) => setFriendPhone(e.target.value)}
-              maxLength={10}
+              placeholder="abcd"
             />
-            <div>
-              <button onClick={handleAddFriend}>Add Friend</button>
-              <button>Delete Friend</button>
+              <button>Do it</button>
             </div>
             {message && <p>{message}</p>}
+          </div>}
+        {activeTab === "groups" && <p>No idea what's gonna be here yet.</p>}
+        {activeTab === "addChat" && (
+          <div className="newChat_addFriend">
+            <p>Maybe dark mode? Idk, give me ideas</p>
           </div>
         )}
       </div>

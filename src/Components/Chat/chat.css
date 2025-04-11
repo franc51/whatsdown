@@ -36,15 +36,6 @@ body {
   align-items: center;
   margin-bottom: 2rem;
 }
-.searchMenuBtn_style {
-  padding: 1.2rem;
-  background-color: white;
-  background-position: center;
-  background-size: 1.5rem;
-  background-repeat: no-repeat;
-  border: 1px solid rgba(68, 68, 160, 0.685);
-  border-radius: 50%;
-}
 .chat_account {
   margin-left: 0.5rem;
   background-image: url("/public/Images/user.png");
