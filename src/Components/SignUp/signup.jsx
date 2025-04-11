@@ -15,7 +15,7 @@ export default function SignUp() {
 
     // Send data to backend
     try {
-      const response = await fetch("http://localhost:3002/signup", {
+      const response = await fetch("https://authservice-xemo.onrender.com/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

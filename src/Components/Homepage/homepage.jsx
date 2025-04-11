@@ -22,7 +22,7 @@ export default function Homepage() {
           return;
         }
 
-        const response = await fetch("http://localhost:3002/getUserInfo", {
+        const response = await fetch("https://authservice-xemo.onrender.com/getUserInfo", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
@@ -65,7 +65,7 @@ export default function Homepage() {
         return;
       }
 
-      const response = await fetch("http://localhost:3002/addFriend", {
+      const response = await fetch("https://authservice-xemo.onrender.com/addFriend", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

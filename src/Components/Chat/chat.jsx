@@ -114,7 +114,7 @@ export default function Chat() {
     const fetchMessages = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3002/messages/${yourUserId}/${friendId}`,
+          `https://authservice-xemo.onrender.com/messages/${yourUserId}/${friendId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

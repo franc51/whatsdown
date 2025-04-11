@@ -17,7 +17,7 @@ export default function AllChats() {
           return;
         }
 
-        const response = await fetch("http://localhost:3002/getFriends", {
+        const response = await fetch("https://authservice-xemo.onrender.com/getFriends", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
