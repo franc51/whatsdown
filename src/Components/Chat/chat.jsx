@@ -28,7 +28,7 @@ export default function Chat() {
   // Set up the WebSocket connection
   useEffect(() => {
     // Create WebSocket connection when the component mounts
-    socketRef.current = new WebSocket("ws://localhost:8081");
+    socketRef.current = new WebSocket("https://websocket-service-30vz.onrender.com");
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected!");
