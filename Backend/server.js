@@ -82,6 +82,34 @@ wss.on("connection", (socket) => {
         createdAt: new Date(),
       });
 
+      // Update sender's friend entry
+      db.collection("users").updateOne(
+        {
+          _id: new ObjectId(senderId),
+          "friends._id": new ObjectId(receiverId),
+        },
+        {
+          $set: {
+            "friends.$.lastMessage": text,
+            "friends.$.lastMessageTime": createdAt,
+          },
+        }
+      );
+
+      // Update receiver's friend entry
+      db.collection("users").updateOne(
+        {
+          _id: new ObjectId(receiverId),
+          "friends._id": new ObjectId(senderId),
+        },
+        {
+          $set: {
+            "friends.$.lastMessage": text,
+            "friends.$.lastMessageTime": createdAt,
+          },
+        }
+      );
+
       console.log("➡️ Sending to recipient:", messageToSend);
 
       const recipientSocket = connectedUsers[receiverId];

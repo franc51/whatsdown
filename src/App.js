@@ -48,7 +48,13 @@ function App() {
 
   // If the page is still loading, show a loader
   if (isPageLoading) {
-    return <img alt="Loading" className="chats_loader" src="/Images/loader.gif"></img>;
+    return (
+      <img
+        alt="Loading"
+        className="chats_loader"
+        src="/Images/loader.gif"
+      ></img>
+    );
   }
 
   // If the user is logged in, show the homepage
