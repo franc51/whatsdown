@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./chat.css";
 import { useLocation, useNavigate } from "react-router-dom";
-import Loader from "../Loader/loader";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);

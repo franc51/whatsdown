@@ -98,7 +98,6 @@ app.post("/login", async (req, res) => {
     const token = jwt.sign(
       { userId: user._id, nickname: user.nickname, phone: user.phone },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" } // Token expires in 1 hour
     );
 
     res.status(200).json({ message: "Login successful", token });
