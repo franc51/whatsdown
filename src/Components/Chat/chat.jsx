@@ -229,7 +229,7 @@ const sendTypingEvent = () => {
           ))}
             {/* ✨ Typing indicator */}
   {isFriendTyping && (
-    <img alt="Loading" className="chat_isTyping incoming" src="/Images/isTyping.gif"></img>
+    <img alt="Loading" className="chat_isTyping incoming" src="/Images/istyping.gif"></img>
   )}
           <div ref={bottomRef}></div>
         </div>}
