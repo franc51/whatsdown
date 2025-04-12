@@ -98,7 +98,7 @@ export default function Homepage() {
         <div className="account_changeNickname">
         <button className="account_logOut" onClick={() => {
           localStorage.removeItem('token');
-          navigate("/");
+          navigate("/login");
         }}>Log Out</button>
             <div className="account_content">
             <div className="account_nickName_container">
