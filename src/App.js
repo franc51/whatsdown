@@ -4,7 +4,6 @@ import { jwtDecode } from "jwt-decode";
 import "./App.css";
 import { useEffect, useState } from "react";
 import WelcomePage from "./Components/Welcome-page/welcome-page.jsx";
-import Loader from "./Components/Loader/loader.jsx";
 import Homepage from "./Components/Homepage/homepage.jsx";
 import Chat from "./Components/Chat/chat.jsx";
 import Account from "./Components/Account/account.jsx";
@@ -48,7 +47,7 @@ function App() {
 
   // If the page is still loading, show a loader
   if (isPageLoading) {
-    return <Loader />;
+    return <img alt="Loading" className="chats_loader" src="/Images/loader.gif"></img>;
   }
 
   // If the user is logged in, show the homepage
