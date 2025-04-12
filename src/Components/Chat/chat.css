@@ -13,11 +13,12 @@ p {
 }
 
 body {
+  height: 100vh;
   margin: 0;
   box-sizing: border-box;
 }
 .homepage_chat_list_openedChat {
-  height: 100vh;
+  height: 98vh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

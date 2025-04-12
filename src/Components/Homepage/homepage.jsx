@@ -105,6 +105,9 @@ export default function Homepage() {
         </div>
       </div>
 
+      <div>
+        <h2>Stories will show here</h2>
+      </div>
       <div className="homepage_nav">
         <button
           className={`homepage_chats link ${
