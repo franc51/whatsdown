@@ -66,7 +66,7 @@ body {
 .chat_sender_input {
   border-radius: 2rem;
   width: 75%;
-  border: 1px solid #8d4bce;
+  background-color: #8d4bce27;
 }
 .chat_sender_submit {
   border: none;
@@ -104,7 +104,7 @@ img {
   padding: 0.4rem 1rem;
   padding-right: 4rem;
   margin: 0.3rem;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   max-width: 70%;
   word-wrap: break-word;
   background-color: #8d4bce !important;
@@ -120,12 +120,14 @@ img {
   background-color: #eb050591;
   align-self: flex-start;
   border-top-left-radius: 0;
+  border-top-right-radius: 2rem;
 }
 
 .outgoing {
   background-color: #ff0000a9 !important;
   align-self: flex-end;
   border-top-right-radius: 0;
+  border-top-left-radius: 2rem;
 }
 .homepage_goBackToAllChats {
   border: none;
@@ -149,4 +151,25 @@ img {
 }
 .chats_loader {
   height: 10rem;
+}
+
+
+
+.chat_container::-webkit-scrollbar {
+  width: 0.7rem;
+}
+
+.chat_container::-webkit-scrollbar-track {
+  background: #ff000017;
+  border-radius: 4px;
+}
+
+.chat_container::-webkit-scrollbar-thumb {
+  background-color: #8d4bce8c;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.chat_container::-webkit-scrollbar-thumb:hover {
+  background-color: #fd00002c;
 }

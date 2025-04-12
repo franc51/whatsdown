@@ -8,6 +8,8 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [yourUserId, setYourUserId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const bottomRef = useRef(null);
+
 
   const socketRef = useRef(null);
   const location = useLocation();
@@ -142,6 +144,13 @@ export default function Chat() {
     fetchMessages();
   }, [yourUserId, friendId]);
 
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+  
+
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="chat_user">
@@ -191,6 +200,7 @@ export default function Chat() {
               </span>
             </p>
           ))}
+          <div ref={bottomRef}></div>
         </div>}
         
 
