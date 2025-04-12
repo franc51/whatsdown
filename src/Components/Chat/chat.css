@@ -152,6 +152,13 @@ img {
 .chats_loader {
   height: 10rem;
 }
+.chat_isTyping {
+  display: flex;
+  justify-content: flex-start;
+  height: 5rem;
+  background-color: #8d4bce00;
+  border-radius: 2rem;
+}
 
 
 

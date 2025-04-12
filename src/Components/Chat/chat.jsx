@@ -55,15 +55,13 @@ export default function Chat() {
         if (parsed.type === "typing" && parsed.senderId === friendId) {
           setIsFriendTyping(true);
     
-          // Remove indicator after 2.5s if no new typing
+          // Remove indicator after 1.7s if no new typing
           setTimeout(() => {
             setIsFriendTyping(false);
-          }, 2500);
+          }, 1700);
     
-          return; // Don't add this as a normal message
+          return; 
         }
-    
-        // 🟢 Handle normal chat message
         setMessages((prevMessages) => [...prevMessages, parsed]);
       };
     
@@ -177,7 +175,7 @@ const sendTypingEvent = () => {
   clearTimeout(typingTimeout);
   typingTimeout = setTimeout(() => {
     typingTimeout = null;
-  }, 2000); // wait 1s before allowing another "typing" event
+  }, 10000); // wait 3s before allowing another "typing" event
 };
 
   return (
@@ -206,7 +204,7 @@ const sendTypingEvent = () => {
 
       <div className="chat_and_sender">
       {loading ? (<div className="loader_div">
-        <img alt="Loading" className="chats_loader" src="/Images/loader.gif"></img>
+        <img alt="Loading" className="chats_loader" src="/public/Images/loader.gif"></img>
       </div>
       ) : <div className="chat_container">
           {messages.map((msg, idx) => (
@@ -231,7 +229,7 @@ const sendTypingEvent = () => {
           ))}
             {/* ✨ Typing indicator */}
   {isFriendTyping && (
-    <img alt="Loading" className="incoming" src="/Images/isTyping.gif"></img>
+    <img alt="Loading" className="chat_isTyping incoming" src="/Images/isTyping.gif"></img>
   )}
           <div ref={bottomRef}></div>
         </div>}
