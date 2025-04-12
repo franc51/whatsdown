@@ -38,11 +38,11 @@ export default function Login() {
 
   return (
     <div className="login_info">
-      <p>Log In into your account.</p>
+      <p className="login_style">Log In into your account.</p>
       <form onSubmit={handleLogin}>
         <div className="login_container marginTop">
           <div className="login_container">
-            <label>Phone</label>
+            <label>Phone Number</label>
             <input
               type="number"
               placeholder="phone"

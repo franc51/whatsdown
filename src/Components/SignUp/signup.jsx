@@ -43,7 +43,7 @@ export default function SignUp() {
 
   return (
     <div className="login_info">
-      <p>Create a new account.</p>
+      <p className="createNewAccount">Create a new account.</p>
       <form onSubmit={handleSubmit}>
         <div className="login_container marginTop">
           <div className="login_container">
@@ -60,7 +60,7 @@ export default function SignUp() {
             <label>Phone nr.</label>
             <input
               type="number"
-              placeholder="number"
+              placeholder=" your number"
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -70,7 +70,7 @@ export default function SignUp() {
             <label>Password</label>
             <input
               type="password"
-              placeholder="your super strong password"
+              placeholder="your password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}

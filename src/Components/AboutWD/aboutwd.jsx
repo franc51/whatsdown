@@ -7,16 +7,54 @@ export default function AboutWD() {
     <p>It's simple.</p>
     <div className="aboutwd_description">
       <p>What's down is a what's up clone developed by Francisc, a frontend engineer located in Brasov, Romania</p>
-      <p>The purpose of this web application is to create and integrate diverse technologies and programming principles, like websockets, mobile UI/UX design, etc.</p>
-      <p>Tech stack:</p>
-      <ul>
-        <li>React</li>
-        <li>HTML5</li>
-        <li>CSS3</li>
-        <li>JavaScript</li>
-        <li>Node</li>
-        <li>MongoDB</li>
-      </ul>
+      <ol>
+      <li>
+        Frontend Stack:
+        <ul>
+        <li>
+          React v18
+        </li>
+        <li>
+          HTML5
+        </li>
+        <li>
+          CSS3
+        </li>
+        <li>
+          JavaScript
+        </li>
+        </ul>
+      </li>
+      <li>
+        Backend Stack:
+        <ul>
+        <li>
+          Node v18
+        </li>
+        <li>
+          JavaScript
+        </li>
+        <li>
+          Websockets
+        </li>
+        </ul>
+      </li>
+      <li>
+        DevOps Stack:
+        <ul>
+        <li>
+          Render web service
+        </li>
+        This service deploys my frontend, and 2 backend servers
+        <li>
+          authService
+        </li>
+        <li>
+          webSocketsService
+        </li>
+        </ul>
+      </li>
+      </ol>
     </div>
   </div>;
 }

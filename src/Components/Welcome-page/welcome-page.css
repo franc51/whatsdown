@@ -16,11 +16,6 @@ body {
   margin: 0;
   box-sizing: border-box;
   padding: 1rem;
-  background-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 255, 0.164),
-    rgba(255, 0, 0, 0.644)
-  );
   height: 100vh;
 }
 .homepage {
@@ -30,18 +25,18 @@ body {
   padding: 2rem 1rem;
   box-shadow: 1px 1px 10px 2px rgba(128, 0, 128, 0.329);
 }
-.homepage_user {
+.homepage_user_welcome {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+.logo {
   margin-bottom: 2rem;
 }
 .homepage_greeting {
   color: gray;
-}
-.homepage_user_greeting {
-  font-size: 1.3rem;
-  font-weight: 900;
 }
 .homepage_nav {
   display: flex;

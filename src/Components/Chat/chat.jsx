@@ -139,7 +139,7 @@ export default function Chat() {
 
   return (
     <div className="homepage_chat_list_openedChat">
-      <div className="homepage_user">
+      <div className="chat_user">
         <div className="picAndName">
           <button
             className="homepage_goBackToAllChats"

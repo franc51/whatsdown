@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
 }
 label {
     color: gray;
@@ -26,13 +26,18 @@ input {
     color: white;
     font-size: 1rem;
     font-weight: 900;
-    padding-bottom: 2.4rem;
-    margin: 0 6rem;
+    padding: 0.5rem 0;
+    margin: 0 7rem;
+    flex: 1;
 }
 .error {
     color: red;
     font-size: 0.8rem;
 }
 .login_info {
-    margin-top: 6rem;
+    margin-top: 0.5rem;
+}
+.login_style {
+    background-color: rgba(128, 0, 128, 0);
+    color: gray !important;
 }

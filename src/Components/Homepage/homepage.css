@@ -13,11 +13,7 @@ body {
   margin: 0;
   box-sizing: border-box;
   padding: 1rem;
-  background-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 255, 0.26),
-    rgba(255, 0, 0, 0.24)
-  );
+
   height: 100vh;
 }
 .homepage {
@@ -45,9 +41,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: rgb(243, 243, 243);
+  background-color: rgb(255, 255, 255);
   border-radius: 2rem;
   margin-bottom: 2rem;
+  margin-top: 6rem;
 }
 .searchMenuBtn_style {
   padding: 1rem;

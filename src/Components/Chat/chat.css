@@ -15,11 +15,7 @@ p {
 body {
   margin: 0;
   box-sizing: border-box;
-  background-image: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0),
-    rgba(234, 0, 255, 0.356)
-  );
+  background-color: #ffc7ff15;
 }
 .homepage_chat_list_openedChat {
   height: 100vh;
@@ -30,7 +26,7 @@ body {
   background-color: #ffffff00;
   box-shadow: unset;
 }
-.homepage_user {
+.chat_user {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -103,13 +99,6 @@ body {
 img {
   height: 3rem;
 }
-p {
-  background-color: #8d4bce;
-  padding: 0.7rem;
-  border-radius: 1rem;
-  max-width: fit-content;
-  color: white !important;
-}
 .messageBubble {
   position: relative;
   padding: 0.4rem 1rem;
@@ -146,4 +135,7 @@ p {
   background-position: center;
   width: 2rem;
   height: 2rem;
+}
+.createNewAccount {
+  background-color: unset;
 }

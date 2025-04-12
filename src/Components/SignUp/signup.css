@@ -10,7 +10,7 @@ label {
 input {
   height: 1.6rem;
   border: none;
-  background-color: rgb(243, 243, 243);
+  background-color: rgb(243, 243, 243) ;
   padding: 0.8rem;
   color: black;
   font-weight: 600;
