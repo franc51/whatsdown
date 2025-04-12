@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./chat.css";
 import { useLocation, useNavigate } from "react-router-dom";
+import Loader from "../Loader/loader";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [yourUserId, setYourUserId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const socketRef = useRef(null);
   const location = useLocation();
@@ -127,11 +129,14 @@ export default function Chat() {
         }
 
         const data = await response.json();
-        console.log("💬 Fetched messages:", data);
         setMessages(data);
+        console.log("💬 Fetched messages:", data);
       } catch (err) {
         console.error("❌ Error fetching message history:", err);
+      } finally {
+        setLoading(false);
       }
+      
     };
 
     fetchMessages();
@@ -162,7 +167,10 @@ export default function Chat() {
       </div>
 
       <div className="chat_and_sender">
-        <div className="chat_container">
+      {loading ? (<div className="loader_div">
+        <img alt="Loading" className="chats_loader" src="/Images/loader.gif"></img>
+      </div>
+      ) : <div className="chat_container">
           {messages.map((msg, idx) => (
             <p
               key={idx}
@@ -183,7 +191,8 @@ export default function Chat() {
               </span>
             </p>
           ))}
-        </div>
+        </div>}
+        
 
         <div className="chat_sender">
           <input

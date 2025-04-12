@@ -15,7 +15,6 @@ p {
 body {
   margin: 0;
   box-sizing: border-box;
-  background-color: #ffc7ff15;
 }
 .homepage_chat_list_openedChat {
   height: 100vh;
@@ -108,6 +107,7 @@ img {
   max-width: 70%;
   word-wrap: break-word;
   background-color: #8d4bce !important;
+  color: white;
 }
 .timeStamp {
   position: absolute;
@@ -138,4 +138,14 @@ img {
 }
 .createNewAccount {
   background-color: unset;
+}
+.loader_div {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.chats_loader {
+  height: 10rem;
 }

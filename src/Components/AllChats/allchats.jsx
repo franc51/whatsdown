@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Chat from "../Chat/chat.jsx";
+import "../AllChats/allchats.css"
 import { useNavigate } from "react-router-dom"; // Hook to navigate
 
 export default function AllChats() {
   const [friends, setFriends] = useState([]);
   const [message, setMessage] = useState("");
   const [selectedFriend, setSelectedFriend] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); // Get the history object for navigation
 
   useEffect(() => {
@@ -33,9 +35,11 @@ export default function AllChats() {
         }
       } catch (err) {
         setMessage("An error occurred. Please try again.");
+      } finally {
+        setLoading(false);
       }
-    };
 
+    };
     fetchFriends();
   }, []);
 
@@ -49,18 +53,14 @@ export default function AllChats() {
     });
   };
 
-  // 👇 Show chat if one is selected
-  if (selectedFriend) {
-    return (
-      <Chat friend={selectedFriend} onBack={() => setSelectedFriend(null)} />
-    );
-  }
+ 
 
   return (
     <div className="homepage_chat_list">
       {message && <p>{message}</p>}
 
-      {friends.length > 0 ? (
+      {loading ? (<img alt="Loading" className="allchats_loader" src="/Images/loader.gif"></img>
+      ) : friends.length > 0 ? (
         friends.map((friend) => (
           <div
             className="homepage_chat_list_item"
@@ -89,7 +89,7 @@ export default function AllChats() {
           </div>
         ))
       ) : (
-        <p>No friends found. Add some friends!</p>
+        <p>Your friends will appear here once you add them, do so on the chat settings tab.</p>
       )}
     </div>
   );
