@@ -32,6 +32,8 @@ wss.on("connection", (socket) => {
         const userId = decoded.userId;
         connectedUsers[userId] = socket;
         console.log(`✅ Registered user ${userId}`);
+        // Notify other users that the user is online
+        broadcastUserStatus(userId, "online");
         return;
       }
 
@@ -103,8 +105,28 @@ wss.on("connection", (socket) => {
       if (connectedUsers[userId] === socket) {
         delete connectedUsers[userId];
         console.log(`User ${userId} disconnected`);
+        // Notify others that the user is offline
+        broadcastUserStatus(userId, "offline");
         break;
       }
     }
   });
 });
+
+function broadcastUserStatus(userId, status) {
+  // Broadcast the status update to all other connected clients
+  for (const otherUserId in connectedUsers) {
+    if (otherUserId !== userId) {
+      const socket = connectedUsers[otherUserId];
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(
+          JSON.stringify({
+            type: "status",
+            userId: userId,
+            status: status,
+          })
+        );
+      }
+    }
+  }
+}

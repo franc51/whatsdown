@@ -7,6 +7,8 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [yourUserId, setYourUserId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [friendStatus, setFriendStatus] = useState("Offline"); // Track friend status
+
   const bottomRef = useRef(null);
 
   const [isFriendTyping, setIsFriendTyping] = useState(false);
@@ -63,6 +65,12 @@ export default function Chat() {
           }, 3000);
 
           return;
+        }
+        // Handle incoming status updates (online/offline)
+        if (parsed.type === "status") {
+          if (parsed.userId === friendId) {
+            setFriendStatus(parsed.status === "online" ? "Online" : "Offline");
+          }
         }
         setMessages((prevMessages) => [...prevMessages, parsed]);
       };
@@ -192,7 +200,7 @@ export default function Chat() {
           />
           <div className="homepage_chat_profile">
             <h4 className="homepage_chat_profile_name">{nickname}</h4>
-            <p className="homepage_chat_profile_lastMessage">Online</p>
+            <p className="homepage_chat_profile_lastMessage">{friendStatus}</p>
           </div>
         </div>
         <div>
@@ -207,7 +215,7 @@ export default function Chat() {
             <img
               alt="Loading"
               className="chats_loader"
-              src="/public/Images/loader.gif"
+              src="/Images/loader.gif"
             ></img>
           </div>
         ) : (
@@ -234,11 +242,7 @@ export default function Chat() {
             ))}
             {/* ✨ Typing indicator */}
             {isFriendTyping && (
-              <img
-                alt="Typing.."
-                className="chat_isTyping incoming"
-                src="/Images/istyping.gif"
-              ></img>
+              <p className="chat_isTyping incoming">Typing . . . </p>
             )}
             <div ref={bottomRef}></div>
           </div>

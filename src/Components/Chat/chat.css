@@ -121,14 +121,12 @@ img {
 .incoming {
   align-self: flex-start;
   border-top-left-radius: 0;
-  border-bottom-left-radius: 1.4rem;
   background-color: #eb050548;
 }
 
 .outgoing {
   align-self: flex-end;
   border-top-right-radius: 0;
-  border-bottom-right-radius: 1.4rem;
   background-color: #ff0000cb !important;
   color: white;
 }
@@ -156,11 +154,18 @@ img {
   height: 10rem;
 }
 .chat_isTyping {
+  font-size: 0.9rem;
   display: flex;
   justify-content: flex-start;
   height: 5rem;
-  background-color: #8d4bce00;
-  border-radius: 2rem;
+  background-color: #8d4bcebb;
+  border-radius: 0.5rem;
+  color: white;
+  padding-left: 1rem !important;
+  padding: 0.3rem 0.4rem;
+  margin: 0.3rem;
+  border-radius: 0.5rem;
+  border-top-left-radius: 0;
 }
 
 .chat_container::-webkit-scrollbar {
