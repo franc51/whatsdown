@@ -9,7 +9,7 @@ console.log("✅ WebSocket server is listening on ws://localhost:8081");
 
 const { MongoClient } = require("mongodb");
 const client = new MongoClient(process.env.MONGO_URI, {
-  useUnifiedTopology: true,
+  
 });
 
 let db;
