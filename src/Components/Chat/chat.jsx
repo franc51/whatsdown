@@ -9,6 +9,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef(null);
 
+  const[isFriendTyping, setIsFriendTyping] = useState(false);
 
   const socketRef = useRef(null);
   const location = useLocation();
@@ -46,21 +47,32 @@ export default function Chat() {
     socketRef.current.onerror = (error) => {
       console.error("WebSocket error", error);
     };
-
-    // Listen for incoming messages
     socketRef.current.onmessage = (event) => {
       const message = event.data;
-      console.log("Received message:", message);
-      // Check if message is a Blob (binary object)
+    
+      const handleParsedMessage = (parsed) => {
+        // 🟡 Handle typing indicator
+        if (parsed.type === "typing" && parsed.senderId === friendId) {
+          setIsFriendTyping(true);
+    
+          // Remove indicator after 2.5s if no new typing
+          setTimeout(() => {
+            setIsFriendTyping(false);
+          }, 2500);
+    
+          return; // Don't add this as a normal message
+        }
+    
+        // 🟢 Handle normal chat message
+        setMessages((prevMessages) => [...prevMessages, parsed]);
+      };
+    
       if (message instanceof Blob) {
-        // Convert Blob to string using FileReader
         const reader = new FileReader();
         reader.onload = () => {
-          const textMessage = reader.result;
           try {
-            const parsed = JSON.parse(textMessage);
-            setMessages((prevMessages) => [...prevMessages, parsed]);
-            console.log("Updated messages:", parsed);
+            const parsed = JSON.parse(reader.result);
+            handleParsedMessage(parsed);
           } catch (e) {
             console.log("Error parsing message blob:", e);
           }
@@ -69,12 +81,13 @@ export default function Chat() {
       } else {
         try {
           const parsed = JSON.parse(message);
-          setMessages((prevMessages) => [...prevMessages, parsed]);
+          handleParsedMessage(parsed);
         } catch (e) {
           console.log("Error parsing message:", e);
         }
       }
     };
+    
 
     // Cleanup: Close WebSocket when the component unmounts
     return () => {
@@ -148,7 +161,24 @@ export default function Chat() {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-  
+
+  let typingTimeout;
+const sendTypingEvent = () => {
+  if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+    socketRef.current.send(
+      JSON.stringify({
+        type: "typing",
+        to: friendId,
+      })
+    );
+  }
+
+  // Debounce: Prevent sending multiple times per second
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => {
+    typingTimeout = null;
+  }, 1000); // wait 1s before allowing another "typing" event
+};
 
   return (
     <div className="homepage_chat_list_openedChat">
@@ -199,24 +229,31 @@ export default function Chat() {
               </span>
             </p>
           ))}
+            {/* ✨ Typing indicator */}
+  {isFriendTyping && (
+    <img alt="Loading" className="" src="/Images/isTyping.gif"></img>
+  )}
           <div ref={bottomRef}></div>
         </div>}
         
 
         <div className="chat_sender">
-          <input
-            className="chat_sender_input"
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          />
-          <button
-            className="chat_sender_submit"
-            type="submit"
-            onClick={sendMessage}
-          ></button>
-        </div>
+  <input
+    className="chat_sender_input"
+    type="text"
+    value={input}
+    onChange={(e) => {
+      setInput(e.target.value);
+      sendTypingEvent();
+    }}
+    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+  />
+  <button
+    className="chat_sender_submit"
+    type="submit"
+    onClick={sendMessage}
+  ></button>
+</div>
       </div>
     </div>
   );

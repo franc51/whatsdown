@@ -36,6 +36,26 @@ wss.on("connection", (socket) => {
         console.log(`✅ Registered user ${userId}`);
         return;
       }
+
+        // 🔥 Handle typing event
+    if (parsed.type === "typing" && parsed.to) {
+      const sender = Object.keys(connectedUsers).find(
+        (id) => connectedUsers[id] === socket
+      );
+
+      const typingPayload = JSON.stringify({
+        type: "typing",
+        senderId: sender,
+      });
+
+      const recipientSocket = connectedUsers[parsed.to];
+      if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
+        recipientSocket.send(typingPayload);
+        console.log(`✍️ Sent typing event from ${sender} to ${parsed.to}`);
+      }
+
+      return;
+    }
   
       const { token, text, receiverId } = parsed;
       if (!token) return;
