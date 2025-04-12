@@ -81,7 +81,7 @@ body {
 a {
   all: unset;
   cursor: pointer;
-  color: gray ;
+  color: gray;
 }
 .homepage_chat_list {
   display: flex;
@@ -120,7 +120,6 @@ a {
 }
 p {
   color: gray;
-  
 }
 .newChat_addFriend {
   display: flex;

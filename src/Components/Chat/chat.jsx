@@ -9,7 +9,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef(null);
 
-  const[isFriendTyping, setIsFriendTyping] = useState(false);
+  const [isFriendTyping, setIsFriendTyping] = useState(false);
 
   const socketRef = useRef(null);
   const location = useLocation();
@@ -32,7 +32,9 @@ export default function Chat() {
   // Set up the WebSocket connection
   useEffect(() => {
     // Create WebSocket connection when the component mounts
-    socketRef.current = new WebSocket("https://websocket-service-30vz.onrender.com");
+    socketRef.current = new WebSocket(
+      "https://websocket-service-30vz.onrender.com"
+    );
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected!");
@@ -49,22 +51,22 @@ export default function Chat() {
     };
     socketRef.current.onmessage = (event) => {
       const message = event.data;
-    
+
       const handleParsedMessage = (parsed) => {
         // 🟡 Handle typing indicator
         if (parsed.type === "typing" && parsed.senderId === friendId) {
           setIsFriendTyping(true);
-    
+
           // Remove indicator after 1.7s if no new typing
           setTimeout(() => {
             setIsFriendTyping(false);
-          }, 1700);
-    
-          return; 
+          }, 3000);
+
+          return;
         }
         setMessages((prevMessages) => [...prevMessages, parsed]);
       };
-    
+
       if (message instanceof Blob) {
         const reader = new FileReader();
         reader.onload = () => {
@@ -85,7 +87,6 @@ export default function Chat() {
         }
       }
     };
-    
 
     // Cleanup: Close WebSocket when the component unmounts
     return () => {
@@ -148,7 +149,6 @@ export default function Chat() {
       } finally {
         setLoading(false);
       }
-      
     };
 
     fetchMessages();
@@ -161,22 +161,22 @@ export default function Chat() {
   }, [messages, isFriendTyping]);
 
   let typingTimeout;
-const sendTypingEvent = () => {
-  if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-    socketRef.current.send(
-      JSON.stringify({
-        type: "typing",
-        to: friendId,
-      })
-    );
-  }
+  const sendTypingEvent = () => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(
+        JSON.stringify({
+          type: "typing",
+          to: friendId,
+        })
+      );
+    }
 
-  // Debounce: Prevent sending multiple times per second
-  clearTimeout(typingTimeout);
-  typingTimeout = setTimeout(() => {
-    typingTimeout = null;
-  }, 10000); // wait 3s before allowing another "typing" event
-};
+    // Debounce: Prevent sending multiple times per second
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      typingTimeout = null;
+    }, 4000); // wait 3s before allowing another "typing" event
+  };
 
   return (
     <div className="homepage_chat_list_openedChat">
@@ -203,55 +203,65 @@ const sendTypingEvent = () => {
       </div>
 
       <div className="chat_and_sender">
-      {loading ? (<div className="loader_div">
-        <img alt="Loading" className="chats_loader" src="/public/Images/loader.gif"></img>
-      </div>
-      ) : <div className="chat_container">
-          {messages.map((msg, idx) => (
-            <p
-              key={idx}
-              className={`messageBubble ${
-                yourUserId && msg.senderId === yourUserId
-                  ? "outgoing"
-                  : "incoming"
-              }`}
-            >
-              {msg.text}
-              <span className="timeStamp">
-                {msg.createdAt && !isNaN(new Date(msg.createdAt))
-                  ? new Date(msg.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : ""}
-              </span>
-            </p>
-          ))}
+        {loading ? (
+          <div className="loader_div">
+            <img
+              alt="Loading"
+              className="chats_loader"
+              src="/public/Images/loader.gif"
+            ></img>
+          </div>
+        ) : (
+          <div className="chat_container">
+            {messages.map((msg, idx) => (
+              <p
+                key={idx}
+                className={`messageBubble ${
+                  yourUserId && msg.senderId === yourUserId
+                    ? "outgoing"
+                    : "incoming"
+                }`}
+              >
+                {msg.text}
+                <span className="timeStamp">
+                  {msg.createdAt && !isNaN(new Date(msg.createdAt))
+                    ? new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : ""}
+                </span>
+              </p>
+            ))}
             {/* ✨ Typing indicator */}
-  {isFriendTyping && (
-    <img alt="Loading" className="chat_isTyping incoming" src="/public/Images/istyping.gif"></img>
-  )}
-          <div ref={bottomRef}></div>
-        </div>}
-        
+            {isFriendTyping && (
+              <img
+                alt="Typing.."
+                className="chat_isTyping incoming"
+                src="/Images/istyping.gif"
+              ></img>
+            )}
+            <div ref={bottomRef}></div>
+          </div>
+        )}
 
         <div className="chat_sender">
-  <input
-    className="chat_sender_input"
-    type="text"
-    value={input}
-    onChange={(e) => {
-      setInput(e.target.value);
-      sendTypingEvent();
-    }}
-    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-  />
-  <button
-    className="chat_sender_submit"
-    type="submit"
-    onClick={sendMessage}
-  ></button>
-</div>
+          <input
+            className="chat_sender_input"
+            type="text"
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value);
+              sendTypingEvent();
+            }}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          />
+          <button
+            className="chat_sender_submit"
+            type="submit"
+            onClick={sendMessage}
+          ></button>
+        </div>
       </div>
     </div>
   );
