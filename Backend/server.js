@@ -8,9 +8,7 @@ const wss = new WebSocket.Server({ port: 8081 });
 console.log("✅ WebSocket server is listening on ws://localhost:8081");
 
 const { MongoClient } = require("mongodb");
-const client = new MongoClient(process.env.MONGO_URI, {
-  
-});
+const client = new MongoClient(process.env.MONGO_URI, {});
 
 let db;
 client.connect().then(() => {
@@ -27,7 +25,7 @@ wss.on("connection", (socket) => {
   socket.on("message", (data) => {
     try {
       const parsed = JSON.parse(data);
-  
+
       // Handle initial registration
       if (parsed.type === "register" && parsed.token) {
         const decoded = jwt.verify(parsed.token, process.env.JWT_SECRET);
@@ -37,52 +35,53 @@ wss.on("connection", (socket) => {
         return;
       }
 
-        // 🔥 Handle typing event
-    if (parsed.type === "typing" && parsed.to) {
-      const sender = Object.keys(connectedUsers).find(
-        (id) => connectedUsers[id] === socket
-      );
+      // 🔥 Handle typing event
+      if (parsed.type === "typing" && parsed.to) {
+        const sender = Object.keys(connectedUsers).find(
+          (id) => connectedUsers[id] === socket
+        );
 
-      const typingPayload = JSON.stringify({
-        type: "typing",
-        senderId: sender,
-      });
+        const typingPayload = JSON.stringify({
+          type: "typing",
+          senderId: sender,
+        });
 
-      const recipientSocket = connectedUsers[parsed.to];
-      if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-        recipientSocket.send(typingPayload);
-        console.log(`✍️ Sent typing event from ${sender} to ${parsed.to}`);
+        const recipientSocket = connectedUsers[parsed.to];
+        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
+          recipientSocket.send(typingPayload);
+          console.log(`✍️ Sent typing event from ${sender} to ${parsed.to}`);
+        }
+
+        return;
       }
 
-      return;
-    }
-  
       const { token, text, receiverId } = parsed;
       if (!token) return;
-  
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const senderId = decoded.userId;
       const senderNickname = decoded.nickname;
-  
+
       connectedUsers[senderId] = socket;
-  
+
       const messageToSend = JSON.stringify({
         senderId,
         senderNickname,
         text,
+        createdAt: new Date(),
       });
-      
+
       // Store message in MongoDB
-db.collection("messages").insertOne({
-  senderId,
-  receiverId,
-  senderNickname,
-  text,
-  createdAt: new Date(),
-});
-  
+      db.collection("messages").insertOne({
+        senderId,
+        receiverId,
+        senderNickname,
+        text,
+        createdAt: new Date(),
+      });
+
       console.log("➡️ Sending to recipient:", messageToSend);
-  
+
       const recipientSocket = connectedUsers[receiverId];
       if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
         recipientSocket.send(messageToSend);
@@ -90,9 +89,9 @@ db.collection("messages").insertOne({
         console.log(`⚠️ User ${receiverId} not connected`);
       }
       // Also send the message back to the sender
-if (socket.readyState === WebSocket.OPEN) {
-  socket.send(messageToSend);
-}
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(messageToSend);
+      }
     } catch (err) {
       console.error("Error processing message:", err.message);
     }
@@ -100,7 +99,6 @@ if (socket.readyState === WebSocket.OPEN) {
 
   // Handle disconnection
   socket.on("close", () => {
-    // Optional: remove the user from `connectedUsers` when they disconnect
     for (const userId in connectedUsers) {
       if (connectedUsers[userId] === socket) {
         delete connectedUsers[userId];

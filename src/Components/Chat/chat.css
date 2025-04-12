@@ -121,14 +121,14 @@ img {
 .incoming {
   align-self: flex-start;
   border-top-left-radius: 0;
-  border-top-right-radius: 2rem;
+  border-bottom-left-radius: 1.4rem;
   background-color: #eb050548;
 }
 
 .outgoing {
   align-self: flex-end;
   border-top-right-radius: 0;
-  border-top-left-radius: 2rem;
+  border-bottom-right-radius: 1.4rem;
   background-color: #ff0000cb !important;
   color: white;
 }

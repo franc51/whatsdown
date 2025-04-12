@@ -105,7 +105,7 @@ export default function Chat() {
     const messageData = {
       text: input,
       receiverId: friendId,
-      token, // you can decode this server-side to get the senderId
+      token,
     };
 
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
@@ -177,7 +177,6 @@ export default function Chat() {
       typingTimeout = null;
     }, 4000); // wait 3s before allowing another "typing" event
   };
-
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="chat_user">
@@ -224,7 +223,7 @@ export default function Chat() {
               >
                 {msg.text}
                 <span className="timeStamp">
-                  {msg.createdAt && !isNaN(new Date(msg.createdAt))
+                  {msg.createdAt && new Date(msg.createdAt)
                     ? new Date(msg.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
