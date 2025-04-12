@@ -160,7 +160,7 @@ export default function Chat() {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, isFriendTyping]);
 
   let typingTimeout;
 const sendTypingEvent = () => {
@@ -177,7 +177,7 @@ const sendTypingEvent = () => {
   clearTimeout(typingTimeout);
   typingTimeout = setTimeout(() => {
     typingTimeout = null;
-  }, 1000); // wait 1s before allowing another "typing" event
+  }, 2000); // wait 1s before allowing another "typing" event
 };
 
   return (
@@ -231,7 +231,7 @@ const sendTypingEvent = () => {
           ))}
             {/* ✨ Typing indicator */}
   {isFriendTyping && (
-    <img alt="Loading" className="" src="/Images/isTyping.gif"></img>
+    <img alt="Loading" className="incoming" src="/Images/isTyping.gif"></img>
   )}
           <div ref={bottomRef}></div>
         </div>}
