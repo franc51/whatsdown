@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Chat from "../Chat/chat.jsx";
-import "../AllChats/allchats.css"
+import "../AllChats/allchats.css";
 import { useNavigate } from "react-router-dom"; // Hook to navigate
 
 export default function AllChats() {
@@ -8,6 +8,8 @@ export default function AllChats() {
   const [message, setMessage] = useState("");
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [friendStatus, setFriendStatus] = useState("Offline"); // Track friend status
+
   const navigate = useNavigate(); // Get the history object for navigation
 
   useEffect(() => {
@@ -19,12 +21,15 @@ export default function AllChats() {
           return;
         }
 
-        const response = await fetch("https://authservice-xemo.onrender.com/getFriends", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          "https://authservice-xemo.onrender.com/getFriends",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const data = await response.json();
 
@@ -38,7 +43,6 @@ export default function AllChats() {
       } finally {
         setLoading(false);
       }
-
     };
     fetchFriends();
   }, []);
@@ -52,14 +56,19 @@ export default function AllChats() {
       },
     });
   };
-
- 
+  // Display the status next to the friend's name
+  const statusClass = friendStatus === "online" ? "online" : "offline";
 
   return (
     <div className="homepage_chat_list">
       {message && <p>{message}</p>}
 
-      {loading ? (<img alt="Loading" className="allchats_loader" src="/Images/loader.gif"></img>
+      {loading ? (
+        <img
+          alt="Loading"
+          className="allchats_loader"
+          src="/Images/loader.gif"
+        ></img>
       ) : friends.length > 0 ? (
         friends.map((friend) => (
           <div
@@ -74,22 +83,28 @@ export default function AllChats() {
                 alt="profileImg"
                 src="/Images/human.png"
               />
+              <div
+                className={`allChats_statusIndicator ${statusClass}`} // Dynamically apply status class
+              ></div>
               <div className="homepage_chat_profile">
                 <h4 className="homepage_chat_profile_name">
                   {friend.nickname}
                 </h4>
                 <p className="homepage_chat_profile_lastMessage">
-                  {friend.lastMessage}
+                  {friend.lastMessage || "No messages yet"}
                 </p>
               </div>
             </div>
             <p className="homepage_chat_profile_messageTime">
-              {friend.lastMessageTime}
+              {friend.lastMessageTime || ""}
             </p>
           </div>
         ))
       ) : (
-        <p>Your friends will appear here once you add them, do so on the chat settings tab.</p>
+        <p>
+          Your friends will appear here once you add them, do so on the chat
+          settings tab.
+        </p>
       )}
     </div>
   );

@@ -1,6 +1,37 @@
 .allchats_loader {
-    height: 10rem;
-    width: 10rem;
-    background-color: rgba(245, 1, 1, 0) ;
-    text-align: center;
+  height: 10rem;
+  width: 10rem;
+  background-color: rgba(245, 1, 1, 0);
+  text-align: center;
+}
+
+.picAndName {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+}
+/* Online/Offline Indicator */
+.allChats_statusIndicator {
+  border: 1px solid black;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 8px;
+  background-color: #ddd; /* Default is offline (gray) */
+  position: absolute;
+  top: 0.1rem;
+  left: 1.8rem;
+}
+
+/* Online Status - Green */
+.online {
+  background-color: #4caf50; /* Green for online */
+}
+
+/* Offline Status - Red */
+.offline {
+  background-color: #f44336; /* Red for offline */
 }

@@ -185,6 +185,10 @@ export default function Chat() {
       typingTimeout = null;
     }, 4000); // wait 3s before allowing another "typing" event
   };
+
+  // Display the status next to the friend's name
+  const statusClass = friendStatus === "online" ? "online" : "offline";
+
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="chat_user">
@@ -198,9 +202,14 @@ export default function Chat() {
             alt="profileImg"
             src="/Images/human.png"
           />
+          <div
+            className={`statusIndicator ${statusClass}`} // Dynamically apply status class
+          ></div>
           <div className="homepage_chat_profile">
             <h4 className="homepage_chat_profile_name">{nickname}</h4>
-            <p className="homepage_chat_profile_lastMessage">{friendStatus}</p>
+            <p className="homepage_chat_profile_lastMessage">
+              {friendStatus === "online" ? "Online" : "Offline"}
+            </p>
           </div>
         </div>
         <div>

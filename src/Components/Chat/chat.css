@@ -91,6 +91,7 @@ body {
   justify-content: center;
   align-items: center;
   gap: 1rem;
+  position: relative;
 }
 .homepage_chat_profile_lastMessage {
   color: gray !important;
@@ -185,4 +186,31 @@ img {
 
 .chat_container::-webkit-scrollbar-thumb:hover {
   background-color: #fd00002c;
+}
+
+/* Status Text (Online/Offline) */
+.homepage_chat_profile_lastMessage {
+  font-size: 14px;
+  color: #777;
+}
+
+/* Online/Offline Indicator */
+.statusIndicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-left: 8px;
+  background-color: #ddd; /* Default is offline (gray) */
+  position: absolute;
+  top: 0.1rem;
+}
+
+/* Online Status - Green */
+.online {
+  background-color: #4caf50; /* Green for online */
+}
+
+/* Offline Status - Red */
+.offline {
+  background-color: #f44336; /* Red for offline */
 }
