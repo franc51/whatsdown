@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import AllChats from "../AllChats/allchats";
 import { useNavigate } from "react-router-dom";
 import "./account.css";
 
@@ -50,48 +49,6 @@ export default function Homepage() {
     setActiveTab(tabName); // Set the active tab
   };
 
-  // Handle the "Add Friend" button click
-  const handleAddFriend = async () => {
-    if (friendPhone.length !== 10 || !/^\d+$/.test(friendPhone)) {
-      setMessage("Please enter a valid 10-digit phone number.");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token"); // Retrieve token from localStorage
-
-      if (!token) {
-        setMessage("You must be logged in to add friends.");
-        return;
-      }
-
-      const response = await fetch("http://localhost:3002/addFriend", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
-        },
-        body: JSON.stringify({
-          friendPhoneNumber: friendPhone,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage("Friend added successfully!");
-        setFriendPhone(""); // Clear the input after success
-      } else {
-        setMessage(data.message || "An error occurred. Please try again.");
-      }
-    } catch (err) {
-      setMessage("An error occurred. Please try again.");
-    }
-
-    // Clear message after 5 seconds
-    setTimeout(() => setMessage(""), 5000);
-  };
-
   return (
     <div className="homepage">
       <div className="homepage_user">
@@ -139,13 +96,25 @@ export default function Homepage() {
       <div className="homepage_content">
         {activeTab === "chats" &&   
         <div className="account_changeNickname">
-            <label>Change your nickname</label>
-            <div>
+        <button className="account_logOut" onClick={() => {
+          localStorage.removeItem('token');
+          navigate("/");
+        }}>Log Out</button>
+            <div className="account_content">
+            <div className="account_nickName_container">
             <input
               type="text"
-              placeholder="abcd"
+              placeholder="Change Name"
             />
-              <button>Do it</button>
+              <button className="account_saveNickname">Save</button>
+            </div>
+            <div className="account_nickName_container">
+            <input
+              type="text"
+              placeholder="Change Profile Picture"
+            />
+              <button className="account_saveNickname">Save</button>
+            </div>
             </div>
             {message && <p>{message}</p>}
           </div>}
