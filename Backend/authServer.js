@@ -176,6 +176,49 @@ app.post("/addFriend", async (req, res) => {
   }
 });
 
+app.post("/sendMessage", async (req, res) => {
+  const { senderId, receiverId, message } = req.body;
+
+  try {
+    const createdAt = new Date();
+
+    // Insert message into collection
+    await db.collection("messages").insertOne({
+      senderId,
+      receiverId,
+      message,
+      createdAt,
+    });
+
+    // Update sender's friend entry
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(senderId), "friends._id": new ObjectId(receiverId) },
+      {
+        $set: {
+          "friends.$.lastMessage": message,
+          "friends.$.lastMessageTime": createdAt,
+        },
+      }
+    );
+
+    // Update receiver's friend entry
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(receiverId), "friends._id": new ObjectId(senderId) },
+      {
+        $set: {
+          "friends.$.lastMessage": message,
+          "friends.$.lastMessageTime": createdAt,
+        },
+      }
+    );
+
+    res.status(200).json({ message: "Message sent successfully" });
+  } catch (err) {
+    console.error("Error sending message:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Get Friends Route
 app.get("/getFriends", async (req, res) => {
   try {

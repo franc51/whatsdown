@@ -73,14 +73,13 @@ wss.on("connection", (socket) => {
         createdAt: new Date(),
       });
 
-      const createAd = new Date();
       // Store message in MongoDB
       db.collection("messages").insertOne({
         senderId,
         receiverId,
         senderNickname,
         text,
-        createdAt,
+        createdAt: new Date(),
       });
 
       console.log("➡️ Sending to recipient:", messageToSend);
@@ -113,21 +112,3 @@ wss.on("connection", (socket) => {
     }
   });
 });
-
-function broadcastUserStatus(userId, status) {
-  // Broadcast the status update to all other connected clients
-  for (const otherUserId in connectedUsers) {
-    if (otherUserId !== userId) {
-      const socket = connectedUsers[otherUserId];
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(
-          JSON.stringify({
-            type: "status",
-            userId: userId,
-            status: status,
-          })
-        );
-      }
-    }
-  }
-}
