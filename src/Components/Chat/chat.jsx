@@ -261,6 +261,7 @@ export default function Chat() {
           <input
             className="chat_sender_input"
             type="text"
+            placeholder="Message"
             value={input}
             onChange={(e) => {
               setInput(e.target.value);

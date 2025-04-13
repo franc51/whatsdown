@@ -12,8 +12,7 @@ p {
 body {
   margin: 0;
   box-sizing: border-box;
-  padding: 1rem;
-
+  padding: 1rem 0.2rem;
   height: 100vh;
 }
 .homepage {
@@ -41,10 +40,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: rgb(255, 255, 255);
+  background-color: rgb(238, 234, 234);
   border-radius: 2rem;
   margin-bottom: 2rem;
-  margin-top: 6rem;
+  margin-top: 1rem;
 }
 .searchMenuBtn_style {
   padding: 1rem;

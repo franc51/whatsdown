@@ -60,7 +60,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 0;
+  padding: 0.5rem 0.7rem;
   text-align: right;
   border-top: 2px solid rgba(128, 0, 128, 0.096);
 }
