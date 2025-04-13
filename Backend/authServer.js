@@ -195,8 +195,8 @@ app.post("/sendMessage", async (req, res) => {
       { _id: new ObjectId(senderId), "friends._id": new ObjectId(receiverId) },
       {
         $set: {
-          "friends.$.lastMessage": message,
-          "friends.$.lastMessageTime": createdAt,
+          "friends.$.lastMessage": message, // Save the latest message
+          "friends.$.lastMessageTime": createdAt, // Save the time of the latest message
         },
       }
     );

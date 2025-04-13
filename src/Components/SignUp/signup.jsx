@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./signup.css";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export default function SignUp() {
   const [nickname, setNickname] = useState("");
@@ -8,26 +9,34 @@ export default function SignUp() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false); // New state for loading
-
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true); // Set loading state to true when the form is submitted
 
     // Send data to backend
     try {
-      const response = await fetch("https://authservice-xemo.onrender.com/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ nickname, phone, password }),
-      });
+      const response = await fetch(
+        "https://authservice-xemo.onrender.com/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nickname, phone, password }),
+        }
+      );
 
       const data = await response.json();
 
       if (response.ok) {
         setSuccess(data.message);
         setError(""); // Clear any previous error
+
+        // 🔁 Wait a bit to show success message, then navigate
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500); // Delay optional (1.5 sec here)
       } else {
         setError(data.message);
         setSuccess(""); // Clear any previous success message
