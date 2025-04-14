@@ -212,7 +212,9 @@ app.post("/sendMessage", async (req, res) => {
 
     // If the sender update fails, return an error
     if (senderUpdateResult.matchedCount === 0) {
-      return res.status(500).json({ message: "Failed to update sender's last message" });
+      return res
+        .status(500)
+        .json({ message: "Failed to update sender's last message" });
     }
 
     // Update receiver's friend entry with the latest message
@@ -228,7 +230,9 @@ app.post("/sendMessage", async (req, res) => {
 
     // If the receiver update fails, return an error
     if (receiverUpdateResult.matchedCount === 0) {
-      return res.status(500).json({ message: "Failed to update receiver's last message" });
+      return res
+        .status(500)
+        .json({ message: "Failed to update receiver's last message" });
     }
 
     // Return a response with message details
@@ -276,7 +280,6 @@ app.get("/getFriends", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 // Get User's Info Route
 app.get("/getUserInfo", async (req, res) => {

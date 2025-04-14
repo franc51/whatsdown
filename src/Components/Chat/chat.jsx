@@ -189,7 +189,7 @@ export default function Chat() {
             type: "message",
             senderId: yourUserId,
             receiverId: friendId,
-            message: input,
+            text: input,
             createdAt: new Date().toISOString(),
           })
         );
@@ -287,7 +287,7 @@ export default function Chat() {
                     : "incoming"
                 }`}
               >
-                {msg.message}
+                {msg.text}
                 <span className="timeStamp">
                   {msg.createdAt && new Date(msg.createdAt)
                     ? new Date(msg.createdAt).toLocaleTimeString([], {
