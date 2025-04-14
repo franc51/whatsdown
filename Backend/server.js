@@ -20,9 +20,6 @@ const connectedUsers = {}; // { userId: socket }
 
 wss.on("connection", (socket) => {
   console.log("New client connected");
-  socket.on("open", () => {
-    console.log(`✅ New WebSocket connection for user ${userId}`);
-  });
 
   socket.on("message", async (data) => {
     try {
@@ -93,22 +90,23 @@ wss.on("connection", (socket) => {
           .then(() => console.log("✅ Updated lastMessage for both users"))
           .catch((err) => console.error("❌ Error updating lastMessage:", err));
 
-        // Inside your WebSocket server message handler
+        // Inside your WebSocket server message handling
         const recipientSocket = connectedUsers[receiverId];
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
           console.log(`➡️ Sending message to ${receiverId}`);
-          recipientSocket.send(messageToSend); // Ensure message is correctly sent
+          recipientSocket.send(messageToSend); // Forward the message to the recipient
         } else {
           console.log(
-            `⚠️ Recipient ${receiverId} is not online, message not sent.`
+            `⚠️ User ${receiverId} is not connected, message not sent.`
           );
         }
 
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          recipientSocket.send(messageToSend);
-          console.log(`➡️ Sent message to ${receiverId}`);
+          console.log(`✅ Recipient ${receiverId} is online. Sending message.`);
         } else {
-          console.log(`⚠️ User ${receiverId} not connected`);
+          console.log(
+            `⚠️ Recipient ${receiverId} is not online or WebSocket is closed.`
+          );
         }
 
         // Echo to sender if applicable
