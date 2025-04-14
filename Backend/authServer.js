@@ -190,7 +190,7 @@ app.post("/sendMessage", async (req, res) => {
     const messageDocument = await db.collection("messages").insertOne({
       senderId,
       receiverId,
-      message,
+      text,
       createdAt,
     });
 
@@ -204,7 +204,7 @@ app.post("/sendMessage", async (req, res) => {
       { _id: new ObjectId(senderId), "friends._id": new ObjectId(receiverId) },
       {
         $set: {
-          "friends.$.lastMessage": message,
+          "friends.$.lastMessage": text,
           "friends.$.lastMessageTime": createdAt,
         },
       }
