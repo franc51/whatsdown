@@ -197,7 +197,7 @@ app.post("/sendMessage", async (req, res) => {
     const messageDocument = await db.collection("messages").insertOne({
       senderId,
       receiverId,
-      text,
+      message,
       createdAt,
     });
 
