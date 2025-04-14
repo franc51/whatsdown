@@ -12,7 +12,14 @@ const port = 3002;
 
 // Middleware to parse JSON
 app.use(express.json());
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "https://whatsdown-wngp.onrender.com",
+    methods: "GET,POST",
+    credentials: true,
+  })
+);
 
 const client = new MongoClient(process.env.MONGO_URI, {
   ssl: true,
