@@ -286,7 +286,7 @@ export default function Chat() {
             ))}
             {/* ✨ Typing indicator */}
             {isFriendTyping && (
-              <p className="chat_isTyping incoming">Typing . . . </p>
+              <p className="chat_isTyping incoming">Typing...</p>
             )}
             <div ref={bottomRef}></div>
           </div>

@@ -246,7 +246,6 @@ app.post("/sendMessage", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-// Get Friends Route
 app.get("/getFriends", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1]; // Get token from the Authorization header
@@ -263,37 +262,13 @@ app.get("/getFriends", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Fetch the friends list from the user's friends field (use ObjectId references)
-    const friends = await db
-      .collection("users")
-      .find({
-        _id: { $in: user.friends.map((friend) => friend._id) },
-      })
-      .toArray();
-    // Fetch the last message for each friend
-    const friendsWithLastMessage = await Promise.all(
-      friends.map(async (friend) => {
-        // Get the last message between the user and this friend
-        const lastMessage = await db
-          .collection("messages")
-          .find({
-            $or: [
-              { senderId: userId, receiverId: friend._id },
-              { senderId: friend._id, receiverId: userId },
-            ],
-          })
-          .sort({ createdAt: -1 }) // Sort messages by createdAt, descending order (most recent first)
-          .limit(1)
-          .toArray();
-
-        // Attach the last message to the friend's data
-        return {
-          ...friend,
-          lastMessage: lastMessage[0] ? lastMessage[0].message : null, // If a message exists
-          lastMessageTime: lastMessage[0] ? lastMessage[0].createdAt : null, // Time of the last message
-        };
-      })
-    );
+    // Fetch friends from the user's friends field and include lastMessage and lastMessageTime
+    const friendsWithLastMessage = user.friends.map((friend) => ({
+      _id: friend._id,
+      nickname: friend.nickname,
+      lastMessage: friend.lastMessage || "No messages yet", // If lastMessage is missing, show default text
+      lastMessageTime: friend.lastMessageTime || null, // If lastMessageTime is missing, show null
+    }));
 
     res.status(200).json({ friends: friendsWithLastMessage });
   } catch (err) {
@@ -301,6 +276,7 @@ app.get("/getFriends", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // Get User's Info Route
 app.get("/getUserInfo", async (req, res) => {
