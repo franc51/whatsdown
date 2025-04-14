@@ -62,7 +62,7 @@ wss.on("connection", (socket) => {
           senderId,
           receiverId,
           senderNickname,
-          message: "text",
+          message: text,
           createdAt: new Date(),
         };
 
