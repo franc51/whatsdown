@@ -203,6 +203,8 @@ img {
   background-color: #ddd; /* Default is offline (gray) */
   position: absolute;
   top: 0.1rem;
+  left: 4.7rem;
+  border: 1px solid rgb(255, 255, 255);
 }
 
 /* Online Status - Green */

@@ -33,7 +33,7 @@ wss.on("connection", (socket) => {
         connectedUsers[userId] = socket;
         console.log(`✅ Registered user ${userId}`);
         // Notify other users that the user is online
-        broadcastUserStatus(userId, "online");
+
         return;
       }
 
@@ -73,14 +73,45 @@ wss.on("connection", (socket) => {
         createdAt: new Date(),
       });
 
-      // Store message in MongoDB
-      db.collection("messages").insertOne({
+      const message = {
         senderId,
         receiverId,
         senderNickname,
         text,
         createdAt: new Date(),
-      });
+      };
+      
+      console.log("📝 Inserting message:", message);
+      
+      // Store message
+      db.collection("messages").insertOne(message)
+        .then(() => {
+          console.log("✅ Message inserted successfully");
+        })
+        .catch((err) => {
+          console.error("❌ Error inserting message:", err);
+        });
+      
+      // Update lastMessage for both users
+      Promise.all([
+        db.collection("users").updateOne(
+          { _id: senderId },
+          { $set: { lastMessage: message } }
+        ).then(() => {
+          console.log(`✅ Updated lastMessage for sender ${senderId}`);
+        }).catch(err => {
+          console.error(`❌ Error updating lastMessage for sender ${senderId}:`, err);
+        }),
+      
+        db.collection("users").updateOne(
+          { _id: receiverId },
+          { $set: { lastMessage: message } }
+        ).then(() => {
+          console.log(`✅ Updated lastMessage for receiver ${receiverId}`);
+        }).catch(err => {
+          console.error(`❌ Error updating lastMessage for receiver ${receiverId}:`, err);
+        })
+      ]);
 
       console.log("➡️ Sending to recipient:", messageToSend);
 
@@ -106,7 +137,6 @@ wss.on("connection", (socket) => {
         delete connectedUsers[userId];
         console.log(`User ${userId} disconnected`);
         // Notify others that the user is offline
-        broadcastUserStatus(userId, "offline");
         break;
       }
     }

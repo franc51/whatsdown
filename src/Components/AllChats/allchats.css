@@ -15,7 +15,7 @@
 }
 /* Online/Offline Indicator */
 .allChats_statusIndicator {
-  border: 1px solid black;
+  border: 1px solid rgb(255, 255, 255);
   width: 10px;
   height: 10px;
   border-radius: 50%;
