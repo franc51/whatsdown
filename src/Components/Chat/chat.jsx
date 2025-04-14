@@ -68,14 +68,14 @@ export default function Chat() {
   useEffect(() => {
     // Create WebSocket connection when the component mounts
     socketRef.current = new WebSocket(
-      "wss://websocket-service-30vz.onrender.com"
+      "https://websocket-service-30vz.onrender.com"
     );
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected!");
       
       const token = localStorage.getItem("token");
-      const idSnippet = friendId ? `Friend ${nickname}` : "Unknown user";
+      const idSnippet = friendId ? `${nickname}` : "Unknown user";
     
       setWsStatus(`${idSnippet} hooked to WebSocket`);
     
@@ -84,10 +84,10 @@ export default function Chat() {
       }
     };
     
-
     socketRef.current.onerror = (error) => {
       console.error("WebSocket error", error);
     };
+    
     socketRef.current.onmessage = (event) => {
       const message = event.data;
 
@@ -174,6 +174,19 @@ export default function Chat() {
   
       // If the message was successfully sent, update the UI
       console.log("Message sent successfully:", responseData);
+
+       // Broadcast the message via WebSocket
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(
+        JSON.stringify({
+          type: "message",
+          senderId: yourUserId,
+          receiverId: friendId,
+          message: input,
+          createdAt: new Date().toISOString(),
+        })
+      );
+    }
   
       // Optionally update the local messages array with the sent message
       setMessages((prevMessages) => [
@@ -269,7 +282,7 @@ export default function Chat() {
                     : "incoming"
                 }`}
               >
-                {msg.text || msg.message || "[no content]"}
+                {msg.text || msg.message || "[Alert, this is not supposed to be a message!]"}
                 <span className="timeStamp">
                   {msg.createdAt && new Date(msg.createdAt)
                     ? new Date(msg.createdAt).toLocaleTimeString([], {
