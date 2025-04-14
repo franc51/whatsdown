@@ -10,21 +10,15 @@ const { ObjectId } = require("mongodb");
 const app = express();
 const port = 3002;
 
-// for preflight requests
-app.options('*', cors());
-
 // Middleware to parse JSON
 app.use(express.json());
-
+app.use(cors());
 
 const client = new MongoClient(process.env.MONGO_URI, {
   ssl: true,
   tlsAllowInvalidCertificates: true, // Disable certificate validation
 });
-app.use(cors({
-  origin: ["https://whatsdown-wngp.onrender.com"], // your frontend prod domain
-  credentials: true
-}));
+
 // Connect to MongoDB
 let db;
 client
