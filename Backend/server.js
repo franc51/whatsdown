@@ -44,9 +44,7 @@ wss.on("connection", (socket) => {
 
         const recipientSocket = connectedUsers[to];
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          recipientSocket.send(
-            JSON.stringify({ type: "typing", senderId })
-          );
+          recipientSocket.send(JSON.stringify({ type: "typing", senderId }));
           console.log(`✍️ Sent typing event from ${senderId} to ${to}`);
         }
         return;
@@ -60,10 +58,11 @@ wss.on("connection", (socket) => {
         connectedUsers[senderId] = socket;
 
         const message = {
+          type: "message",
           senderId,
           receiverId,
           senderNickname,
-          text,
+          message,
           createdAt: new Date(),
         };
 
@@ -72,17 +71,24 @@ wss.on("connection", (socket) => {
         console.log("📝 Inserting message:", message);
 
         // Store in DB
-        db.collection("messages").insertOne(message).then(() => {
-          console.log("✅ Message inserted");
-        }).catch(err => console.error("❌ Insert error:", err));
+        db.collection("messages")
+          .insertOne(message)
+          .then(() => {
+            console.log("✅ Message inserted");
+          })
+          .catch((err) => console.error("❌ Insert error:", err));
 
         // Update lastMessage for both users
         Promise.all([
-          db.collection("users").updateOne({ _id: senderId }, { $set: { lastMessage: message } }),
-          db.collection("users").updateOne({ _id: receiverId }, { $set: { lastMessage: message } })
+          db
+            .collection("users")
+            .updateOne({ _id: senderId }, { $set: { lastMessage: message } }),
+          db
+            .collection("users")
+            .updateOne({ _id: receiverId }, { $set: { lastMessage: message } }),
         ])
-        .then(() => console.log("✅ Updated lastMessage for both users"))
-        .catch(err => console.error("❌ Error updating lastMessage:", err));
+          .then(() => console.log("✅ Updated lastMessage for both users"))
+          .catch((err) => console.error("❌ Error updating lastMessage:", err));
 
         // Send to recipient if online
         const recipientSocket = connectedUsers[receiverId];
@@ -100,7 +106,6 @@ wss.on("connection", (socket) => {
 
         return;
       }
-
     } catch (err) {
       console.error("❌ Error processing message:", err.message);
     }

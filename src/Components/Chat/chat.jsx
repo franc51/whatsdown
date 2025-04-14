@@ -23,11 +23,11 @@ export default function Chat() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token || !friendId) return;
-  
+
     const decoded = JSON.parse(atob(token.split(".")[1]));
     const userId = decoded.userId;
     setYourUserId(userId);
-  
+
     const fetchMessages = async () => {
       try {
         const response = await fetch(
@@ -38,11 +38,11 @@ export default function Chat() {
             },
           }
         );
-  
+
         if (!response.ok) {
           throw new Error(`Fetch failed with status ${response.status}`);
         }
-  
+
         const data = await response.json();
         setMessages(data);
         console.log("💬 Fetched messages:", data);
@@ -52,17 +52,15 @@ export default function Chat() {
         setLoading(false);
       }
     };
-  
+
     fetchMessages();
   }, [friendId]);
-  
+
   useEffect(() => {
     if (!friendId || !nickname) {
       navigate("/", { replace: true });
     }
   }, []);
-  
-  
 
   // Set up the WebSocket connection
   useEffect(() => {
@@ -73,21 +71,21 @@ export default function Chat() {
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected!");
-      
+
       const token = localStorage.getItem("token");
       const idSnippet = friendId ? `${nickname}` : "Unknown user";
-    
+
       setWsStatus(`${idSnippet} hooked to WebSocket`);
-    
+
       if (token) {
         socketRef.current.send(JSON.stringify({ type: "register", token }));
       }
     };
-    
+
     socketRef.current.onerror = (error) => {
       console.error("WebSocket error", error);
     };
-    
+
     socketRef.current.onmessage = (event) => {
       const message = event.data;
 
@@ -109,7 +107,10 @@ export default function Chat() {
             setFriendStatus(parsed.status === "online" ? "Online" : "Offline");
           }
         }
-        setMessages((prevMessages) => [...prevMessages, parsed]);
+        // ✅ Only add actual messages
+        if (parsed.type === "message") {
+          setMessages((prevMessages) => [...prevMessages, parsed]);
+        }
       };
 
       if (message instanceof Blob) {
@@ -144,61 +145,67 @@ export default function Chat() {
 
   const sendMessage = async () => {
     if (input.trim() === "") return; // Don't send empty messages
-  
+
     const token = localStorage.getItem("token");
     if (!token) return;
-  
+
     const messageData = {
-      senderId: yourUserId,  // The sender's ID
-      receiverId: friendId,  // The receiver's ID
-      message: input,        // The actual message content
+      senderId: yourUserId, // The sender's ID
+      receiverId: friendId, // The receiver's ID
+      message: input, // The actual message content
     };
-  
+
     try {
       // Send the message via POST request
-      const response = await fetch("https://authservice-xemo.onrender.com/sendMessage", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(messageData),
-      });
-  
+      const response = await fetch(
+        "https://authservice-xemo.onrender.com/sendMessage",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(messageData),
+        }
+      );
+
       // Check if the response is okay
       if (!response.ok) {
         throw new Error(`Failed to send message. Status: ${response.status}`);
       }
-  
+
       const responseData = await response.json();
-  
+
       // If the message was successfully sent, update the UI
       console.log("Message sent successfully:", responseData);
 
-       // Broadcast the message via WebSocket
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(
-        JSON.stringify({
-          type: "message",
-          senderId: yourUserId,
-          receiverId: friendId,
-          message: input,
-          createdAt: new Date().toISOString(),
-        })
-      );
-    }
-  
+      // Broadcast the message via WebSocket
+      if (
+        socketRef.current &&
+        socketRef.current.readyState === WebSocket.OPEN
+      ) {
+        socketRef.current.send(
+          JSON.stringify({
+            type: "message",
+            senderId: yourUserId,
+            receiverId: friendId,
+            message: input,
+            createdAt: new Date().toISOString(),
+          })
+        );
+      }
+
       // Optionally update the local messages array with the sent message
       setMessages((prevMessages) => [
         ...prevMessages,
-        { 
-          senderId: yourUserId, 
-          receiverId: friendId, 
-          text: input, 
+        {
+          senderId: yourUserId,
+          receiverId: friendId,
+          text: input,
           createdAt: new Date(),
-        }
+        },
       ]);
-  
+
       // Reset the input field after sending
       setInput("");
     } catch (err) {
@@ -223,7 +230,7 @@ export default function Chat() {
         })
       );
     }
-  
+
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       typingTimeoutRef.current = null;
@@ -251,9 +258,7 @@ export default function Chat() {
           ></div>
           <div className="homepage_chat_profile">
             <h4 className="homepage_chat_profile_name">{nickname}</h4>
-            <p className="homepage_chat_profile_lastMessage">
-              {wsStatus}
-            </p>
+            <p className="homepage_chat_profile_lastMessage">{wsStatus}</p>
           </div>
         </div>
         <div>
@@ -282,7 +287,7 @@ export default function Chat() {
                     : "incoming"
                 }`}
               >
-                {msg.text || msg.message || "[Alert, this is not supposed to be a message!]"}
+                {msg.message}
                 <span className="timeStamp">
                   {msg.createdAt && new Date(msg.createdAt)
                     ? new Date(msg.createdAt).toLocaleTimeString([], {
