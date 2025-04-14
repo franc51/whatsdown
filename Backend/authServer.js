@@ -16,30 +16,15 @@ app.options('*', cors());
 // Middleware to parse JSON
 app.use(express.json());
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://whatsdown-wngp.onrender.com"
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like curl or mobile apps)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-}));
 
 const client = new MongoClient(process.env.MONGO_URI, {
   ssl: true,
   tlsAllowInvalidCertificates: true, // Disable certificate validation
 });
-
+app.use(cors({
+  origin: ["https://whatsdown-wngp.onrender.com"], // your frontend prod domain
+  credentials: true
+}));
 // Connect to MongoDB
 let db;
 client
