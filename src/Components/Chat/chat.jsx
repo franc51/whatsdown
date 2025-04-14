@@ -80,8 +80,7 @@ export default function Chat() {
       if (token) {
         socketRef.current.send(JSON.stringify({ type: "register", token }));
       }
-      console.log("👥 Current connected users:", Object.keys(connectedUsers));
-      console.log("📨 Trying to send to:", receiverId);
+      console.log("📨 Trying to send to:", friendId);
     };
 
     socketRef.current.onerror = (error) => {
