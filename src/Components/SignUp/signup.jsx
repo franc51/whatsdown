@@ -9,7 +9,6 @@ export default function SignUp() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false); // New state for loading
-  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true); // Set loading state to true when the form is submitted
@@ -35,7 +34,6 @@ export default function SignUp() {
 
         // 🔁 Wait a bit to show success message, then navigate
         setTimeout(() => {
-          navigate("/login");
         }, 1500); // Delay optional (1.5 sec here)
       } else {
         setError(data.message);
