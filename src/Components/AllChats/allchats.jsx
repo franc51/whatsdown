@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Chat from "../Chat/chat.jsx";
 import "../AllChats/allchats.css";
 import { useNavigate } from "react-router-dom"; // Hook to navigate
 
