@@ -68,7 +68,7 @@ export default function Chat() {
   useEffect(() => {
     // Create WebSocket connection when the component mounts
     socketRef.current = new WebSocket(
-      "https://websocket-service-30vz.onrender.com"
+      "wss://websocket-service-30vz.onrender.com"
     );
 
     socketRef.current.onopen = () => {
