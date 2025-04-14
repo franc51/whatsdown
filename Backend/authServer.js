@@ -10,11 +10,28 @@ const { ObjectId } = require("mongodb");
 const app = express();
 const port = 3002;
 
+// for preflight requests
+app.options('*', cors());
+
 // Middleware to parse JSON
 app.use(express.json());
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://whatsdown-wngp.onrender.com"
+];
+
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like curl or mobile apps)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
 }));
 
