@@ -56,6 +56,12 @@ export default function Chat() {
     fetchMessages();
   }, [friendId]);
   
+  useEffect(() => {
+    if (!friendId || !nickname) {
+      navigate("/", { replace: true });
+    }
+  }, []);
+  
   
 
   // Set up the WebSocket connection
@@ -67,14 +73,17 @@ export default function Chat() {
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected!");
-      setWsStatus("Connected to websocket");
-
+      
       const token = localStorage.getItem("token");
+      const idSnippet = friendId ? `Friend ${nickname}` : "Unknown user";
+    
+      setWsStatus(`${idSnippet} hooked to WebSocket`);
+    
       if (token) {
-        // Register user with the server immediately
         socketRef.current.send(JSON.stringify({ type: "register", token }));
       }
     };
+    
 
     socketRef.current.onerror = (error) => {
       console.error("WebSocket error", error);
@@ -124,12 +133,11 @@ export default function Chat() {
       }
     };
 
-    // Cleanup: Close WebSocket when the component unmounts
     return () => {
       if (socketRef.current) {
         console.log("WebSocket disconnected");
         socketRef.current.close();
-        setWsStatus("Disconnected :(");
+        // Optionally remove setWsStatus here
       }
     };
   }, []); // Empty dependency array means it runs once when the component mounts
@@ -261,7 +269,7 @@ export default function Chat() {
                     : "incoming"
                 }`}
               >
-                {msg.text}
+                {msg.text || msg.message || "[no content]"}
                 <span className="timeStamp">
                   {msg.createdAt && new Date(msg.createdAt)
                     ? new Date(msg.createdAt).toLocaleTimeString([], {

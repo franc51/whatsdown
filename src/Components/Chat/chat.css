@@ -216,3 +216,6 @@ img {
 .offline {
   background-color: #f44336; /* Red for offline */
 }
+.homepage_chat_profile_lastMessage {
+  overflow: unset;
+}
