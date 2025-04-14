@@ -92,6 +92,20 @@ wss.on("connection", (socket) => {
 
         // Send to recipient if online
         const recipientSocket = connectedUsers[receiverId];
+
+        // 🔍 DEBUG: Show all connected users and their socket status
+        console.log("🔍 connectedUsers:");
+        for (const id in connectedUsers) {
+          console.log(
+            `- ${id}: ${
+              connectedUsers[id].readyState === WebSocket.OPEN
+                ? "open"
+                : "closed"
+            }`
+          );
+        }
+        console.log("📨 Attempting to send message to:", receiverId);
+
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
           recipientSocket.send(messageToSend);
           console.log(`➡️ Sent message to ${receiverId}`);
