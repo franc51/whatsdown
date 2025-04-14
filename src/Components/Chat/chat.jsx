@@ -105,22 +105,57 @@ export default function Chat() {
     };
   }, []); // Empty dependency array means it runs once when the component mounts
 
-  const sendMessage = () => {
-    if (input.trim() === "") return;
-
+  const sendMessage = async () => {
+    if (input.trim() === "") return; // Don't send empty messages
+  
     const token = localStorage.getItem("token");
     if (!token) return;
+  
     const messageData = {
-      text: input,
-      receiverId: friendId,
-      token,
+      senderId: yourUserId,  // The sender's ID
+      receiverId: friendId,  // The receiver's ID
+      message: input,        // The actual message content
     };
-
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify(messageData));
+  
+    try {
+      // Send the message via POST request
+      const response = await fetch("https://authservice-xemo.onrender.com/sendMessage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(messageData),
+      });
+  
+      // Check if the response is okay
+      if (!response.ok) {
+        throw new Error(`Failed to send message. Status: ${response.status}`);
+      }
+  
+      const responseData = await response.json();
+  
+      // If the message was successfully sent, update the UI
+      console.log("Message sent successfully:", responseData);
+  
+      // Optionally update the local messages array with the sent message
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { 
+          senderId: yourUserId, 
+          receiverId: friendId, 
+          text: input, 
+          createdAt: new Date(),
+        }
+      ]);
+  
+      // Reset the input field after sending
       setInput("");
+    } catch (err) {
+      console.error("Error sending message:", err);
     }
   };
+  
 
   useEffect(() => {
     const token = localStorage.getItem("token");

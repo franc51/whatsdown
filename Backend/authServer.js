@@ -178,30 +178,45 @@ app.post("/addFriend", async (req, res) => {
 app.post("/sendMessage", async (req, res) => {
   const { senderId, receiverId, message } = req.body;
 
+  // Validate the inputs
+  if (!senderId || !receiverId || !message || typeof message !== "string") {
+    return res.status(400).json({ message: "Invalid input data" });
+  }
+
   try {
     const createdAt = new Date();
 
-    // Insert message into collection
-    await db.collection("messages").insertOne({
+    // Insert the message into the collection
+    const messageDocument = await db.collection("messages").insertOne({
       senderId,
       receiverId,
       message,
       createdAt,
     });
 
-    // Update sender's friend entry
-    await db.collection("users").updateOne(
+    // If message insertion fails, return an error
+    if (!messageDocument.insertedId) {
+      return res.status(500).json({ message: "Failed to insert message" });
+    }
+
+    // Update sender's friend entry with the latest message
+    const senderUpdateResult = await db.collection("users").updateOne(
       { _id: new ObjectId(senderId), "friends._id": new ObjectId(receiverId) },
       {
         $set: {
-          "friends.$.lastMessage": message, // Save the latest message
-          "friends.$.lastMessageTime": createdAt, // Save the time of the latest message
+          "friends.$.lastMessage": message,
+          "friends.$.lastMessageTime": createdAt,
         },
       }
     );
 
-    // Update receiver's friend entry
-    await db.collection("users").updateOne(
+    // If the sender update fails, return an error
+    if (senderUpdateResult.matchedCount === 0) {
+      return res.status(500).json({ message: "Failed to update sender's last message" });
+    }
+
+    // Update receiver's friend entry with the latest message
+    const receiverUpdateResult = await db.collection("users").updateOne(
       { _id: new ObjectId(receiverId), "friends._id": new ObjectId(senderId) },
       {
         $set: {
@@ -211,13 +226,26 @@ app.post("/sendMessage", async (req, res) => {
       }
     );
 
-    res.status(200).json({ message: "Message sent successfully" });
+    // If the receiver update fails, return an error
+    if (receiverUpdateResult.matchedCount === 0) {
+      return res.status(500).json({ message: "Failed to update receiver's last message" });
+    }
+
+    // Return a response with message details
+    res.status(200).json({
+      message: "Message sent successfully",
+      data: {
+        senderId,
+        receiverId,
+        message,
+        createdAt,
+      },
+    });
   } catch (err) {
     console.error("Error sending message:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
-
 // Get Friends Route
 app.get("/getFriends", async (req, res) => {
   try {
