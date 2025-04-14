@@ -8,6 +8,7 @@ export default function Chat() {
   const [yourUserId, setYourUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [friendStatus, setFriendStatus] = useState("Offline"); // Track friend status
+  const [wsStatus, setWsStatus] = useState("Connecting...");
 
   const bottomRef = useRef(null);
 
@@ -21,15 +22,41 @@ export default function Chat() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return;
-
-    try {
-      const decoded = JSON.parse(atob(token.split(".")[1]));
-      setYourUserId(decoded.userId);
-    } catch (e) {
-      console.error("Error decoding token", e);
-    }
-  }, []);
+    if (!token || !friendId) return;
+  
+    const decoded = JSON.parse(atob(token.split(".")[1]));
+    const userId = decoded.userId;
+    setYourUserId(userId);
+  
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch(
+          `https://authservice-xemo.onrender.com/messages/${userId}/${friendId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        if (!response.ok) {
+          throw new Error(`Fetch failed with status ${response.status}`);
+        }
+  
+        const data = await response.json();
+        setMessages(data);
+        console.log("💬 Fetched messages:", data);
+      } catch (err) {
+        console.error("❌ Error fetching message history:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchMessages();
+  }, [friendId]);
+  
+  
 
   // Set up the WebSocket connection
   useEffect(() => {
@@ -40,6 +67,7 @@ export default function Chat() {
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected!");
+      setWsStatus("Connected to websocket");
 
       const token = localStorage.getItem("token");
       if (token) {
@@ -101,6 +129,7 @@ export default function Chat() {
       if (socketRef.current) {
         console.log("WebSocket disconnected");
         socketRef.current.close();
+        setWsStatus("Disconnected :(");
       }
     };
   }, []); // Empty dependency array means it runs once when the component mounts
@@ -155,47 +184,6 @@ export default function Chat() {
       console.error("Error sending message:", err);
     }
   };
-  
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    if (!yourUserId || !friendId) {
-      console.warn("Waiting for userId or friendId...", {
-        yourUserId,
-        friendId,
-      });
-      return;
-    }
-
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch(
-          `https://authservice-xemo.onrender.com/messages/${yourUserId}/${friendId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Fetch failed with status ${response.status}`);
-        }
-
-        const data = await response.json();
-        setMessages(data);
-        console.log("💬 Fetched messages:", data);
-      } catch (err) {
-        console.error("❌ Error fetching message history:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMessages();
-  }, [yourUserId, friendId]);
 
   useEffect(() => {
     if (bottomRef.current) {
@@ -203,7 +191,8 @@ export default function Chat() {
     }
   }, [messages, isFriendTyping]);
 
-  let typingTimeout;
+  const typingTimeoutRef = useRef(null);
+
   const sendTypingEvent = () => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       socketRef.current.send(
@@ -213,12 +202,11 @@ export default function Chat() {
         })
       );
     }
-
-    // Debounce: Prevent sending multiple times per second
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
-      typingTimeout = null;
-    }, 4000); // wait 3s before allowing another "typing" event
+  
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      typingTimeoutRef.current = null;
+    }, 3000); // Adjust if needed
   };
 
   // Display the status next to the friend's name
@@ -243,7 +231,7 @@ export default function Chat() {
           <div className="homepage_chat_profile">
             <h4 className="homepage_chat_profile_name">{nickname}</h4>
             <p className="homepage_chat_profile_lastMessage">
-              {friendStatus === "online" ? "Online" : "Offline"}
+              {wsStatus}
             </p>
           </div>
         </div>

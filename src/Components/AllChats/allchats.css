@@ -12,6 +12,7 @@
   align-items: center;
   gap: 1rem;
   position: relative;
+  overflow: hidden;
 }
 /* Online/Offline Indicator */
 .allChats_statusIndicator {
@@ -34,4 +35,19 @@
 /* Offline Status - Red */
 .offline {
   background-color: #f44336; /* Red for offline */
+}
+.homepage_chat_profile_lastMessage {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 95%;
+
+}
+.homepage_chat_profile {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* ⬅ this makes child text not overflow */
+}
+.homepage_chat_profile_messageTime {
+  width: 15%;
 }
