@@ -51,7 +51,7 @@ wss.on("connection", (socket) => {
       }
 
       // 💬 Handle message (normal or forward)
-      if (type === "message" || (token && text && receiverId)) {
+      if (type === "message" || type === "forward" || (token && text && receiverId)) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const senderId = decoded.userId;
         const senderNickname = decoded.nickname || "Anonymous";
