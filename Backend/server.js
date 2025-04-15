@@ -100,11 +100,6 @@ wss.on("connection", (socket) => {
           );
         }
 
-        // Echo to sender if applicable
-        if (type !== "forward" && socket.readyState === WebSocket.OPEN) {
-          socket.send(messageToSend);
-        }
-
         return;
       }
     } catch (err) {
