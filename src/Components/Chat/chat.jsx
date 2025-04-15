@@ -98,13 +98,6 @@ export default function Chat() {
       const message = event.data;
 
       const handleParsedMessage = (parsed) => {
-        try {
-          const parsed = JSON.parse(event.data);
-          handleParsedMessage(parsed);
-        }
-        catch (err) {
-          console.error("❌ Failed to parse incoming message:", err, event.data);
-        }
         console.log("📥 Parsed WebSocket message:", parsed);
         if (parsed.type === "typing" && parsed.senderId === friendId) {
           setIsFriendTyping(true);
