@@ -24,7 +24,7 @@ wss.on("connection", (socket) => {
   socket.on("message", async (data) => {
     try {
       const parsed = JSON.parse(data);
-      const { type, token, receiverId, text, to } = parsed;
+      const { type, token, receiverId, message: text, to } = parsed;
 
       // 🔐 Handle user registration
       if (type === "register" && token) {
@@ -94,9 +94,9 @@ wss.on("connection", (socket) => {
         // Inside your WebSocket server message handling
         const recipientSocket = connectedUsers[receiverId];
         console.log("🔍 Attempting to send message");
-console.log("📦 receiverId:", receiverId);
-console.log("🧠 Connected users:", Object.keys(connectedUsers));
-console.log("🔎 recipientSocket exists:", !!recipientSocket);
+        console.log("📦 receiverId:", receiverId);
+        console.log("🧠 Connected users:", Object.keys(connectedUsers));
+        console.log("🔎 recipientSocket exists:", !!recipientSocket);
 
 if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
   console.log(`➡️ Sending message to ${receiverId}`);

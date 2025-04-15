@@ -178,6 +178,7 @@ export default function Chat() {
         socketRef.current.send(
           JSON.stringify({
             type: "message",
+            token,
             senderId: yourUserId,
             receiverId: friendId,
             message: input,
