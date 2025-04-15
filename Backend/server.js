@@ -62,7 +62,6 @@ wss.on("connection", (socket) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const senderId = decoded.userId;
         const senderNickname = decoded.nickname || "Anonymous";
-        connectedUsers[senderId] = socket;
 
         const message = {
           type: "message",

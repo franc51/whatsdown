@@ -120,7 +120,6 @@ export default function Chat() {
                 msg.senderId === parsed.senderId &&
                 msg.message === parsed.message)
           );
-
           if (isDuplicate) {
             console.log("🛑 Duplicate message skipped");
             return;
