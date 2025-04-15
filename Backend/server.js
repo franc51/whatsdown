@@ -54,7 +54,11 @@ wss.on("connection", (socket) => {
       }
 
       // 💬 Handle message (normal or forward)
-      if (type === "message" || type === "forward" || (token && text && receiverId)) {
+      if (
+        type === "message" ||
+        type === "forward" ||
+        (token && text && receiverId)
+      ) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const senderId = decoded.userId;
         const senderNickname = decoded.nickname || "Anonymous";
@@ -67,6 +71,7 @@ wss.on("connection", (socket) => {
           senderNickname,
           message: text,
           createdAt: new Date(),
+          tempId,
         };
 
         const messageToSend = JSON.stringify(message);
@@ -75,14 +80,12 @@ wss.on("connection", (socket) => {
 
         // Update lastMessage for both the sender and the receiver
         Promise.all([
-          db.collection("users").updateOne(
-            { _id: senderId },
-            { $set: { lastMessage: message } }
-          ),
-          db.collection("users").updateOne(
-            { _id: receiverId },
-            { $set: { lastMessage: message } }
-          ),
+          db
+            .collection("users")
+            .updateOne({ _id: senderId }, { $set: { lastMessage: message } }),
+          db
+            .collection("users")
+            .updateOne({ _id: receiverId }, { $set: { lastMessage: message } }),
         ])
           .then(() => console.log("✅ Updated lastMessage for both users"))
           .catch((err) => console.error("❌ Error updating lastMessage:", err));
@@ -93,7 +96,9 @@ wss.on("connection", (socket) => {
           console.log(`➡️ Sending message to ${receiverId}`);
           recipientSocket.send(messageToSend);
         } else {
-          console.log(`⚠️ User ${receiverId} is not connected or WebSocket is closed.`);
+          console.log(
+            `⚠️ User ${receiverId} is not connected or WebSocket is closed.`
+          );
         }
 
         // Echo to sender if applicable
