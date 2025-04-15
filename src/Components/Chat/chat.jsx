@@ -7,18 +7,17 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [yourUserId, setYourUserId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [friendStatus, setFriendStatus] = useState("Offline"); // Track friend status
   const [wsStatus, setWsStatus] = useState("Connecting...");
-
   const bottomRef = useRef(null);
-
+  
   const [isFriendTyping, setIsFriendTyping] = useState(false);
 
   const socketRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { friendId, nickname } = location.state || {};
+  const { friendId, nickname, status: friendStatus } = location.state || {};
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -106,9 +105,6 @@ export default function Chat() {
             setIsFriendTyping(false);
           }, 3000);
           return;
-        }
-        if (parsed.type === "status" && parsed.userId === friendId) {
-          setFriendStatus(parsed.status === "online" ? "online" : "Offline");
         }
         if (parsed.type === "message") {
           setMessages((prevMessages) => [...prevMessages, parsed]);
@@ -239,7 +235,9 @@ export default function Chat() {
           ></div>
           <div className="homepage_chat_profile">
             <h4 className="homepage_chat_profile_name">{nickname}</h4>
-            <p className="homepage_chat_profile_lastMessage">{wsStatus}</p>
+            <p className="homepage_chat_profile_lastMessage">
+             {friendStatus === "online" ? wsStatus : "Offline"}
+            </p>          
           </div>
         </div>
         <div>

@@ -158,7 +158,6 @@ img {
   font-size: 0.9rem;
   display: flex;
   justify-content: flex-start;
-  height: 5rem;
   background-color: #8d4bcebb;
   border-radius: 0.5rem;
   color: white;
@@ -202,7 +201,7 @@ img {
   margin-left: 8px;
   background-color: #ddd; /* Default is offline (gray) */
   position: absolute;
-  top: 0.1rem;
+  top: 0.2rem;
   left: 4.7rem;
   border: 1px solid rgb(255, 255, 255);
 }

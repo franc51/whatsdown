@@ -75,13 +75,16 @@ export default function AllChats() {
   }, []);
 
   const goToChat = (friendId, nickname) => {
+    const status = onlineUsers[friendId] === "online" ? "online" : "Offline";
     navigate(`/chat/${friendId}`, {
       state: {
         friendId,
         nickname,
+        status, // ✅ now status is defined in this scope
       },
     });
   };
+  
 
   return (
     <div className="homepage_chat_list">
