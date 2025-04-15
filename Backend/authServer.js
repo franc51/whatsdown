@@ -13,9 +13,22 @@ const port = 3002;
 // Middleware to parse JSON
 app.use(express.json());
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://whatsdown-wngp.onrender.com",
+];
+
 app.use(
   cors({
-    origin: "https://whatsdown-wngp.onrender.com",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: "GET,POST",
     credentials: true,
   })

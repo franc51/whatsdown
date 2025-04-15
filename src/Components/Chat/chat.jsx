@@ -91,6 +91,7 @@ export default function Chat() {
       const message = event.data;
 
       const handleParsedMessage = (parsed) => {
+        console.log("📥 Parsed WebSocket message:", parsed);
         // 🟡 Handle typing indicator
         if (parsed.type === "typing" && parsed.senderId === friendId) {
           setIsFriendTyping(true);

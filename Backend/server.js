@@ -89,6 +89,7 @@ wss.on("connection", (socket) => {
         ])
           .then(() => console.log("✅ Updated lastMessage for both users"))
           .catch((err) => console.error("❌ Error updating lastMessage:", err));
+          console.log("🔎 Currently connected users:", Object.keys(connectedUsers));
 
         // Inside your WebSocket server message handling
         const recipientSocket = connectedUsers[receiverId];
