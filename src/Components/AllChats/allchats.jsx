@@ -29,6 +29,18 @@ export default function AllChats() {
             [userId]: status,
           }));
         }
+        // 🆕 Handle the initial list of online users
+        if (data.type === "onlineUsers") {
+          const online = {};
+          data.userIds.forEach((id) => {
+            online[id] = "online";
+          });
+
+          setOnlineUsers((prev) => ({
+            ...prev,
+            ...online,
+          }));
+        }
       } catch (e) {
         console.error("Error parsing status update:", e);
       }
@@ -148,7 +160,10 @@ export default function AllChats() {
           );
         })
       ) : (
-        <p>Your friends will appear here once you add them, do so on the chat settings tab.</p>
+        <p>
+          Your friends will appear here once you add them, do so on the chat
+          settings tab.
+        </p>
       )}
     </div>
   );
