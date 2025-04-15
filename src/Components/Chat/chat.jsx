@@ -24,7 +24,14 @@ export default function Chat() {
     const token = localStorage.getItem("token");
     if (!token || !friendId) return;
 
-    const decoded = JSON.parse(atob(token.split(".")[1]));
+    let decoded;
+    try {
+      decoded = JSON.parse(atob(token.split(".")[1]));
+    } catch (e) {
+      console.error("Failed to decode token:", e);
+      return;
+    }
+
     const userId = decoded.userId;
     setYourUserId(userId);
 
@@ -62,29 +69,29 @@ export default function Chat() {
     }
   }, []);
 
-  // Set up the WebSocket connection
   useEffect(() => {
-    // Create WebSocket connection when the component mounts
-    socketRef.current = new WebSocket(
-      "https://websocket-service-30vz.onrender.com"
-    );
+    socketRef.current = new WebSocket("wss://websocket-service-30vz.onrender.com");
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected!");
-
+      setWsStatus(`${nickname || "Unknown user"} hooked to WebSocket`);
       const token = localStorage.getItem("token");
-      const idSnippet = friendId ? `${nickname}` : "Unknown user";
-
-      setWsStatus(`${idSnippet} hooked to WebSocket`);
-
       if (token) {
         socketRef.current.send(JSON.stringify({ type: "register", token }));
       }
-      console.log("📨 Trying to send to:", friendId);
     };
 
     socketRef.current.onerror = (error) => {
       console.error("WebSocket error", error);
+      setWsStatus("WebSocket error, retrying...");
+    };
+
+    socketRef.current.onclose = (event) => {
+      console.log("WebSocket closed", event);
+      setWsStatus("WebSocket closed. Reconnecting...");
+      setTimeout(() => {
+        socketRef.current = new WebSocket("wss://websocket-service-30vz.onrender.com");
+      }, 3000);
     };
 
     socketRef.current.onmessage = (event) => {
@@ -92,24 +99,16 @@ export default function Chat() {
 
       const handleParsedMessage = (parsed) => {
         console.log("📥 Parsed WebSocket message:", parsed);
-        // 🟡 Handle typing indicator
         if (parsed.type === "typing" && parsed.senderId === friendId) {
           setIsFriendTyping(true);
-
-          // Remove indicator after 1.7s if no new typing
           setTimeout(() => {
             setIsFriendTyping(false);
           }, 3000);
-
           return;
         }
-        // Handle incoming status updates (online/offline)
-        if (parsed.type === "status") {
-          if (parsed.userId === friendId) {
-            setFriendStatus(parsed.status === "online" ? "Online" : "Offline");
-          }
+        if (parsed.type === "status" && parsed.userId === friendId) {
+          setFriendStatus(parsed.status === "online" ? "Online" : "Offline");
         }
-        // ✅ Only add actual messages
         if (parsed.type === "message") {
           setMessages((prevMessages) => [...prevMessages, parsed]);
         }
@@ -138,27 +137,24 @@ export default function Chat() {
 
     return () => {
       if (socketRef.current) {
-        console.log("WebSocket disconnected");
         socketRef.current.close();
-        // Optionally remove setWsStatus here
       }
     };
-  }, []); // Empty dependency array means it runs once when the component mounts
+  }, []);
 
   const sendMessage = async () => {
-    if (input.trim() === "") return; // Don't send empty messages
+    if (input.trim() === "") return;
 
     const token = localStorage.getItem("token");
     if (!token) return;
 
     const messageData = {
-      senderId: yourUserId, // The sender's ID
-      receiverId: friendId, // The receiver's ID
-      message: input, // The actual message content
+      senderId: yourUserId,
+      receiverId: friendId,
+      message: input,
     };
 
     try {
-      // Send the message via POST request
       const response = await fetch(
         "https://authservice-xemo.onrender.com/sendMessage",
         {
@@ -171,21 +167,14 @@ export default function Chat() {
         }
       );
 
-      // Check if the response is okay
       if (!response.ok) {
         throw new Error(`Failed to send message. Status: ${response.status}`);
       }
 
       const responseData = await response.json();
-
-      // If the message was successfully sent, update the UI
       console.log("Message sent successfully:", responseData);
 
-      // Broadcast the message via WebSocket
-      if (
-        socketRef.current &&
-        socketRef.current.readyState === WebSocket.OPEN
-      ) {
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
         socketRef.current.send(
           JSON.stringify({
             type: "message",
@@ -197,7 +186,6 @@ export default function Chat() {
         );
       }
 
-      // Optionally update the local messages array with the sent message
       setMessages((prevMessages) => [
         ...prevMessages,
         {
@@ -208,7 +196,6 @@ export default function Chat() {
         },
       ]);
 
-      // Reset the input field after sending
       setInput("");
     } catch (err) {
       console.error("Error sending message:", err);
@@ -235,8 +222,8 @@ export default function Chat() {
 
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
-      typingTimeoutRef.current = null;
-    }, 3000); // Adjust if needed
+      setIsFriendTyping(false);
+    }, 3000);
   };
 
   // Display the status next to the friend's name
