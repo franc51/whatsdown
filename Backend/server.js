@@ -33,6 +33,9 @@ wss.on("connection", (socket) => {
         connectedUsers[userId] = socket;
         console.log(`✅ Registered user ${userId}`);
         broadcastStatus(userId, "online", socket);
+
+        // Send the list of currently online users to the newly connected user
+        sendOnlineUsersList(userId);
         return;
       }
 
@@ -116,6 +119,20 @@ wss.on("connection", (socket) => {
     }
   });
 });
+
+// Send the list of currently online users to the newly connected user
+function sendOnlineUsersList(newUserId) {
+  const onlineUsers = Object.keys(connectedUsers);
+  const onlineMessage = JSON.stringify({
+    type: "onlineUsers",
+    userIds: onlineUsers,
+  });
+
+  const newUserSocket = connectedUsers[newUserId];
+  if (newUserSocket && newUserSocket.readyState === WebSocket.OPEN) {
+    newUserSocket.send(onlineMessage);
+  }
+}
 
 function broadcastStatus(userId, status, excludeSocket = null) {
   const statusMessage = JSON.stringify({

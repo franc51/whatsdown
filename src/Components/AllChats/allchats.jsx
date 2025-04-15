@@ -34,6 +34,17 @@ export default function AllChats() {
       }
     };
 
+    socket.onerror = (error) => {
+      console.error("WebSocket error", error);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket closed");
+      setTimeout(() => {
+        socket = new WebSocket("wss://websocket-service-30vz.onrender.com");
+      }, 3000); // Reconnect after 3 seconds
+    };
+
     return () => {
       socket.close();
     };
@@ -75,7 +86,7 @@ export default function AllChats() {
   }, []);
 
   const goToChat = (friendId, nickname) => {
-    const status = onlineUsers[friendId] === "online" ? "online" : "Offline";
+    const status = onlineUsers[friendId] === "online" ? "online" : "offline";
     navigate(`/chat/${friendId}`, {
       state: {
         friendId,
@@ -84,7 +95,6 @@ export default function AllChats() {
       },
     });
   };
-  
 
   return (
     <div className="homepage_chat_list">
@@ -132,16 +142,13 @@ export default function AllChats() {
                       hour: "2-digit",
                       minute: "2-digit",
                     })
-                  : "No date bro"}
+                  : "No date yet"}
               </p>
             </div>
           );
         })
       ) : (
-        <p>
-          Your friends will appear here once you add them, do so on the chat
-          settings tab.
-        </p>
+        <p>Your friends will appear here once you add them, do so on the chat settings tab.</p>
       )}
     </div>
   );
