@@ -10,8 +10,12 @@ const { ObjectId } = require("mongodb");
 const app = express();
 const port = 3002;
 
+const multer = require("multer");
+const path = require("path");
+
 // Middleware to parse JSON
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -346,6 +350,74 @@ app.get("/messages/:user1/:user2", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+// Configure multer storage to store images in the "uploads" folder
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Save uploaded files in "uploads" folder
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Use the current timestamp as the file name
+  },
+});
+
+// Initialize multer with the configured storage
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
+  fileFilter: (req, file, cb) => {
+    const fileTypes = /jpeg|jpg|png|gif/; // Allow only image files
+    const extname = fileTypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+    const mimetype = fileTypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed!"));
+    }
+  },
+});
+
+// Profile picture upload route
+app.post(
+  "/uploadProfilePicture",
+  upload.single("profilePicture"),
+  async (req, res) => {
+    try {
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        return res.status(403).json({ message: "No token provided" });
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = new ObjectId(decoded.userId);
+
+      // Get the uploaded file path
+      const filePath = `/uploads/${req.file.filename}`;
+
+      // Update the user's profile picture URL in the database
+      const updateResult = await db
+        .collection("users")
+        .updateOne({ _id: userId }, { $set: { profilePicture: filePath } });
+
+      if (updateResult.modifiedCount === 0) {
+        return res
+          .status(500)
+          .json({ message: "Failed to update profile picture" });
+      }
+
+      res.status(200).json({
+        message: "Profile picture updated successfully",
+        url: filePath,
+      });
+    } catch (err) {
+      console.error("Error uploading profile picture:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
 
 app.listen(port, () => {
   console.log(`Auth server running at http://localhost:${port}`);

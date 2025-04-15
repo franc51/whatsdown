@@ -9,7 +9,6 @@ export default function Homepage() {
   const [message, setMessage] = useState(""); // For showing success/error messages
   const [user, setUser] = useState(""); // To store user information
   const navigate = useNavigate();
-  
 
   // Fetch user information when the component mounts
   useEffect(() => {
@@ -22,12 +21,15 @@ export default function Homepage() {
           return;
         }
 
-        const response = await fetch("https://authservice-xemo.onrender.com/getUserInfo", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
-          },
-        });
+        const response = await fetch(
+          "https://authservice-xemo.onrender.com/getUserInfo",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
+            },
+          }
+        );
 
         const data = await response.json();
 
@@ -65,16 +67,19 @@ export default function Homepage() {
         return;
       }
 
-      const response = await fetch("https://authservice-xemo.onrender.com/addFriend", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
-        },
-        body: JSON.stringify({
-          friendPhoneNumber: friendPhone,
-        }),
-      });
+      const response = await fetch(
+        "https://authservice-xemo.onrender.com/addFriend",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
+          },
+          body: JSON.stringify({
+            friendPhoneNumber: friendPhone,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -101,7 +106,10 @@ export default function Homepage() {
         </div>
         <div>
           <button className="homepage_searchBtn searchMenuBtn_style" />
-          <button onClick={() => navigate("/account")} className="homepage_menuBtn searchMenuBtn_style" />
+          <button
+            onClick={() => navigate("/account")}
+            className="homepage_menuBtn searchMenuBtn_style"
+          />
         </div>
       </div>
 
