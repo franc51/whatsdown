@@ -8,7 +8,9 @@ export default function Homepage() {
   const [friendPhone, setFriendPhone] = useState(""); // To store phone number input
   const [message, setMessage] = useState(""); // For showing success/error messages
   const [user, setUser] = useState(""); // To store user information
-  const navigate = useNavigate();
+  const navigate = useNavigate(null);
+
+  const [selectedFile, setSelectedFile] = useState();
 
   // Fetch user information when the component mounts
   useEffect(() => {
