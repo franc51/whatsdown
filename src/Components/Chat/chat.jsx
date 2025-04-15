@@ -187,16 +187,6 @@ export default function Chat() {
         );
       }
 
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          senderId: yourUserId,
-          receiverId: friendId,
-          message: input,
-          createdAt: new Date(),
-        },
-      ]);
-
       setInput("");
     } catch (err) {
       console.error("Error sending message:", err);
