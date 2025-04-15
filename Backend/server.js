@@ -70,9 +70,19 @@ wss.on("connection", (socket) => {
 
         console.log("📝 Preparing message to send:", message);
 
-        // DO NOT insert into DB here. The frontend will handle it.
-        // You may only update the status in the users' lastMessage fields if required.
-        // This can be handled inside your API's route handler for `sendMessage`.
+        // Update lastMessage for both the sender and the receiver
+        Promise.all([
+          db.collection("users").updateOne(
+            { _id: senderId },
+            { $set: { lastMessage: message } }
+          ),
+          db.collection("users").updateOne(
+            { _id: receiverId },
+            { $set: { lastMessage: message } }
+          ),
+        ])
+          .then(() => console.log("✅ Updated lastMessage for both users"))
+          .catch((err) => console.error("❌ Error updating lastMessage:", err));
 
         // Broadcast to recipient if connected
         const recipientSocket = connectedUsers[receiverId];
