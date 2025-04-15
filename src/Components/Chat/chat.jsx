@@ -99,6 +99,7 @@ export default function Chat() {
 
       const handleParsedMessage = (parsed) => {
         console.log("📥 Parsed WebSocket message:", parsed);
+        
         if (parsed.type === "typing" && parsed.senderId === friendId) {
           setIsFriendTyping(true);
           setTimeout(() => {
@@ -214,7 +215,7 @@ export default function Chat() {
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       setIsFriendTyping(false);
-    }, 3000);
+    }, 2000);
   };
 
   // Display the status next to the friend's name

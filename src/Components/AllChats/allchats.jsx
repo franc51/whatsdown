@@ -1,15 +1,43 @@
 import React, { useState, useEffect } from "react";
 import "../AllChats/allchats.css";
-import { useNavigate } from "react-router-dom"; // Hook to navigate
+import { useNavigate } from "react-router-dom";
 
 export default function AllChats() {
   const [friends, setFriends] = useState([]);
   const [message, setMessage] = useState("");
-  const [selectedFriend, setSelectedFriend] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [friendStatus, setFriendStatus] = useState("Offline"); // Track friend status
+  const [onlineUsers, setOnlineUsers] = useState({});
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Get the history object for navigation
+  useEffect(() => {
+    const socket = new WebSocket("wss://websocket-service-30vz.onrender.com");
+
+    socket.onopen = () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        socket.send(JSON.stringify({ type: "register", token }));
+      }
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "status") {
+          const { userId, status } = data;
+          setOnlineUsers((prev) => ({
+            ...prev,
+            [userId]: status,
+          }));
+        }
+      } catch (e) {
+        console.error("Error parsing status update:", e);
+      }
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -46,7 +74,6 @@ export default function AllChats() {
     fetchFriends();
   }, []);
 
-  // Function to navigate to the chat page for a specific friend
   const goToChat = (friendId, nickname) => {
     navigate(`/chat/${friendId}`, {
       state: {
@@ -55,8 +82,6 @@ export default function AllChats() {
       },
     });
   };
-  // Display the status next to the friend's name
-  const statusClass = friendStatus === "online" ? "online" : "offline";
 
   return (
     <div className="homepage_chat_list">
@@ -69,41 +94,49 @@ export default function AllChats() {
           src="/Images/loader.gif"
         ></img>
       ) : friends.length > 0 ? (
-        friends.map((friend) => (
-          <div
-            className="homepage_chat_list_item"
-            key={friend._id}
-            onClick={() => goToChat(friend._id, friend.nickname)} // Navigate to the specific friend's chat page
-            style={{ cursor: "pointer" }} // Optional: improve UX with pointer cursor
-          >
-            <div className="picAndName">
-              <img
-                className="homepage_chat_profileImg"
-                alt="profileImg"
-                src="/Images/human.png"
-              />
-              <div
-                className={`allChats_statusIndicator ${statusClass}`} // Dynamically apply status class
-              ></div>
-              <div className="homepage_chat_profile">
-                <h4 className="homepage_chat_profile_name">
-                  {friend.nickname}
-                </h4>
-                <p className="homepage_chat_profile_lastMessage">
-                  {friend.lastMessage || "No messages yet"}
-                </p>
+        friends.map((friend) => {
+          const isOnline = onlineUsers[friend._id] === "online";
+          return (
+            <div
+              className="homepage_chat_list_item"
+              key={friend._id}
+              onClick={() => goToChat(friend._id, friend.nickname)}
+              style={{ cursor: "pointer" }}
+            >
+              <div className="picAndName">
+                <img
+                  className="homepage_chat_profileImg"
+                  alt="profileImg"
+                  src="/Images/human.png"
+                />
+                <div
+                  className={`allChats_statusIndicator ${
+                    isOnline ? "online" : "offline"
+                  }`}
+                ></div>
+                <div className="homepage_chat_profile">
+                  <h4 className="homepage_chat_profile_name">
+                    {friend.nickname}
+                  </h4>
+                  <p className="homepage_chat_profile_lastMessage">
+                    {friend.lastMessage || "No messages yet"}
+                  </p>
+                  <p className="friendStatusText">
+                    {isOnline ? "Online" : "Offline"}
+                  </p>
+                </div>
               </div>
+              <p className="homepage_chat_profile_messageTime">
+                {friend.lastMessageTime
+                  ? new Date(friend.lastMessageTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "No date bro"}
+              </p>
             </div>
-            <p className="homepage_chat_profile_messageTime">
-  {friend.lastMessageTime
-    ? new Date(friend.lastMessageTime).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "No date bro"}
-</p>
-          </div>
-        ))
+          );
+        })
       ) : (
         <p>
           Your friends will appear here once you add them, do so on the chat
