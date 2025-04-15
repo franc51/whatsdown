@@ -93,14 +93,18 @@ wss.on("connection", (socket) => {
 
         // Inside your WebSocket server message handling
         const recipientSocket = connectedUsers[receiverId];
-        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          console.log(`➡️ Sending message to ${receiverId}`);
-          recipientSocket.send(messageToSend); // Forward the message to the recipient
-        } else {
-          console.log(
-            `⚠️ User ${receiverId} is not connected, message not sent.`
-          );
-        }
+        console.log("🔍 Attempting to send message");
+console.log("📦 receiverId:", receiverId);
+console.log("🧠 Connected users:", Object.keys(connectedUsers));
+console.log("🔎 recipientSocket exists:", !!recipientSocket);
+
+if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
+  console.log(`➡️ Sending message to ${receiverId}`);
+  recipientSocket.send(messageToSend);
+} else {
+  console.log(`⚠️ User ${receiverId} is not connected or WebSocket is closed.`);
+}
+
 
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
           console.log(`✅ Recipient ${receiverId} is online. Sending message.`);
