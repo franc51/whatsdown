@@ -31,7 +31,7 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0;
-  padding-bottom: 1rem;
+  padding: 0.5rem 0.7rem;
   border-bottom: 2px solid #8d4bce3d;
 }
 .chat_account {
@@ -90,7 +90,7 @@ body {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
   position: relative;
 }
 .homepage_chat_profile_lastMessage {
@@ -105,30 +105,32 @@ img {
   position: relative;
   padding: 0.4rem 1rem;
   padding-right: 4rem;
-  margin: 0.3rem;
-  border-radius: 0.5rem;
+  margin: 0.2rem;
+  border-radius: 1rem;
   max-width: 70%;
   word-wrap: break-word;
-  background-color: #8d4bcebb !important;
+  background-color: #8d4bcebb;
   color: white;
   font-size: 0.9rem;
+  font-weight: 500;
 }
 .timeStamp {
   position: absolute;
   bottom: 0.3rem;
   right: 0.6rem;
   font-size: 0.6rem;
+  color: rgb(201, 201, 201);
 }
 .incoming {
   align-self: flex-start;
   border-top-left-radius: 0;
-  background-color: #eb050548;
+  background-color: rgba(41, 38, 38, 0.87) !important;
+  color: rgba(255, 255, 255, 0.911);
 }
-
 .outgoing {
   align-self: flex-end;
   border-top-right-radius: 0;
-  background-color: #ff0000cb !important;
+  background-color: #8d4bce;
   color: white;
 }
 .homepage_goBackToAllChats {
@@ -202,7 +204,7 @@ img {
   background-color: #ddd; /* Default is offline (gray) */
   position: absolute;
   top: 0.2rem;
-  left: 4.7rem;
+  left: 4.2rem;
   border: 1px solid rgb(255, 255, 255);
 }
 
