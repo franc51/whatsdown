@@ -24,7 +24,7 @@ wss.on("connection", (socket) => {
   socket.on("message", async (data) => {
     try {
       const parsed = JSON.parse(data);
-      const { type, token, receiverId, message: text, to } = parsed;
+      const { type, token, receiverId, message: text, to, tempId } = parsed;
 
       // 🔐 Handle user registration
       if (type === "register" && token) {
