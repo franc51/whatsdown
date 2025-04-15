@@ -9,7 +9,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [wsStatus, setWsStatus] = useState("Connecting...");
   const bottomRef = useRef(null);
-  
+
   const [isFriendTyping, setIsFriendTyping] = useState(false);
 
   const socketRef = useRef(null);
@@ -17,7 +17,6 @@ export default function Chat() {
   const navigate = useNavigate();
 
   const { friendId, nickname, status: friendStatus } = location.state || {};
-
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -69,7 +68,9 @@ export default function Chat() {
   }, []);
 
   useEffect(() => {
-    socketRef.current = new WebSocket("wss://websocket-service-30vz.onrender.com");
+    socketRef.current = new WebSocket(
+      "wss://websocket-service-30vz.onrender.com"
+    );
 
     socketRef.current.onopen = () => {
       const token = localStorage.getItem("token");
@@ -87,7 +88,9 @@ export default function Chat() {
       console.log("WebSocket closed", event);
       setWsStatus("WebSocket closed. Reconnecting...");
       setTimeout(() => {
-        socketRef.current = new WebSocket("wss://websocket-service-30vz.onrender.com");
+        socketRef.current = new WebSocket(
+          "wss://websocket-service-30vz.onrender.com"
+        );
       }, 3000);
     };
 
@@ -96,7 +99,7 @@ export default function Chat() {
 
       const handleParsedMessage = (parsed) => {
         console.log("📥 Parsed WebSocket message:", parsed);
-        
+
         if (parsed.type === "typing" && parsed.senderId === friendId) {
           setIsFriendTyping(true);
           setTimeout(() => {
@@ -143,12 +146,34 @@ export default function Chat() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
+    const tempId = Date.now(); // Unique temp ID to track status
     const messageData = {
       senderId: yourUserId,
       receiverId: friendId,
       message: input,
+      createdAt: new Date().toISOString(),
+      status: "sending",
+      tempId,
     };
 
+    // 1. Optimistically add to UI
+    setMessages((prevMessages) => [...prevMessages, messageData]);
+    setInput("");
+
+    // 2. Send via WebSocket
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(
+        JSON.stringify({
+          type: "message",
+          token,
+          receiverId: friendId,
+          message: input,
+          createdAt: messageData.createdAt,
+        })
+      );
+    }
+
+    // 3. Save to DB
     try {
       const response = await fetch(
         "https://authservice-xemo.onrender.com/sendMessage",
@@ -158,33 +183,32 @@ export default function Chat() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(messageData),
+          body: JSON.stringify({
+            receiverId: friendId,
+            message: input,
+          }),
         }
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to send message. Status: ${response.status}`);
+        throw new Error(`Failed to save. Status: ${response.status}`);
       }
 
-      const responseData = await response.json();
-      console.log("Message sent successfully:", responseData);
+      const saved = await response.json();
 
-      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-        socketRef.current.send(
-          JSON.stringify({
-            type: "message",
-            token,
-            senderId: yourUserId,
-            receiverId: friendId,
-            message: input,
-            createdAt: new Date().toISOString(),
-          })
-        );
-      }
-
-      setInput("");
+      // 4. Update message status in UI
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.tempId === tempId ? { ...msg, status: "sent" } : msg
+        )
+      );
     } catch (err) {
-      console.error("Error sending message:", err);
+      console.error("❌ Error saving to DB:", err);
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.tempId === tempId ? { ...msg, status: "failed" } : msg
+        )
+      );
     }
   };
 
@@ -234,8 +258,8 @@ export default function Chat() {
           <div className="homepage_chat_profile">
             <h4 className="homepage_chat_profile_name">{nickname}</h4>
             <p className="homepage_chat_profile_lastMessage">
-             {friendStatus === "online" ? wsStatus : "Offline"}
-            </p>          
+              {friendStatus === "online" ? wsStatus : "Offline"}
+            </p>
           </div>
         </div>
         <div>
@@ -272,6 +296,12 @@ export default function Chat() {
                         minute: "2-digit",
                       })
                     : ""}
+                  {msg.status === "sending" && (
+                    <span className="sending"> ⏳</span>
+                  )}
+                  {msg.status === "failed" && (
+                    <span className="failed"> ❌</span>
+                  )}
                 </span>
               </p>
             ))}
