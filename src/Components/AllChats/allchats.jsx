@@ -10,7 +10,7 @@ export default function AllChats() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const socket = new WebSocket("wss://websocket-service-30vz.onrender.com");
+    let socket = new WebSocket("wss://websocket-service-30vz.onrender.com");
 
     socket.onopen = () => {
       const token = localStorage.getItem("token");
