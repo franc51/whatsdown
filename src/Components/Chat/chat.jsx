@@ -107,7 +107,7 @@ export default function Chat() {
           return;
         }
         if (parsed.type === "status" && parsed.userId === friendId) {
-          setFriendStatus(parsed.status === "online" ? "Online" : "Offline");
+          setFriendStatus(parsed.status === "online" ? "online" : "Offline");
         }
         if (parsed.type === "message") {
           setMessages((prevMessages) => [...prevMessages, parsed]);

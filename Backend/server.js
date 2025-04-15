@@ -68,50 +68,19 @@ wss.on("connection", (socket) => {
 
         const messageToSend = JSON.stringify(message);
 
-        console.log("📝 Inserting message:", message);
+        console.log("📝 Preparing message to send:", message);
 
-        // Store in DB
-        db.collection("messages")
-          .insertOne(message)
-          .then(() => {
-            console.log("✅ Message inserted");
-          })
-          .catch((err) => console.error("❌ Insert error:", err));
+        // DO NOT insert into DB here. The frontend will handle it.
+        // You may only update the status in the users' lastMessage fields if required.
+        // This can be handled inside your API's route handler for `sendMessage`.
 
-        // Update lastMessage for both users
-        Promise.all([
-          db
-            .collection("users")
-            .updateOne({ _id: senderId }, { $set: { lastMessage: message } }),
-          db
-            .collection("users")
-            .updateOne({ _id: receiverId }, { $set: { lastMessage: message } }),
-        ])
-          .then(() => console.log("✅ Updated lastMessage for both users"))
-          .catch((err) => console.error("❌ Error updating lastMessage:", err));
-          console.log("🔎 Currently connected users:", Object.keys(connectedUsers));
-
-        // Inside your WebSocket server message handling
+        // Broadcast to recipient if connected
         const recipientSocket = connectedUsers[receiverId];
-        console.log("🔍 Attempting to send message");
-        console.log("📦 receiverId:", receiverId);
-        console.log("🧠 Connected users:", Object.keys(connectedUsers));
-        console.log("🔎 recipientSocket exists:", !!recipientSocket);
-
-if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-  console.log(`➡️ Sending message to ${receiverId}`);
-  recipientSocket.send(messageToSend);
-} else {
-  console.log(`⚠️ User ${receiverId} is not connected or WebSocket is closed.`);
-}
-
-
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          console.log(`✅ Recipient ${receiverId} is online. Sending message.`);
+          console.log(`➡️ Sending message to ${receiverId}`);
+          recipientSocket.send(messageToSend);
         } else {
-          console.log(
-            `⚠️ Recipient ${receiverId} is not online or WebSocket is closed.`
-          );
+          console.log(`⚠️ User ${receiverId} is not connected or WebSocket is closed.`);
         }
 
         // Echo to sender if applicable
@@ -137,6 +106,7 @@ if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
     }
   });
 });
+
 function broadcastStatus(userId, status, excludeSocket = null) {
   const statusMessage = JSON.stringify({
     type: "status",
