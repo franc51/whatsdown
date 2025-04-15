@@ -72,8 +72,6 @@ export default function Chat() {
     socketRef.current = new WebSocket("wss://websocket-service-30vz.onrender.com");
 
     socketRef.current.onopen = () => {
-      console.log("WebSocket connected!");
-      setWsStatus(`${nickname || "Unknown user"} hooked to WebSocket`);
       const token = localStorage.getItem("token");
       if (token) {
         socketRef.current.send(JSON.stringify({ type: "register", token }));

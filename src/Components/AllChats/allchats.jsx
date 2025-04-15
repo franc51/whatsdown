@@ -124,9 +124,6 @@ export default function AllChats() {
                   <p className="homepage_chat_profile_lastMessage">
                     {friend.lastMessage || "No messages yet"}
                   </p>
-                  <p className="friendStatusText">
-                    {isOnline ? "Online" : "Offline"}
-                  </p>
                 </div>
               </div>
               <p className="homepage_chat_profile_messageTime">
