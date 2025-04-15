@@ -161,7 +161,7 @@ img {
   display: flex;
   justify-content: flex-start;
   background-color: #8d4bcebb;
-  border-radius: 2rem;
+  border-radius: 0.5rem;
   color: white;
   padding-left: 1rem !important;
   padding: 0.3rem 0.4rem;

@@ -15,8 +15,13 @@ export default function Chat() {
   const socketRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const messagesRef = useRef([]);
 
   const { friendId, nickname, status: friendStatus } = location.state || {};
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -108,8 +113,12 @@ export default function Chat() {
           return;
         }
         if (parsed.type === "message") {
-          const isDuplicate = messages.some(
-            (msg) => msg.tempId && parsed.tempId && msg.tempId === parsed.tempId
+          const isDuplicate = messagesRef.current.some(
+            (msg) =>
+              (msg.tempId && parsed.tempId && msg.tempId === parsed.tempId) ||
+              (msg.createdAt === parsed.createdAt &&
+                msg.senderId === parsed.senderId &&
+                msg.message === parsed.message)
           );
 
           if (isDuplicate) {
@@ -157,11 +166,14 @@ export default function Chat() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    const tempId = Date.now(); // Unique temp ID to track status
+    const tempId = Date.now();
+    const messageText = input; // ✅ Store value before it's cleared
+    const createdAt = new Date().toISOString();
+
     const messageData = {
       senderId: yourUserId,
       receiverId: friendId,
-      message: input,
+      message: messageText,
       createdAt: new Date().toISOString(),
       status: "sending",
       tempId,
@@ -178,7 +190,7 @@ export default function Chat() {
           type: "message",
           token,
           receiverId: friendId,
-          message: input,
+          message: messageText,
           createdAt: messageData.createdAt,
         })
       );
@@ -197,7 +209,7 @@ export default function Chat() {
           body: JSON.stringify({
             senderId: yourUserId,
             receiverId: friendId,
-            message: input,
+            message: messageText,
           }),
         }
       );
@@ -317,7 +329,13 @@ export default function Chat() {
             ))}
             {/* ✨ Typing indicator */}
             {isFriendTyping && (
-              <p className="chat_isTyping incoming">Typing...</p>
+              <p
+                className={`chat_isTyping incoming ${
+                  isFriendTyping ? "visible" : ""
+                }`}
+              >
+                <img src="/Images/typing2.gif"></img>
+              </p>
             )}
             <div ref={bottomRef}></div>
           </div>
