@@ -108,7 +108,19 @@ export default function Chat() {
           return;
         }
         if (parsed.type === "message") {
-          setMessages((prevMessages) => [...prevMessages, parsed]);
+          const isDuplicate = messages.some(
+            (msg) => msg.tempId && parsed.tempId && msg.tempId === parsed.tempId
+          );
+
+          if (isDuplicate) {
+            console.log("🛑 Duplicate message skipped");
+            return;
+          }
+
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { ...parsed, status: "sent" },
+          ]);
         }
       };
 
@@ -139,7 +151,6 @@ export default function Chat() {
       }
     };
   }, []);
-
   const sendMessage = async () => {
     if (input.trim() === "") return;
 
@@ -184,6 +195,7 @@ export default function Chat() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
+            senderId: yourUserId,
             receiverId: friendId,
             message: input,
           }),
@@ -257,9 +269,7 @@ export default function Chat() {
           ></div>
           <div className="homepage_chat_profile">
             <h4 className="homepage_chat_profile_name">{nickname}</h4>
-            <p className="homepage_chat_profile_lastMessage">
-              {friendStatus === "online" ? wsStatus : "Offline"}
-            </p>
+            <p className="homepage_chat_profile_lastMessage">{friendStatus}</p>
           </div>
         </div>
         <div>
