@@ -451,6 +451,18 @@ function multerErrorHandler(err, req, res, next) {
   next();
 }
 
+app.get("/file-exists/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, "uploads", filename);
+
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).json({ exists: false, message: "File not found" });
+    }
+    return res.json({ exists: true, message: "File exists" });
+  });
+});
+
 // Profile picture upload route
 app.post(
   "/uploadProfilePicture",
