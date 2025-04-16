@@ -454,10 +454,11 @@ function multerErrorHandler(err, req, res, next) {
   next();
 }
 
+// Route to check if the file exists
 app.get("/file-exists/:filename", (req, res) => {
   try {
     const filename = req.params.filename;
-    const filePath = path.join(uploadsDirectory, filename); // Absolute path to the file
+    const filePath = path.join(uploadsDirectory, filename); // Absolute file path
 
     fs.access(filePath, fs.constants.F_OK, (err) => {
       if (err) {
