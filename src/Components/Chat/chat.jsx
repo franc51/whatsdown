@@ -8,16 +8,82 @@ export default function Chat() {
   const [yourUserId, setYourUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [wsStatus, setWsStatus] = useState("Connecting...");
-  const bottomRef = useRef(null);
-
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [isFriendTyping, setIsFriendTyping] = useState(false);
 
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [skip, setSkip] = useState(50); // Start at 50 because you already fetch 50
+  const [hasMore, setHasMore] = useState(true); // Assume there's more
+
+
+
+  const bottomRef = useRef(null);
   const socketRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const messagesRef = useRef([]);
+  const chatContainerRef = useRef(null);
 
   const { friendId, nickname, status: friendStatus } = location.state || {};
+
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+  
+    const handleScroll = async () => {
+      if (container.scrollTop < 100 && hasMore && !isFetchingMore) {
+        await fetchOlderMessages();
+      }
+    };
+  
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [hasMore, isFetchingMore, messages]);
+  
+  const fetchOlderMessages = async () => {
+    setIsFetchingMore(true);
+    const token = localStorage.getItem("token");
+    const oldest = messages[0]?.createdAt;
+  
+    // 🟨 Step 1: Capture current scroll height before update
+    const previousScrollHeight = chatContainerRef.current?.scrollHeight;
+  
+    try {
+      const response = await fetch(
+        `https://authservice-xemo.onrender.com/messages/${yourUserId}/${friendId}?limit=50&before=${oldest}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (!response.ok) throw new Error(`Failed: ${response.status}`);
+      const older = await response.json();
+  
+      if (older.length === 0) {
+        setHasMore(false);
+      } else {
+        // 🟩 Step 2: Prepend older messages
+        setMessages((prev) => [...older, ...prev]);
+  
+        // 🟦 Step 3: Adjust scroll to preserve position
+        setTimeout(() => {
+          if (chatContainerRef.current) {
+            const newScrollHeight = chatContainerRef.current.scrollHeight;
+            chatContainerRef.current.scrollTop =
+              newScrollHeight - previousScrollHeight;
+          }
+        }, 0);
+      }
+    } catch (err) {
+      console.error("❌ Error fetching older messages:", err);
+    } finally {
+      setIsFetchingMore(false);
+    }
+  };
+  
+  
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -261,7 +327,6 @@ export default function Chat() {
 
   // Display the status next to the friend's name
   const statusClass = friendStatus === "online" ? "online" : "offline";
-
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="chat_user">
@@ -275,9 +340,7 @@ export default function Chat() {
             alt="profileImg"
             src="/Images/human.png"
           />
-          <div
-            className={`statusIndicator ${statusClass}`} // Dynamically apply status class
-          ></div>
+          <div className={`statusIndicator ${statusClass}`}></div>
           <div className="homepage_chat_profile">
             <h4 className="homepage_chat_profile_name">{nickname}</h4>
             <p className="homepage_chat_profile_lastMessage">{friendStatus}</p>
@@ -288,7 +351,7 @@ export default function Chat() {
           <button className="chat_account searchMenuBtn_style" />
         </div>
       </div>
-
+  
       <div className="chat_and_sender">
         {loading ? (
           <div className="loader_div">
@@ -296,10 +359,21 @@ export default function Chat() {
               alt="Loading"
               className="chats_loader"
               src="/Images/loader.gif"
-            ></img>
+            />
           </div>
         ) : (
-          <div className="chat_container">
+          <div className="chat_container" ref={chatContainerRef}>
+            {/* 🌀 Loader for fetching older messages */}
+            {isFetchingMore && (
+              <div className="loader_div">
+                <img
+                  alt="Loading older messages"
+                  className="chats_loader"
+                  src="/Images/loader.gif"
+                />
+              </div>
+            )}
+  
             {messages.map((msg, idx) => (
               <p
                 key={idx}
@@ -326,6 +400,7 @@ export default function Chat() {
                 </span>
               </p>
             ))}
+  
             {/* ✨ Typing indicator */}
             {isFriendTyping && (
               <p
@@ -333,13 +408,13 @@ export default function Chat() {
                   isFriendTyping ? "visible" : ""
                 }`}
               >
-                <img src="/Images/typing2.gif"></img>
+                <img src="/Images/typing2.gif" alt="Typing..." />
               </p>
             )}
             <div ref={bottomRef}></div>
           </div>
         )}
-
+  
         <div className="chat_sender">
           <input
             className="chat_sender_input"

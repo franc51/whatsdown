@@ -333,28 +333,34 @@ app.get("/messages/:user1/:user2", async (req, res) => {
   const { user1, user2 } = req.params;
   const skip = parseInt(req.query.skip) || 0;
   const limit = parseInt(req.query.limit) || 50;
+  const before = req.query.before ? new Date(req.query.before) : null;
 
   try {
+    const query = {
+      $or: [
+        { senderId: user1, receiverId: user2 },
+        { senderId: user2, receiverId: user1 },
+      ],
+    };
+
+    if (before) {
+      query.createdAt = { $lt: before };
+    }
+
     const messages = await db
       .collection("messages")
-      .find({
-        $or: [
-          { senderId: user1, receiverId: user2 },
-          { senderId: user2, receiverId: user1 },
-        ],
-      })
-      .sort({ createdAt: -1 })
-      .skip(skip)
+      .find(query)
+      .sort({ createdAt: -1 }) // Newest first
       .limit(limit)
       .toArray();
 
-    // Reverse to show oldest-to-newest order
-    res.status(200).json(messages.reverse());
+    res.status(200).json(messages.reverse()); // Send oldest → newest
   } catch (err) {
     console.error("Error fetching messages:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // Configure multer storage to store images in the "uploads" folder
 const storage = multer.diskStorage({

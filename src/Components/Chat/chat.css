@@ -171,12 +171,12 @@ img {
 }
 
 .chat_container::-webkit-scrollbar {
-  width: 0.5rem;
+  width: 0.2rem;
 }
 
 .chat_container::-webkit-scrollbar-track {
   background: #ff000017;
-  border-radius: 2rem;
+  border-radius: 10rem;
 }
 
 .chat_container::-webkit-scrollbar-thumb {
