@@ -16,15 +16,15 @@
 }
 /* Online/Offline Indicator */
 .allChats_statusIndicator {
-  border: 1px solid rgb(255, 255, 255);
+  border: 2px solid rgb(255, 255, 255);
   width: 10px;
   height: 10px;
   border-radius: 50%;
   margin-left: 8px;
-  background-color: #ddd; /* Default is offline (gray) */
+  background-color: #ffffff; /* Default is offline (gray) */
   position: absolute;
   top: 0.1rem;
-  left: 1.8rem;
+  left: 2.5rem;
 }
 
 /* Online Status - Green */
@@ -69,7 +69,7 @@
 }
 /* Offline Status - Red */
 .offline {
-  background-color: #f44336; /* Red for offline */
+  background-color: #ff1100; /* Red for offline */
 }
 .allchats_loader_container {
   display: flex;

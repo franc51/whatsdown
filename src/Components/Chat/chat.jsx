@@ -347,7 +347,7 @@ export default function Chat() {
                 : "/Images/human.png"
             }
           />
-          <div className={`statusIndicator ${statusClass}`}></div>
+          <div className={`statusIndicator_chat ${statusClass}`}></div>
           <div className="homepage_chat_profile">
             <h4 className="homepage_chat_profile_name">{nickname}</h4>
             <p className="homepage_chat_profile_lastMessage">{friendStatus}</p>
