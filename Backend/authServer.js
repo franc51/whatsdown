@@ -391,6 +391,21 @@ const upload = multer({
   },
 });
 
+// Middleware to handle multer errors
+function multerErrorHandler(err, req, res, next) {
+  if (err instanceof multer.MulterError) {
+    // A Multer error occurred during the upload
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({ message: "File size exceeds 5MB limit." });
+    }
+    return res.status(400).json({ message: err.message });
+  } else if (err) {
+    // Unknown error occurred
+    return res.status(500).json({ message: "Server error" });
+  }
+  next();
+}
+
 // Profile picture upload route
 app.post(
   "/uploadProfilePicture",
@@ -414,9 +429,7 @@ app.post(
         .updateOne({ _id: userId }, { $set: { profilePicture: filePath } });
 
       if (updateResult.modifiedCount === 0) {
-        return res
-          .status(500)
-          .json({ message: "Failed to update profile picture" });
+        return res.status(500).json({ message: "Failed to update profile picture" });
       }
 
       res.status(200).json({

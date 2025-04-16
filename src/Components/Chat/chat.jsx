@@ -45,8 +45,9 @@ export default function Chat() {
     const token = localStorage.getItem("token");
     const oldest = messages[0]?.createdAt;
   
-    // 🟨 Step 1: Capture current scroll height before update
-    const previousScrollHeight = chatContainerRef.current?.scrollHeight;
+    // 🟨 Step 1: Capture current scroll position before update
+    const container = chatContainerRef.current;
+    const previousScrollTop = container.scrollTop;
   
     try {
       const response = await fetch(
@@ -69,11 +70,11 @@ export default function Chat() {
   
         // 🟦 Step 3: Adjust scroll to preserve position
         setTimeout(() => {
-          if (chatContainerRef.current) {
-            const newScrollHeight = chatContainerRef.current.scrollHeight;
-            chatContainerRef.current.scrollTop =
-              newScrollHeight - previousScrollHeight;
-          }
+          const newScrollHeight = container.scrollHeight;
+          const messageContainerHeight = container.clientHeight;
+  
+          // 🟢 Keep the scroll position the same relative to the new messages
+          container.scrollTop = newScrollHeight - messageContainerHeight - previousScrollTop;
         }, 0);
       }
     } catch (err) {

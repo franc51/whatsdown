@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./account.css";
 import ProfilePicture from "../ProfilePicture/profilePicture";
 
-export default function Homepage() {
+export default function Account() {
   const [activeTab, setActiveTab] = useState("chats"); // Default tab is chats
   const [friendPhone, setFriendPhone] = useState(""); // To store phone number input
   const [message, setMessage] = useState(""); // For showing success/error messages
@@ -76,6 +76,7 @@ export default function Homepage() {
       const data = await response.json();
       if (response.ok) {
         setMessage("Profile picture updated successfully!");
+        setUser(prevUser => ({ ...prevUser, profilePicture: data.url })); // Assuming the URL is returned
       } else {
         setMessage(data.message || "Failed to upload picture.");
       }
@@ -156,7 +157,24 @@ export default function Homepage() {
               </div>
               <div className="account_nickName_container">
                 <ProfilePicture onFileChange={handleFileChange} />
-                <button className="account_saveNickname">Save</button>
+                {/* Display Current Profile Picture if available */}
+                {user.profilePicture && (
+                  <img
+                    src={user.profilePicture}
+                    alt="Current Profile"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      borderRadius: "1rem",
+                    }}
+                  />
+                )}
+                <button
+                  className="account_saveNickname"
+                  onClick={handleSaveProfilePicture}
+                >
+                  Save Profile Picture
+                </button>
               </div>
             </div>
             {message && <p>{message}</p>}
