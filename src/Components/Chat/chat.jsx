@@ -397,7 +397,7 @@ export default function Chat() {
                         hour: "2-digit",
                         minute: "2-digit",
                       })
-                    : ""}
+                    : "No date"}
                   {msg.status === "sending" && (
                     <span className="sending"> ⏳</span>
                   )}

@@ -103,9 +103,9 @@ img {
 }
 .messageBubble {
   position: relative;
-  padding: 0.4rem 1rem;
+  padding: 0.5rem 0.8rem;
   padding-right: 4rem;
-  margin: 0.2rem;
+  margin: 0.1rem;
   border-radius: 1rem;
   max-width: 70%;
   word-wrap: break-word;

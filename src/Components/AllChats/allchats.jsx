@@ -175,7 +175,9 @@ export default function AllChats() {
               </div>
               <p className="homepage_chat_profile_messageTime">
                 {friend.lastMessageTime
-                  ? new Date(friend.lastMessageTime).toLocaleTimeString([], {
+                  ? new Date(friend.lastMessageTime).toLocaleString([], {
+                      day: "2-digit",
+                      month: "short",
                       hour: "2-digit",
                       minute: "2-digit",
                     })
