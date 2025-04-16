@@ -10,56 +10,54 @@ export default function AllChats() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let socket = new WebSocket("wss://websocket-service-30vz.onrender.com");
+    let socket;
 
-    socket.onopen = () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        socket.send(JSON.stringify({ type: "register", token }));
-      }
-    };
+    const setupSocket = () => {
+      socket = new WebSocket("wss://websocket-service-30vz.onrender.com");
 
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "status") {
-          const { userId, status } = data;
-          setOnlineUsers((prev) => ({
-            ...prev,
-            [userId]: status,
-          }));
+      socket.onopen = () => {
+        const token = localStorage.getItem("token");
+        if (token) {
+          socket.send(JSON.stringify({ type: "register", token }));
         }
-        // 🆕 Handle the initial list of online users
-        if (data.type === "onlineUsers") {
-          const online = {};
-          data.userIds.forEach((id) => {
-            online[id] = "online";
-          });
+      };
 
-          setOnlineUsers((prev) => ({
-            ...prev,
-            ...online,
-          }));
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "status") {
+            const { userId, status } = data;
+            setOnlineUsers((prev) => ({
+              ...prev,
+              [userId]: status,
+            }));
+          }
+          if (data.type === "onlineUsers") {
+            const online = {};
+            data.userIds.forEach((id) => {
+              online[id] = "online";
+            });
+            setOnlineUsers((prev) => ({ ...prev, ...online }));
+          }
+        } catch (e) {
+          console.error("Error parsing status update:", e);
         }
-      } catch (e) {
-        console.error("Error parsing status update:", e);
-      }
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error", error);
+      };
+
+      socket.onclose = () => {
+        console.log("WebSocket closed. Reconnecting...");
+        setTimeout(() => {
+          setupSocket(); // Reconnect
+        }, 3000);
+      };
     };
 
-    socket.onerror = (error) => {
-      console.error("WebSocket error", error);
-    };
-
-    socket.onclose = () => {
-      console.log("WebSocket closed");
-      setTimeout(() => {
-        socket = new WebSocket("wss://websocket-service-30vz.onrender.com");
-      }, 3000); // Reconnect after 3 seconds
-    };
-
-    return () => {
-      socket.close();
-    };
+    setupSocket();
+    return () => socket && socket.close();
   }, []);
 
   useEffect(() => {
@@ -84,6 +82,12 @@ export default function AllChats() {
         const data = await response.json();
 
         if (response.ok) {
+          const sortedFriends = data.friends.sort((a, b) => {
+            const timeA = new Date(a.lastMessageTime || 0).getTime();
+            const timeB = new Date(b.lastMessageTime || 0).getTime();
+            return timeB - timeA;
+          });
+          setFriends(sortedFriends);
           setFriends(data.friends);
         } else {
           setMessage(data.message || "Unable to fetch friends.");
@@ -128,6 +132,10 @@ export default function AllChats() {
       ) : friends.length > 0 ? (
         friends.map((friend) => {
           const isOnline = onlineUsers[friend._id] === "online";
+          console.log(
+            `Profile picture URL for ${friend.nickname}:`,
+            friend.profilePicture
+          );
           return (
             <div
               className="homepage_chat_list_item"

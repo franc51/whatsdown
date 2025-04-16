@@ -274,31 +274,42 @@ app.post("/sendMessage", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 app.get("/getFriends", async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1]; // Get token from the Authorization header
-    if (!token) {
-      return res.status(403).json({ message: "No token provided" });
-    }
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(403).json({ message: "No token provided" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = new ObjectId(decoded.userId);
 
-    // Find the user based on the userId from the token
     const user = await db.collection("users").findOne({ _id: userId });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Fetch friends from the user's friends field and include lastMessage and lastMessageTime
-    const friendsWithLastMessage = user.friends.map((friend) => ({
-      _id: friend._id,
-      nickname: friend.nickname,
-      lastMessage: friend.lastMessage || "No messages yet", // If lastMessage is missing, show default text
-      lastMessageTime: friend.lastMessageTime || null, // If lastMessageTime is missing, show null
-    }));
+    const friendIds = user.friends.map((f) => new ObjectId(f._id));
 
-    res.status(200).json({ friends: friendsWithLastMessage });
+    // Fetch latest friend data from the users collection
+    const freshFriends = await db
+      .collection("users")
+      .find({ _id: { $in: friendIds } })
+      .project({ _id: 1, nickname: 1, profilePicture: 1 })
+      .toArray();
+
+    // Merge the latest info with lastMessage + lastMessageTime from user's stored friends array
+    const friendsWithInfo = freshFriends.map((fresh) => {
+      const stored = user.friends.find(
+        (f) => f._id.toString() === fresh._id.toString()
+      );
+      return {
+        _id: fresh._id,
+        nickname: fresh.nickname,
+        profilePicture: fresh.profilePicture || null,
+        lastMessage: stored?.lastMessage || "No messages yet",
+        lastMessageTime: stored?.lastMessageTime || null,
+      };
+    });
+
+    res.status(200).json({ friends: friendsWithInfo });
   } catch (err) {
     console.error("Error fetching friends:", err);
     res.status(500).json({ message: "Server error" });
@@ -325,6 +336,41 @@ app.get("/getUserInfo", async (req, res) => {
     res.status(200).json({ user });
   } catch (err) {
     console.error("Error fetching user info:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.get("/getAllUsers", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1]; // Get token from the Authorization header
+    if (!token) {
+      return res.status(403).json({ message: "No token provided" });
+    }
+
+    // Verify the token and get the userId
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = new ObjectId(decoded.userId);
+
+    // Fetch all users' info
+    const allUsers = await db.collection("users").find().toArray();
+
+    // You can also exclude the logged-in user from the result if needed
+    const filteredUsers = allUsers.filter(
+      (user) => user._id.toString() !== userId.toString()
+    );
+
+    // Map the users' data to return only necessary fields
+    const usersWithInfo = filteredUsers.map((user) => ({
+      _id: user._id,
+      nickname: user.nickname,
+      profilePicture: user.profilePicture,
+      lastMessage: user.lastMessage, // You can modify this field based on your use case
+      lastMessageTime: user.lastMessageTime, // You can modify this field based on your use case
+    }));
+
+    res.status(200).json({ users: usersWithInfo });
+  } catch (err) {
+    console.error("Error fetching users:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -360,7 +406,6 @@ app.get("/messages/:user1/:user2", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 // Configure multer storage to store images in the "uploads" folder
 const storage = multer.diskStorage({
@@ -407,46 +452,51 @@ function multerErrorHandler(err, req, res, next) {
 }
 
 // Profile picture upload route
-app.post("/uploadProfilePicture", upload.single("profilePicture"), async (req, res) => {
-  try {
-    // Check if file is uploaded
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded." });
+app.post(
+  "/uploadProfilePicture",
+  upload.single("profilePicture"),
+  async (req, res) => {
+    try {
+      // Check if file is uploaded
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded." });
+      }
+
+      // Extract token from Authorization header
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        return res.status(403).json({ message: "No token provided" });
+      }
+
+      // Verify the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = new ObjectId(decoded.userId);
+
+      // Get the uploaded file path
+      const filePath = `/uploads/${req.file.filename}`;
+
+      // Update the user's profile picture URL in the database
+      const updateResult = await db
+        .collection("users")
+        .updateOne({ _id: userId }, { $set: { profilePicture: filePath } });
+
+      if (updateResult.modifiedCount === 0) {
+        return res
+          .status(500)
+          .json({ message: "Failed to update profile picture in database." });
+      }
+
+      // Success: Send the URL of the uploaded file
+      res.status(200).json({
+        message: "Profile picture uploaded successfully!",
+        url: filePath,
+      });
+    } catch (err) {
+      console.error("Error uploading profile picture:", err);
+      res.status(500).json({ message: "Internal server error" });
     }
-
-    // Extract token from Authorization header
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-      return res.status(403).json({ message: "No token provided" });
-    }
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = new ObjectId(decoded.userId);
-
-    // Get the uploaded file path
-    const filePath = `/uploads/${req.file.filename}`;
-
-    // Update the user's profile picture URL in the database
-    const updateResult = await db
-      .collection("users")
-      .updateOne({ _id: userId }, { $set: { profilePicture: filePath } });
-
-    if (updateResult.modifiedCount === 0) {
-      return res.status(500).json({ message: "Failed to update profile picture in database." });
-    }
-
-    // Success: Send the URL of the uploaded file
-    res.status(200).json({
-      message: "Profile picture uploaded successfully!",
-      url: filePath,
-    });
-  } catch (err) {
-    console.error("Error uploading profile picture:", err);
-    res.status(500).json({ message: "Internal server error" });
   }
-});
-
+);
 
 app.listen(port, () => {
   console.log(`Auth server running at http://localhost:${port}`);
