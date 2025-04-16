@@ -13,9 +13,12 @@ const port = 3002;
 const multer = require("multer");
 const path = require("path");
 
+// Assuming the 'uploads' folder is at the root level
+const uploadsDirectory = path.join(__dirname, "..", "uploads"); // Moves up to the parent directory, then into 'uploads'
+
 // Middleware to parse JSON
 app.use(express.json());
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static(uploadsDirectory));
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -452,15 +455,23 @@ function multerErrorHandler(err, req, res, next) {
 }
 
 app.get("/file-exists/:filename", (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(__dirname, "uploads", filename);
+  try {
+    const filename = req.params.filename;
+    const filePath = path.join(uploadsDirectory, filename); // Absolute path to the file
 
-  fs.access(filePath, fs.constants.F_OK, (err) => {
-    if (err) {
-      return res.status(404).json({ exists: false, message: "File not found" });
-    }
-    return res.json({ exists: true, message: "File exists" });
-  });
+    fs.access(filePath, fs.constants.F_OK, (err) => {
+      if (err) {
+        console.error("File check error:", err);
+        return res
+          .status(404)
+          .json({ exists: false, message: "File not found" });
+      }
+      return res.status(200).json({ exists: true, message: "File exists" });
+    });
+  } catch (error) {
+    console.error("Internal error:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 
 // Profile picture upload route
