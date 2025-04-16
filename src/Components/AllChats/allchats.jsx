@@ -97,13 +97,14 @@ export default function AllChats() {
     fetchFriends();
   }, []);
 
-  const goToChat = (friendId, nickname) => {
+  const goToChat = (friendId, nickname, profilePicture) => {
     const status = onlineUsers[friendId] === "online" ? "online" : "offline";
     navigate(`/chat/${friendId}`, {
       state: {
         friendId,
         nickname,
-        status, // ✅ now status is defined in this scope
+        status,
+        profilePicture,
       },
     });
   };
@@ -113,11 +114,17 @@ export default function AllChats() {
       {message && <p>{message}</p>}
 
       {loading ? (
-        <img
-          alt="Loading"
-          className="allchats_loader"
-          src="/Images/loader.gif"
-        ></img>
+        <div className="allchats_loader_container">
+          <img
+            alt="Loading"
+            className="allchats_loader"
+            src="/Images/loader.gif"
+          ></img>
+          <p>
+            If the server spins down with inactivity, might delay requests by 50
+            seconds or more.
+          </p>
+        </div>
       ) : friends.length > 0 ? (
         friends.map((friend) => {
           const isOnline = onlineUsers[friend._id] === "online";
@@ -125,14 +132,24 @@ export default function AllChats() {
             <div
               className="homepage_chat_list_item"
               key={friend._id}
-              onClick={() => goToChat(friend._id, friend.nickname)}
+              onClick={() =>
+                goToChat(friend._id, friend.nickname, friend.profilePicture)
+              }
               style={{ cursor: "pointer" }}
             >
               <div className="picAndName">
                 <img
                   className="homepage_chat_profileImg"
                   alt="profileImg"
-                  src="{profilePicture}"
+                  src={
+                    friend.profilePicture
+                      ? `https://authservice-xemo.onrender.com${friend.profilePicture}`
+                      : "/Images/human.png"
+                  }
+                  onError={(e) => {
+                    console.error("Image failed to load:", e.target.src);
+                    e.target.src = "/Images/human.png";
+                  }}
                 />
                 <div
                   className={`allChats_statusIndicator ${
