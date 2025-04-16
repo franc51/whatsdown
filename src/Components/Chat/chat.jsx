@@ -10,6 +10,7 @@ export default function Chat() {
   const [wsStatus, setWsStatus] = useState("Connecting...");
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [isFriendTyping, setIsFriendTyping] = useState(false);
+  
 
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [skip, setSkip] = useState(50); // Start at 50 because you already fetch 50
@@ -339,7 +340,7 @@ export default function Chat() {
           <img
             className="homepage_chat_profileImg"
             alt="profileImg"
-            src="/Images/human.png"
+            src="{profilePicture}"
           />
           <div className={`statusIndicator ${statusClass}`}></div>
           <div className="homepage_chat_profile">

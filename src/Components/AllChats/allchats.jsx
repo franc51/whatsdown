@@ -132,7 +132,7 @@ export default function AllChats() {
                 <img
                   className="homepage_chat_profileImg"
                   alt="profileImg"
-                  src="/Images/human.png"
+                  src="{profilePicture}"
                 />
                 <div
                   className={`allChats_statusIndicator ${
