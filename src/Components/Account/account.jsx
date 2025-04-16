@@ -56,14 +56,14 @@ export default function Account() {
       setMessage("Please select a profile picture.");
       return;
     }
-
+  
     const formData = new FormData();
     formData.append("profilePicture", selectedFile);
-
+  
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "http://localhost:3002/uploadProfilePicture",
+        "https://authservice-xemo.onrender.com/uploadProfilePicture",
         {
           method: "POST",
           headers: {
@@ -72,18 +72,22 @@ export default function Account() {
           body: formData,
         }
       );
-
+  
       const data = await response.json();
       if (response.ok) {
         setMessage("Profile picture updated successfully!");
-        setUser(prevUser => ({ ...prevUser, profilePicture: data.url })); // Assuming the URL is returned
+        setUser((prevUser) => ({
+          ...prevUser,
+          profilePicture: data.url, // Assuming URL is returned
+        }));
       } else {
-        setMessage(data.message || "Failed to upload picture.");
+        setMessage(`Failed to upload picture: ${data.message || "Unknown error"}`);
       }
     } catch (err) {
-      setMessage("Error uploading profile picture.");
+      setMessage(`Error uploading profile picture: ${err.message}`);
     }
   };
+  
 
   // Function to prevent page reload
   const handleTabChange = (e, tabName) => {

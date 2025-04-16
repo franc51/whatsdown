@@ -407,41 +407,46 @@ function multerErrorHandler(err, req, res, next) {
 }
 
 // Profile picture upload route
-app.post(
-  "/uploadProfilePicture",
-  upload.single("profilePicture"),
-  async (req, res) => {
-    try {
-      const token = req.headers.authorization?.split(" ")[1];
-      if (!token) {
-        return res.status(403).json({ message: "No token provided" });
-      }
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const userId = new ObjectId(decoded.userId);
-
-      // Get the uploaded file path
-      const filePath = `/uploads/${req.file.filename}`;
-
-      // Update the user's profile picture URL in the database
-      const updateResult = await db
-        .collection("users")
-        .updateOne({ _id: userId }, { $set: { profilePicture: filePath } });
-
-      if (updateResult.modifiedCount === 0) {
-        return res.status(500).json({ message: "Failed to update profile picture" });
-      }
-
-      res.status(200).json({
-        message: "Profile picture updated successfully",
-        url: filePath,
-      });
-    } catch (err) {
-      console.error("Error uploading profile picture:", err);
-      res.status(500).json({ message: "Server error" });
+app.post("/uploadProfilePicture", upload.single("profilePicture"), async (req, res) => {
+  try {
+    // Check if file is uploaded
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded." });
     }
+
+    // Extract token from Authorization header
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(403).json({ message: "No token provided" });
+    }
+
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = new ObjectId(decoded.userId);
+
+    // Get the uploaded file path
+    const filePath = `/uploads/${req.file.filename}`;
+
+    // Update the user's profile picture URL in the database
+    const updateResult = await db
+      .collection("users")
+      .updateOne({ _id: userId }, { $set: { profilePicture: filePath } });
+
+    if (updateResult.modifiedCount === 0) {
+      return res.status(500).json({ message: "Failed to update profile picture in database." });
+    }
+
+    // Success: Send the URL of the uploaded file
+    res.status(200).json({
+      message: "Profile picture uploaded successfully!",
+      url: filePath,
+    });
+  } catch (err) {
+    console.error("Error uploading profile picture:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
-);
+});
+
 
 app.listen(port, () => {
   console.log(`Auth server running at http://localhost:${port}`);
