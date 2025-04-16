@@ -331,6 +331,8 @@ app.get("/getUserInfo", async (req, res) => {
 
 app.get("/messages/:user1/:user2", async (req, res) => {
   const { user1, user2 } = req.params;
+  const skip = parseInt(req.query.skip) || 0;
+  const limit = parseInt(req.query.limit) || 50;
 
   try {
     const messages = await db
@@ -341,10 +343,13 @@ app.get("/messages/:user1/:user2", async (req, res) => {
           { senderId: user2, receiverId: user1 },
         ],
       })
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .toArray();
 
-    res.status(200).json(messages);
+    // Reverse to show oldest-to-newest order
+    res.status(200).json(messages.reverse());
   } catch (err) {
     console.error("Error fetching messages:", err);
     res.status(500).json({ message: "Server error" });

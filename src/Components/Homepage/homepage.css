@@ -127,3 +127,26 @@ p {
   align-items: flex-start;
   gap: 0.5rem;
 }
+.addFriend_btn {
+  background-image: url(/public/Images/add-user.png);
+}
+
+.btn_style {
+  background-position: center;
+  background-size: 2rem;
+  height: 2rem;
+  width: 2rem;
+  border: none;
+  background-color: rgba(240, 248, 255, 0);
+}
+.deleteFriend_btn {
+  background-image: url(/public/Images/delete-friend.png);
+  background-size: 2.3rem;
+  height: 2.3rem;
+  width: 2.3rem;
+}
+.input_and_btns {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}

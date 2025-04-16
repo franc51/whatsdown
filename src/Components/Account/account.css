@@ -4,15 +4,24 @@
 .account_changeNickname {
   display: flex;
   flex-direction: column;
+  text-align: center;
   gap: 1rem;
 }
 .account_logOut {
-  padding: 1rem 2rem;
+  padding: 1rem;
+  margin: 0 8rem;
   border: none;
-  color: white;
-  font-size: 1.1rem;
+  color: #002fff59;
+  font-size: 1rem;
   font-weight: 900;
-  background-color: rgba(255, 0, 0, 0.575);
+  background-color: rgb(255, 236, 255);
+  border-radius: 1rem;
+  background-image: url("/public/Images/logout2.png");
+  background-size: 2.2rem;
+  background-repeat: no-repeat;
+  background-position: 6rem center;
+  text-align: left;
+  cursor: pointer;
 }
 .account_content {
   display: flex;
@@ -20,11 +29,14 @@
   gap: 1rem;
 }
 .account_saveNickname {
-  background-color: rgba(51, 255, 0, 0.247);
+  background-color: rgba(247, 0, 255, 0.082);
   padding: 1rem;
   border: none;
   font-size: 0.9rem;
   font-weight: 600;
+  border-radius: 1rem;
+  color: #002fff59;
+  cursor: pointer;
 }
 .account_nickName_container {
   display: flex;
