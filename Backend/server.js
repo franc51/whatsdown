@@ -1,17 +1,21 @@
 const WebSocket = require("ws");
+const http = require("http");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const { MongoClient } = require("mongodb");
 
 dotenv.config();
 
-const server = require("http").createServer();
-const wss = new WebSocket.Server({ server });
-
-const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => {
-  console.log(`✅ WebSocket server listening on port ${PORT}`);
+// Create HTTP server to bind WebSocket to
+const server = http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end("WebSocket server is running.\n");
 });
+
+// Use the correct port for Render
+const PORT = process.env.PORT || 10000;
+
+const wss = new WebSocket.Server({ server });
 
 const client = new MongoClient(process.env.MONGO_URI, {});
 let db;
@@ -21,7 +25,7 @@ client.connect().then(() => {
   console.log("✅ WebSocket server connected to MongoDB");
 });
 
-const connectedUsers = {}; // { userId: socket }
+const connectedUsers = {};
 
 wss.on("connection", (socket) => {
   console.log("New client connected");
@@ -31,20 +35,16 @@ wss.on("connection", (socket) => {
       const parsed = JSON.parse(data);
       const { type, token, receiverId, message: text, to, tempId } = parsed;
 
-      // 🔐 Handle user registration
       if (type === "register" && token) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.userId;
         connectedUsers[userId] = socket;
         console.log(`✅ Registered user ${userId}`);
         broadcastStatus(userId, "online", socket);
-
-        // Send the list of currently online users to the newly connected user
         sendOnlineUsersList(userId);
         return;
       }
 
-      // ✍️ Handle typing
       if (type === "typing" && to) {
         const senderId = Object.keys(connectedUsers).find(
           (id) => connectedUsers[id] === socket
@@ -58,7 +58,6 @@ wss.on("connection", (socket) => {
         return;
       }
 
-      // 💬 Handle message (normal or forward)
       if (
         type === "message" ||
         type === "forward" ||
@@ -82,7 +81,6 @@ wss.on("connection", (socket) => {
 
         console.log("📝 Preparing message to send:", message);
 
-        // Update lastMessage for both the sender and the receiver
         Promise.all([
           db
             .collection("users")
@@ -94,15 +92,12 @@ wss.on("connection", (socket) => {
           .then(() => console.log("✅ Updated lastMessage for both users"))
           .catch((err) => console.error("❌ Error updating lastMessage:", err));
 
-        // Broadcast to recipient if connected
         const recipientSocket = connectedUsers[receiverId];
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
           console.log(`➡️ Sending message to ${receiverId}`);
           recipientSocket.send(messageToSend);
         } else {
-          console.log(
-            `⚠️ User ${receiverId} is not connected or WebSocket is closed.`
-          );
+          console.log(`⚠️ User ${receiverId} is not connected.`);
         }
 
         return;
@@ -124,7 +119,6 @@ wss.on("connection", (socket) => {
   });
 });
 
-// Send the list of currently online users to the newly connected user
 function sendOnlineUsersList(newUserId) {
   const onlineUsers = Object.keys(connectedUsers);
   const onlineMessage = JSON.stringify({
@@ -142,7 +136,7 @@ function broadcastStatus(userId, status, excludeSocket = null) {
   const statusMessage = JSON.stringify({
     type: "status",
     userId,
-    status, // "online" or "offline"
+    status,
   });
 
   for (const otherId in connectedUsers) {
@@ -154,3 +148,8 @@ function broadcastStatus(userId, status, excludeSocket = null) {
 
   console.log(`📡 Broadcasted ${status} status for ${userId}`);
 }
+
+// Start the server
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ WebSocket server listening on port ${PORT}`);
+});
