@@ -17,6 +17,7 @@ function App() {
   const [friends, setFriends] = useState([]);
   const [friendsLoading, setFriendsLoading] = useState(true);
   const [friendsError, setFriendsError] = useState("");
+  const [activeChatId, setActiveChatId] = useState(null);
 
   const socketRef = useRef(null);
 
@@ -39,8 +40,10 @@ function App() {
 
         const handleParsed = (parsed) => {
           if (parsed.type === "typing") {
-            setIsFriendTyping(true);
-            setTimeout(() => setIsFriendTyping(false), 3000);
+            if (parsed.fromId === activeChatId) {
+              setIsFriendTyping(true);
+              setTimeout(() => setIsFriendTyping(false), 3000);
+            }
           }
           if (parsed.type === "message") {
             setMessages((prev) => [...prev, parsed]);
@@ -199,6 +202,7 @@ function App() {
                   isFriendTyping={isFriendTyping}
                   sendMessage={sendMessage}
                   setMessages={setMessages}
+                  setActiveChatId={setActiveChatId}
                 />
               }
             />

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./chat.css";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
-export default function Chat({ socket }) {
+export default function Chat({ socket, setActiveChatId }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [yourUserId, setYourUserId] = useState(null);
@@ -27,6 +28,11 @@ export default function Chat({ socket }) {
     profilePicture,
   } = location.state || {};
   console.log("🧩 Chat component mounted");
+
+  useEffect(() => {
+    setActiveChatId(friendId);
+    return () => setActiveChatId(null); // cleanup on unmount
+  }, [friendId]);
 
   useEffect(() => {
     const container = chatContainerRef.current;
@@ -109,10 +115,6 @@ export default function Chat({ socket }) {
 
     fetchMessages();
   }, [friendId]);
-
-  useEffect(() => {
-    if (!friendId || !nickname) navigate("/", { replace: true });
-  }, []);
 
   useEffect(() => {
     if (!socket || !friendId || !yourUserIdRef.current) return;
