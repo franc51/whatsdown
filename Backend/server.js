@@ -33,13 +33,14 @@ client.connect().then(() => {
 const connectedUsers = {};
 
 wss.on("connection", (socket) => {
-  console.log("New client connected");
+  console.log("New client connected:", socket._socket.remoteAddress);
 
   socket.on("message", async (data) => {
     try {
+      console.log("📥 Received message:", data);
       const parsed = JSON.parse(data);
       const { type, token, receiverId, message: text, to, tempId } = parsed;
-
+      console.log("📥 Parsed data:", parsed);
       if (type === "register" && token) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.userId;
@@ -100,6 +101,7 @@ wss.on("connection", (socket) => {
         const recipientSocket = connectedUsers[receiverId];
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
           console.log(`➡️ Sending message to ${receiverId}`);
+          console.log("Message content:", messageToSend);
           recipientSocket.send(messageToSend);
         } else {
           console.log(`⚠️ User ${receiverId} is not connected.`);

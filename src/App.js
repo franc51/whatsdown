@@ -20,7 +20,7 @@ function App() {
 
   const socketRef = useRef(null);
 
-  // ✅ Setup WebSocket ONCE on mount
+  // ✅ Setup WebSocket singleton
   useEffect(() => {
     const setupWebSocket = () => {
       const token = localStorage.getItem("token");
@@ -61,6 +61,7 @@ function App() {
           }
         };
 
+        // Check if the message is a blob (binary data)
         if (msg instanceof Blob) {
           const reader = new FileReader();
           reader.onload = () => handleParsed(JSON.parse(reader.result));
@@ -81,14 +82,16 @@ function App() {
       };
     };
 
+    // Set up the WebSocket only once
     setupWebSocket();
 
+    // Cleanup the WebSocket connection on component unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.close();
       }
     };
-  }, []); // ✅ Only once
+  }, []); // Empty dependency array to run only once
 
   // Fetch friends when the user is logged in
   useEffect(() => {
