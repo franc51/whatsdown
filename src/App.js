@@ -20,6 +20,76 @@ function App() {
 
   const socketRef = useRef(null);
 
+  // ✅ Setup WebSocket ONCE on mount
+  useEffect(() => {
+    const setupWebSocket = () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const ws = new WebSocket("wss://websocket-service-30vz.onrender.com");
+      socketRef.current = ws;
+
+      ws.onopen = () => {
+        console.log("✅ WebSocket connected");
+        ws.send(JSON.stringify({ type: "register", token }));
+      };
+
+      ws.onmessage = (event) => {
+        const msg = event.data;
+
+        const handleParsed = (parsed) => {
+          if (parsed.type === "typing") {
+            setIsFriendTyping(true);
+            setTimeout(() => setIsFriendTyping(false), 3000);
+          }
+          if (parsed.type === "message") {
+            setMessages((prev) => [...prev, parsed]);
+          }
+          if (parsed.type === "status") {
+            const { userId, status } = parsed;
+            setOnlineUsers((prev) => ({
+              ...prev,
+              [userId]: status,
+            }));
+          }
+          if (parsed.type === "onlineUsers") {
+            const online = {};
+            parsed.userIds.forEach((id) => {
+              online[id] = "online";
+            });
+            setOnlineUsers((prev) => ({ ...prev, ...online }));
+          }
+        };
+
+        if (msg instanceof Blob) {
+          const reader = new FileReader();
+          reader.onload = () => handleParsed(JSON.parse(reader.result));
+          reader.readAsText(msg);
+        } else {
+          handleParsed(JSON.parse(msg));
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        setTimeout(setupWebSocket, 3000); // reconnect
+      };
+
+      ws.onclose = () => {
+        console.log("🔌 WebSocket closed. Reconnecting...");
+        setTimeout(setupWebSocket, 3000); // reconnect
+      };
+    };
+
+    setupWebSocket();
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+    };
+  }, []); // ✅ Only once
+
   // Fetch friends when the user is logged in
   useEffect(() => {
     const fetchFriends = async () => {
@@ -59,7 +129,7 @@ function App() {
     if (isLoggedIn) fetchFriends();
   }, [isLoggedIn]);
 
-  // Handle token login and loading state
+  // Token check & login state
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -89,100 +159,7 @@ function App() {
     return () => window.removeEventListener("load", handleLoad);
   }, []);
 
-  // Setup WebSocket connection
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) return; // Ensure token exists before trying to connect
-
-    const socket = new WebSocket("wss://websocket-service-30vz.onrender.com");
-    socketRef.current = socket;
-
-    socket.onopen = () => {
-      console.log("✅ WebSocket reconnected");
-      socket.send(JSON.stringify({ type: "register", token }));
-    };
-
-    socket.onmessage = (event) => {
-      const msg = event.data;
-
-      const handleParsed = (parsed) => {
-        if (parsed.type === "typing") {
-          setIsFriendTyping(true);
-          setTimeout(() => setIsFriendTyping(false), 3000);
-        }
-
-        if (parsed.type === "message") {
-          setMessages((prev) => [...prev, parsed]);
-        }
-        if (parsed.type === "status") {
-          const { userId, status } = parsed;
-          setOnlineUsers((prev) => ({
-            ...prev,
-            [userId]: status,
-          }));
-        }
-
-        if (parsed.type === "onlineUsers") {
-          const online = {};
-          parsed.userIds.forEach((id) => {
-            online[id] = "online";
-          });
-          setOnlineUsers((prev) => ({ ...prev, ...online }));
-        }
-      };
-
-      if (msg instanceof Blob) {
-        const reader = new FileReader();
-        reader.onload = () => handleParsed(JSON.parse(reader.result));
-        reader.readAsText(msg);
-      } else {
-        handleParsed(JSON.parse(msg));
-      }
-    };
-
-    socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
-
-      // More detailed logging
-      if (error && error.message) {
-        console.error("Error Message:", error.message);
-      }
-      if (error && error.code) {
-        console.error("Error Code:", error.code);
-      }
-
-      // Reconnect logic: attempt to reconnect after a delay if the connection fails
-      setTimeout(() => {
-        console.log("Attempting to reconnect WebSocket...");
-        const newSocket = new WebSocket(
-          "wss://websocket-service-30vz.onrender.com"
-        );
-        socketRef.current = newSocket;
-      }, 3000);
-    };
-
-    socket.onclose = () => {
-      console.log("WebSocket closed. Reconnecting...");
-      // Reconnect after 3 seconds if socket closes
-      setTimeout(() => {
-        // Reconnect logic directly here
-        const newSocket = new WebSocket(
-          "wss://websocket-service-30vz.onrender.com"
-        );
-        socketRef.current = newSocket;
-      }, 3000);
-    };
-
-    // Cleanup WebSocket on component unmount
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
-    };
-  }, [isLoggedIn]);
-
-  // Message sender function
+  // Message sender
   const sendMessage = (message) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(message));
