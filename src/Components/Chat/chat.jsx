@@ -19,6 +19,8 @@ export default function Chat({ socket, setActiveChatId }) {
   const messagesRef = useRef([]);
   const chatContainerRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const messageHandlerRef = useRef(null);
+  const friendIdRef = useRef(friendId);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -120,7 +122,12 @@ export default function Chat({ socket, setActiveChatId }) {
   }, [friendId]);
 
   useEffect(() => {
-    if (!socket || !friendId || !yourUserIdRef.current) return;
+    friendIdRef.current = friendId;
+    yourUserIdRef.current = yourUserId;
+  }, [friendId, yourUserId]);
+
+  useEffect(() => {
+    if (!socket || !friendIdRef.current || !yourUserIdRef.current) return;
 
     const handleMessage = (event) => {
       try {
@@ -128,12 +135,15 @@ export default function Chat({ socket, setActiveChatId }) {
         console.log("📥 WS received:", parsed);
         console.log(
           "👤 You (userId):",
-          yourUserId,
+          yourUserIdRef.current,
           "| 👥 Chatting with:",
-          friendId
+          friendIdRef.current
         );
 
-        if (parsed.type === "typing" && parsed.senderId === friendId) {
+        if (
+          parsed.type === "typing" &&
+          parsed.senderId === friendIdRef.current
+        ) {
           console.log("✏️ Friend is typing...");
           setIsFriendTyping(true);
           clearTimeout(typingTimeoutRef.current);
@@ -143,9 +153,11 @@ export default function Chat({ socket, setActiveChatId }) {
           }, 3000);
         } else if (parsed.type === "message") {
           const isFromFriendToYou =
-            parsed.senderId === friendId && parsed.receiverId === yourUserId;
+            parsed.senderId === friendIdRef.current &&
+            parsed.receiverId === yourUserIdRef.current;
           const isFromYouToFriend =
-            parsed.senderId === yourUserId && parsed.receiverId === friendId;
+            parsed.senderId === yourUserIdRef.current &&
+            parsed.receiverId === friendIdRef.current;
 
           console.log(
             `📨 Incoming message | From: ${parsed.senderId} To: ${
@@ -164,11 +176,19 @@ export default function Chat({ socket, setActiveChatId }) {
         console.error("❌ Failed to parse WS message:", event.data, err);
       }
     };
-    socket.removeEventListener("message", handleMessage); // cleanup if previously added
+
+    messageHandlerRef.current = handleMessage;
+
     console.log("🧲 Setting up socket message listener");
     socket.addEventListener("message", handleMessage);
-    return () => socket.removeEventListener("message", handleMessage);
-  }, [socket, friendId]);
+
+    return () => {
+      if (messageHandlerRef.current) {
+        console.log("🧹 Removing socket message listener");
+        socket.removeEventListener("message", messageHandlerRef.current);
+      }
+    };
+  }, [socket]);
 
   const sendMessage = async () => {
     if (input.trim() === "") return;

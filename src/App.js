@@ -28,34 +28,55 @@ function App() {
 
   const socketRef = useRef(null);
 
+  useEffect(() => {
+    console.log("Friend ID in Chat component:", friendId);
+  }, [friendId]);
+
+  useEffect(() => {
+    console.log("Messages in Chat component:", messages);
+  }, [messages]);
+
   // ✅ Setup WebSocket singleton
   useEffect(() => {
     const setupWebSocket = () => {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      console.log("Sending token to WebSocket:", token);
+      if (!token) {
+        console.log("❌ No token found, WebSocket setup aborted");
+        return;
+      }
 
+      console.log("✅ Setting up WebSocket connection...");
       const ws = new WebSocket("wss://websocket-service-30vz.onrender.com");
       socketRef.current = ws;
 
       ws.onopen = () => {
         console.log("✅ WebSocket connected");
-        ws.send(JSON.stringify({ type: "register", token }));
+        const token = localStorage.getItem("token");
+        if (token) {
+          console.log("Sending registration message with token");
+          ws.send(JSON.stringify({ type: "register", token }));
+        }
       };
 
       ws.onmessage = (event) => {
+        console.log("📥 WebSocket message received:", event.data);
         const msg = event.data;
 
         const handleParsed = (parsed) => {
           if (parsed.type === "typing") {
+            console.log("💬 Typing status received:", parsed);
             if (parsed.fromId === activeChatId) {
               setIsFriendTyping(true);
               setTimeout(() => setIsFriendTyping(false), 3000);
             }
           }
           if (parsed.type === "message") {
+            console.log("💬 Message received:", parsed);
             setMessages((prev) => [...prev, parsed]);
           }
           if (parsed.type === "status") {
+            console.log("👤 Status update:", parsed);
             const { userId, status } = parsed;
             setOnlineUsers((prev) => ({
               ...prev,
@@ -63,6 +84,7 @@ function App() {
             }));
           }
           if (parsed.type === "onlineUsers") {
+            console.log("👥 Online users update:", parsed);
             const online = {};
             parsed.userIds.forEach((id) => {
               online[id] = "online";
@@ -73,16 +95,18 @@ function App() {
 
         // Check if the message is a blob (binary data)
         if (msg instanceof Blob) {
+          console.log("⚠️ Received Blob data, parsing...");
           const reader = new FileReader();
           reader.onload = () => handleParsed(JSON.parse(reader.result));
           reader.readAsText(msg);
         } else {
+          console.log("🔍 Parsing JSON message...");
           handleParsed(JSON.parse(msg));
         }
       };
 
       ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        console.error("❌ WebSocket error:", error);
         setTimeout(setupWebSocket, 3000); // reconnect
       };
 
@@ -98,6 +122,7 @@ function App() {
     // Cleanup the WebSocket connection on component unmount
     return () => {
       if (socketRef.current) {
+        console.log("❌ Cleaning up WebSocket connection...");
         socketRef.current.close();
       }
     };
@@ -110,6 +135,7 @@ function App() {
         const token = localStorage.getItem("token");
         if (!token) return;
 
+        console.log("🔄 Fetching friends list...");
         const response = await fetch(
           "https://authservice-xemo.onrender.com/getFriends",
           {
@@ -130,9 +156,14 @@ function App() {
           });
           setFriends(sorted);
         } else {
+          console.error(
+            "⚠️ Error fetching friends:",
+            data.message || "Unable to fetch friends."
+          );
           setFriendsError(data.message || "Unable to fetch friends.");
         }
       } catch (err) {
+        console.error("⚠️ An error occurred while fetching friends:", err);
         setFriendsError("An error occurred. Please try again.");
       } finally {
         setFriendsLoading(false);
@@ -150,13 +181,15 @@ function App() {
         const decoded = jwtDecode(token);
         const isExpired = decoded.exp * 1000 < Date.now();
         if (isExpired) {
+          console.log("❌ Token expired, logging out...");
           localStorage.removeItem("token");
           setIsLoggedIn(false);
         } else {
+          console.log("✅ Token valid, user logged in.");
           setIsLoggedIn(true);
         }
       } catch (e) {
-        console.error("Invalid token");
+        console.error("⚠️ Invalid token:", e);
         localStorage.removeItem("token");
         setIsLoggedIn(false);
       }
@@ -175,7 +208,10 @@ function App() {
   // Message sender
   const sendMessage = (message) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
+      console.log("📤 Sending message:", message);
       socketRef.current.send(JSON.stringify(message));
+    } else {
+      console.warn("❌ WebSocket not open, unable to send message.");
     }
   };
 
