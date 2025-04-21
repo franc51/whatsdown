@@ -8,8 +8,13 @@ dotenv.config();
 
 // Create HTTP server to bind WebSocket to
 const server = http.createServer((req, res) => {
-  res.writeHead(200);
-  res.end("WebSocket server is running.\n");
+  if (req.url === "/") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("WebSocket server is running.");
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
 });
 
 // Use the correct port for Render
