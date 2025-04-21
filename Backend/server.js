@@ -5,8 +5,13 @@ const { MongoClient } = require("mongodb");
 
 dotenv.config();
 
-const wss = new WebSocket.Server({ port: 8081 });
-console.log("✅ WebSocket server is listening on ws://localhost:8081");
+const server = require("http").createServer();
+const wss = new WebSocket.Server({ server });
+
+const PORT = process.env.PORT || 10000;
+server.listen(PORT, () => {
+  console.log(`✅ WebSocket server listening on port ${PORT}`);
+});
 
 const client = new MongoClient(process.env.MONGO_URI, {});
 let db;

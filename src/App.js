@@ -99,6 +99,7 @@ function App() {
     socketRef.current = socket;
 
     socket.onopen = () => {
+      console.log("✅ WebSocket reconnected");
       socket.send(JSON.stringify({ type: "register", token }));
     };
 
