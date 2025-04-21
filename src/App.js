@@ -20,6 +20,7 @@ function App() {
 
   const socketRef = useRef(null);
 
+  // Fetch friends when the user is logged in
   useEffect(() => {
     const fetchFriends = async () => {
       try {
@@ -91,7 +92,8 @@ function App() {
   // Setup WebSocket connection
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+
+    if (!token) return; // Ensure token exists before trying to connect
 
     const socket = new WebSocket("wss://websocket-service-30vz.onrender.com");
     socketRef.current = socket;
@@ -138,7 +140,45 @@ function App() {
       }
     };
 
-    return () => socket.close();
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+
+      // More detailed logging
+      if (error && error.message) {
+        console.error("Error Message:", error.message);
+      }
+      if (error && error.code) {
+        console.error("Error Code:", error.code);
+      }
+
+      // Reconnect logic: attempt to reconnect after a delay if the connection fails
+      setTimeout(() => {
+        console.log("Attempting to reconnect WebSocket...");
+        const newSocket = new WebSocket(
+          "wss://websocket-service-30vz.onrender.com"
+        );
+        socketRef.current = newSocket;
+      }, 3000);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket closed. Reconnecting...");
+      // Reconnect after 3 seconds if socket closes
+      setTimeout(() => {
+        // Reconnect logic directly here
+        const newSocket = new WebSocket(
+          "wss://websocket-service-30vz.onrender.com"
+        );
+        socketRef.current = newSocket;
+      }, 3000);
+    };
+
+    // Cleanup WebSocket on component unmount
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+    };
   }, [isLoggedIn]);
 
   // Message sender function
@@ -170,7 +210,6 @@ function App() {
                 />
               }
             />
-
             <Route
               path="/chat/:friendId"
               element={
