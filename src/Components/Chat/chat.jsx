@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 export default function Chat({ socket, setActiveChatId }) {
+  const { friendId } = useParams();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [yourUserId, setYourUserId] = useState(null);
@@ -22,12 +23,14 @@ export default function Chat({ socket, setActiveChatId }) {
   const location = useLocation();
   const navigate = useNavigate();
   const {
-    friendId,
     nickname,
     status: friendStatus,
     profilePicture,
   } = location.state || {};
-  console.log("🧩 Chat component mounted");
+
+  useEffect(() => {
+    console.log("🧩 Chat component mounted");
+  }, []);
 
   useEffect(() => {
     setActiveChatId(friendId);
@@ -165,7 +168,7 @@ export default function Chat({ socket, setActiveChatId }) {
     console.log("🧲 Setting up socket message listener");
     socket.addEventListener("message", handleMessage);
     return () => socket.removeEventListener("message", handleMessage);
-  }, [socket, friendId, yourUserId]);
+  }, [socket, friendId]);
 
   const sendMessage = async () => {
     if (input.trim() === "") return;

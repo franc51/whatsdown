@@ -1,4 +1,10 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useParams,
+} from "react-router-dom"; // Make sure to import useParams here
+
 import { jwtDecode } from "jwt-decode";
 import "./App.css";
 import { useEffect, useRef, useState } from "react";
@@ -9,6 +15,7 @@ import Account from "./Components/Account/account.jsx";
 import Login from "./Components/Login/login.jsx";
 
 function App() {
+  const { friendId } = useParams(); // Using useParams to grab friendId from URL
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -195,7 +202,7 @@ function App() {
               }
             />
             <Route
-              path="/chat/:friendId"
+              path="/chat/:friendId" // This is where friendId is captured from the URL
               element={
                 <Chat
                   messages={messages}
@@ -203,6 +210,7 @@ function App() {
                   sendMessage={sendMessage}
                   setMessages={setMessages}
                   setActiveChatId={setActiveChatId}
+                  friendId={friendId} // Pass friendId as prop to Chat component
                 />
               }
             />
