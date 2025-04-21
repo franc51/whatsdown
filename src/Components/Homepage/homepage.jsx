@@ -3,7 +3,7 @@ import "./homepage.css";
 import AllChats from "../AllChats/allchats";
 import { useNavigate } from "react-router-dom";
 
-export default function Homepage() {
+export default function Homepage({ friends, onlineUsers, loading, error }) {
   const [activeTab, setActiveTab] = useState("chats"); // Default tab is chats
   const [friendPhone, setFriendPhone] = useState(""); // To store phone number input
   const [message, setMessage] = useState(""); // For showing success/error messages
@@ -145,30 +145,40 @@ export default function Homepage() {
 
       {/* Conditional Rendering of Components */}
       <div className="homepage_content">
-        {activeTab === "chats" && <AllChats />}
+        {activeTab === "chats" && (
+          <AllChats
+            friends={friends}
+            onlineUsers={onlineUsers}
+            loading={loading}
+            error={error}
+          />
+        )}
         {activeTab === "groups" && <p>Groups</p>}
         {activeTab === "addChat" && (
           <div className="newChat_addFriend">
             <label>Add friend</label>
             <div className="input_and_btns">
-            <input
-              type="text"
-              placeholder="Phone number"
-              value={friendPhone}
-              onChange={(e) => setFriendPhone(e.target.value)}
-              maxLength={10}
-            />
-              <button className="addFriend_btn btn_style" onClick={handleAddFriend}></button>
+              <input
+                type="text"
+                placeholder="Phone number"
+                value={friendPhone}
+                onChange={(e) => setFriendPhone(e.target.value)}
+                maxLength={10}
+              />
+              <button
+                className="addFriend_btn btn_style"
+                onClick={handleAddFriend}
+              ></button>
             </div>
             <label>Delete friend</label>
             <div className="input_and_btns">
-            <input
-              type="text"
-              placeholder="Phone number"
-              value={friendPhone}
-              onChange={(e) => setFriendPhone(e.target.value)}
-              maxLength={10}
-            />
+              <input
+                type="text"
+                placeholder="Phone number"
+                value={friendPhone}
+                onChange={(e) => setFriendPhone(e.target.value)}
+                maxLength={10}
+              />
               <button className="deleteFriend_btn btn_style"></button>
             </div>
             {message && <p>{message}</p>}

@@ -2,26 +2,23 @@ import React, { useState, useEffect, useRef } from "react";
 import "./chat.css";
 import { useLocation, useNavigate } from "react-router-dom";
 
-export default function Chat() {
+export default function Chat({ socket }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [yourUserId, setYourUserId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [wsStatus, setWsStatus] = useState("Connecting...");
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [isFriendTyping, setIsFriendTyping] = useState(false);
-
-  const [loadingOlder, setLoadingOlder] = useState(false);
-  const [skip, setSkip] = useState(50); // Start at 50 because you already fetch 50
-  const [hasMore, setHasMore] = useState(true); // Assume there's more
+  const [skip, setSkip] = useState(50);
+  const [hasMore, setHasMore] = useState(true);
 
   const bottomRef = useRef(null);
-  const socketRef = useRef(null);
-  const location = useLocation();
-  const navigate = useNavigate();
   const messagesRef = useRef([]);
   const chatContainerRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
+  const location = useLocation();
+  const navigate = useNavigate();
   const {
     friendId,
     nickname,
@@ -48,10 +45,6 @@ export default function Chat() {
     const token = localStorage.getItem("token");
     const oldest = messages[0]?.createdAt;
 
-    // 🟨 Step 1: Capture current scroll position before update
-    const container = chatContainerRef.current;
-    const previousScrollTop = container.scrollTop;
-
     try {
       const response = await fetch(
         `https://authservice-xemo.onrender.com/messages/${yourUserId}/${friendId}?limit=50&before=${oldest}`,
@@ -68,17 +61,12 @@ export default function Chat() {
       if (older.length === 0) {
         setHasMore(false);
       } else {
-        // 🟩 Step 2: Prepend older messages
         setMessages((prev) => [...older, ...prev]);
-
-        // 🟦 Step 3: Adjust scroll to preserve position
         setTimeout(() => {
-          const newScrollHeight = container.scrollHeight;
-          const messageContainerHeight = container.clientHeight;
-
-          // 🟢 Keep the scroll position the same relative to the new messages
-          container.scrollTop =
-            newScrollHeight - messageContainerHeight - previousScrollTop;
+          const newScrollHeight = chatContainerRef.current.scrollHeight;
+          const containerHeight = chatContainerRef.current.clientHeight;
+          chatContainerRef.current.scrollTop =
+            newScrollHeight - containerHeight;
         }, 0);
       }
     } catch (err) {
@@ -96,35 +84,19 @@ export default function Chat() {
     const token = localStorage.getItem("token");
     if (!token || !friendId) return;
 
-    let decoded;
-    try {
-      decoded = JSON.parse(atob(token.split(".")[1]));
-    } catch (e) {
-      console.error("Failed to decode token:", e);
-      return;
-    }
-
-    const userId = decoded.userId;
-    setYourUserId(userId);
+    const decoded = JSON.parse(atob(token.split(".")[1]));
+    setYourUserId(decoded.userId);
 
     const fetchMessages = async () => {
       try {
         const response = await fetch(
-          `https://authservice-xemo.onrender.com/messages/${userId}/${friendId}?limit=50`,
+          `https://authservice-xemo.onrender.com/messages/${decoded.userId}/${friendId}?limit=50`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        if (!response.ok) {
-          throw new Error(`Fetch failed with status ${response.status}`);
-        }
-
         const data = await response.json();
         setMessages(data);
-        console.log("💬 Fetched messages:", data);
       } catch (err) {
         console.error("❌ Error fetching message history:", err);
       } finally {
@@ -136,135 +108,60 @@ export default function Chat() {
   }, [friendId]);
 
   useEffect(() => {
-    if (!friendId || !nickname) {
-      navigate("/", { replace: true });
-    }
+    if (!friendId || !nickname) navigate("/", { replace: true });
   }, []);
 
   useEffect(() => {
-    socketRef.current = new WebSocket(
-      "wss://websocket-service-30vz.onrender.com"
-    );
+    if (!socket) return;
 
-    socketRef.current.onopen = () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        socketRef.current.send(JSON.stringify({ type: "register", token }));
+    const handleMessage = (event) => {
+      const parsed = JSON.parse(event.data);
+      if (parsed.type === "typing" && parsed.senderId === friendId) {
+        setIsFriendTyping(true);
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsFriendTyping(false);
+        }, 3000);
+      } else if (parsed.type === "message" && parsed.senderId === friendId) {
+        setMessages((prev) => [...prev, parsed]);
       }
     };
 
-    socketRef.current.onerror = (error) => {
-      console.error("WebSocket error", error);
-      setWsStatus("WebSocket error, retrying...");
-    };
+    socket.addEventListener("message", handleMessage);
+    return () => socket.removeEventListener("message", handleMessage);
+  }, [socket, friendId]);
 
-    socketRef.current.onclose = (event) => {
-      console.log("WebSocket closed", event);
-      setWsStatus("WebSocket closed. Reconnecting...");
-      setTimeout(() => {
-        socketRef.current = new WebSocket(
-          "wss://websocket-service-30vz.onrender.com"
-        );
-      }, 3000);
-    };
-
-    socketRef.current.onmessage = (event) => {
-      const message = event.data;
-
-      const handleParsedMessage = (parsed) => {
-        console.log("📥 Parsed WebSocket message:", parsed);
-
-        if (parsed.type === "typing" && parsed.senderId === friendId) {
-          setIsFriendTyping(true);
-          setTimeout(() => {
-            setIsFriendTyping(false);
-          }, 3000);
-          return;
-        }
-        if (parsed.type === "message") {
-          const isDuplicate = messagesRef.current.some(
-            (msg) =>
-              (msg.tempId && parsed.tempId && msg.tempId === parsed.tempId) ||
-              (msg.createdAt === parsed.createdAt &&
-                msg.senderId === parsed.senderId &&
-                msg.message === parsed.message)
-          );
-          if (isDuplicate) {
-            console.log("🛑 Duplicate message skipped");
-            return;
-          }
-
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            { ...parsed, status: "sent" },
-          ]);
-        }
-      };
-
-      if (message instanceof Blob) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          try {
-            const parsed = JSON.parse(reader.result);
-            handleParsedMessage(parsed);
-          } catch (e) {
-            console.log("Error parsing message blob:", e);
-          }
-        };
-        reader.readAsText(message);
-      } else {
-        try {
-          const parsed = JSON.parse(message);
-          handleParsedMessage(parsed);
-        } catch (e) {
-          console.log("Error parsing message:", e);
-        }
-      }
-    };
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
-    };
-  }, []);
   const sendMessage = async () => {
     if (input.trim() === "") return;
-
     const token = localStorage.getItem("token");
-    if (!token) return;
-
     const tempId = Date.now();
-    const messageText = input; // ✅ Store value before it's cleared
     const createdAt = new Date().toISOString();
+    const messageText = input;
 
     const messageData = {
       senderId: yourUserId,
       receiverId: friendId,
       message: messageText,
-      createdAt: new Date().toISOString(),
+      createdAt,
       status: "sending",
       tempId,
     };
 
-    // 1. Optimistically add to UI
-    setMessages((prevMessages) => [...prevMessages, messageData]);
+    setMessages((prev) => [...prev, messageData]);
     setInput("");
 
-    // 2. Send via WebSocket
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(
         JSON.stringify({
           type: "message",
           token,
           receiverId: friendId,
           message: messageText,
-          createdAt: messageData.createdAt,
+          createdAt,
         })
       );
     }
 
-    // 3. Save to DB
     try {
       const response = await fetch(
         "https://authservice-xemo.onrender.com/sendMessage",
@@ -282,24 +179,30 @@ export default function Chat() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`Failed to save. Status: ${response.status}`);
-      }
-
       const saved = await response.json();
 
-      // 4. Update message status in UI
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
+      setMessages((prev) =>
+        prev.map((msg) =>
           msg.tempId === tempId ? { ...msg, status: "sent" } : msg
         )
       );
     } catch (err) {
       console.error("❌ Error saving to DB:", err);
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
+      setMessages((prev) =>
+        prev.map((msg) =>
           msg.tempId === tempId ? { ...msg, status: "failed" } : msg
         )
+      );
+    }
+  };
+
+  const sendTypingEvent = () => {
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          type: "typing",
+          to: friendId,
+        })
       );
     }
   };
@@ -310,26 +213,8 @@ export default function Chat() {
     }
   }, [messages, isFriendTyping]);
 
-  const typingTimeoutRef = useRef(null);
-
-  const sendTypingEvent = () => {
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(
-        JSON.stringify({
-          type: "typing",
-          to: friendId,
-        })
-      );
-    }
-
-    clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsFriendTyping(false);
-    }, 2000);
-  };
-
-  // Display the status next to the friend's name
   const statusClass = friendStatus === "online" ? "online" : "offline";
+
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="chat_user">
