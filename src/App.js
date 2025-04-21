@@ -30,11 +30,10 @@ function App() {
 
   useEffect(() => {
     console.log("Friend ID in Chat component:", friendId);
+    if (friendId) {
+      setActiveChatId(friendId);
+    }
   }, [friendId]);
-
-  useEffect(() => {
-    console.log("Messages in Chat component:", messages);
-  }, [messages]);
 
   // ✅ Setup WebSocket singleton
   useEffect(() => {
@@ -246,7 +245,6 @@ function App() {
                   sendMessage={sendMessage}
                   setMessages={setMessages}
                   setActiveChatId={setActiveChatId}
-                  friendId={friendId} // Pass friendId as prop to Chat component
                 />
               }
             />

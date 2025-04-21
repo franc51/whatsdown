@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 export default function Chat({ socket, setActiveChatId }) {
-  const { friendId } = useParams();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [yourUserId, setYourUserId] = useState(null);
@@ -20,15 +19,26 @@ export default function Chat({ socket, setActiveChatId }) {
   const chatContainerRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const messageHandlerRef = useRef(null);
-  const friendIdRef = useRef(friendId);
-
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     nickname,
     status: friendStatus,
     profilePicture,
   } = location.state || {};
+
+  const params = useParams();
+
+  const friendId = params.friendId || location.state?.friendId;
+  const friendIdRef = useRef(friendId);
+
+  useEffect(() => {
+    if (!friendId) {
+      console.warn("🚫 No friendId found. Redirecting...");
+      navigate("/");
+    }
+  }, [friendId]);
+  console.log("🧭 Resolved friendId:", friendId);
 
   useEffect(() => {
     console.log("🧩 Chat component mounted");
@@ -209,6 +219,7 @@ export default function Chat({ socket, setActiveChatId }) {
     setMessages((prev) => [...prev, messageData]);
     setInput("");
 
+    // Check if WebSocket is open before sending
     if (socket?.readyState === WebSocket.OPEN) {
       socket.send(
         JSON.stringify({
@@ -219,6 +230,8 @@ export default function Chat({ socket, setActiveChatId }) {
           createdAt,
         })
       );
+    } else {
+      console.warn("❌ WebSocket not open");
     }
 
     try {
