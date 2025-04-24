@@ -13,6 +13,7 @@ export default function Chat({ socket, setActiveChatId }) {
   const [skip, setSkip] = useState(50);
   const [hasMore, setHasMore] = useState(true);
   const yourUserIdRef = useRef(null);
+  const friendIdRef = useRef(null);
 
   const bottomRef = useRef(null);
   const messagesRef = useRef([]);
@@ -25,20 +26,13 @@ export default function Chat({ socket, setActiveChatId }) {
     nickname,
     status: friendStatus,
     profilePicture,
+    wsConnected,
   } = location.state || {};
 
   const params = useParams();
 
-  const friendId = params.friendId || location.state?.friendId;
-  const friendIdRef = useRef(friendId);
-
-  useEffect(() => {
-    if (!friendId) {
-      console.warn("🚫 No friendId found. Redirecting...");
-      navigate("/");
-    }
-  }, [friendId]);
-  console.log("🧭 Resolved friendId:", friendId);
+  const { friendId: paramFriendId } = useParams();
+  const friendId = paramFriendId || location.state?.friendId;
 
   useEffect(() => {
     console.log("🧩 Chat component mounted");
@@ -202,6 +196,7 @@ export default function Chat({ socket, setActiveChatId }) {
 
   const sendMessage = async () => {
     if (input.trim() === "") return;
+
     const token = localStorage.getItem("token");
     const tempId = Date.now();
     const createdAt = new Date().toISOString();
@@ -219,8 +214,9 @@ export default function Chat({ socket, setActiveChatId }) {
     setMessages((prev) => [...prev, messageData]);
     setInput("");
 
-    // Check if WebSocket is open before sending
-    if (socket?.readyState === WebSocket.OPEN) {
+    // Check if WebSocket is defined and open
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      console.log("WebSocket readyState:", socket.readyState); // Log the readyState for debugging
       socket.send(
         JSON.stringify({
           type: "message",
@@ -231,10 +227,11 @@ export default function Chat({ socket, setActiveChatId }) {
         })
       );
     } else {
-      console.warn("❌ WebSocket not open");
+      console.warn("❌ WebSocket is not open or socket is undefined");
     }
 
     try {
+      // Send message to the server to save in the database
       const response = await fetch(
         "https://authservice-xemo.onrender.com/sendMessage",
         {
@@ -253,6 +250,7 @@ export default function Chat({ socket, setActiveChatId }) {
 
       const saved = await response.json();
 
+      // Update message status to 'sent' after the server confirms it is saved
       setMessages((prev) =>
         prev.map((msg) =>
           msg.tempId === tempId ? { ...msg, status: "sent" } : msg
@@ -260,6 +258,8 @@ export default function Chat({ socket, setActiveChatId }) {
       );
     } catch (err) {
       console.error("❌ Error saving to DB:", err);
+
+      // Update message status to 'failed' in case of an error
       setMessages((prev) =>
         prev.map((msg) =>
           msg.tempId === tempId ? { ...msg, status: "failed" } : msg
@@ -278,7 +278,16 @@ export default function Chat({ socket, setActiveChatId }) {
       );
     }
   };
+  useEffect(() => {
+    if (!socket) {
+      console.warn("❌ Socket is not passed to the Chat component");
+      return;
+    }
 
+    console.log("✅ Socket is passed to Chat component:", socket);
+
+    // Handle WebSocket events, like 'message', etc.
+  }, [socket]); // Effect to check socket once it's passed
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -286,6 +295,11 @@ export default function Chat({ socket, setActiveChatId }) {
   }, [messages, isFriendTyping]);
 
   const statusClass = friendStatus === "online" ? "online" : "offline";
+  useEffect(() => {
+    if (socket) {
+      console.log("WebSocket readyState:", socket.readyState); // This will show the state of the WebSocket connection
+    }
+  }, [socket]); // The effect runs whenever 'socket' state changes
 
   return (
     <div className="homepage_chat_list_openedChat">

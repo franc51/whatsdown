@@ -15,6 +15,7 @@ import Account from "./Components/Account/account.jsx";
 import Login from "./Components/Login/login.jsx";
 
 function App() {
+  const [wsConnected, setWsConnected] = useState(false);
   const { friendId } = useParams(); // Using useParams to grab friendId from URL
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -39,18 +40,17 @@ function App() {
   useEffect(() => {
     const setupWebSocket = () => {
       const token = localStorage.getItem("token");
-      console.log("Sending token to WebSocket:", token);
       if (!token) {
         console.log("❌ No token found, WebSocket setup aborted");
         return;
       }
 
-      console.log("✅ Setting up WebSocket connection...");
       const ws = new WebSocket("wss://websocket-service-30vz.onrender.com");
       socketRef.current = ws;
 
       ws.onopen = () => {
         console.log("✅ WebSocket connected");
+        setWsConnected(true); // Update WebSocket connection status to open
         const token = localStorage.getItem("token");
         if (token) {
           console.log("Sending registration message with token");
@@ -59,69 +59,52 @@ function App() {
       };
 
       ws.onmessage = (event) => {
-        console.log("📥 WebSocket message received:", event.data);
         const msg = event.data;
-
         const handleParsed = (parsed) => {
           if (parsed.type === "typing") {
-            console.log("💬 Typing status received:", parsed);
             if (parsed.fromId === activeChatId) {
               setIsFriendTyping(true);
               setTimeout(() => setIsFriendTyping(false), 3000);
             }
           }
           if (parsed.type === "message") {
-            console.log("💬 Message received:", parsed);
             setMessages((prev) => [...prev, parsed]);
           }
           if (parsed.type === "status") {
-            console.log("👤 Status update:", parsed);
             const { userId, status } = parsed;
             setOnlineUsers((prev) => ({
               ...prev,
               [userId]: status,
             }));
           }
-          if (parsed.type === "onlineUsers") {
-            console.log("👥 Online users update:", parsed);
-            const online = {};
-            parsed.userIds.forEach((id) => {
-              online[id] = "online";
-            });
-            setOnlineUsers((prev) => ({ ...prev, ...online }));
-          }
         };
 
-        // Check if the message is a blob (binary data)
         if (msg instanceof Blob) {
-          console.log("⚠️ Received Blob data, parsing...");
           const reader = new FileReader();
           reader.onload = () => handleParsed(JSON.parse(reader.result));
           reader.readAsText(msg);
         } else {
-          console.log("🔍 Parsing JSON message...");
           handleParsed(JSON.parse(msg));
         }
       };
 
       ws.onerror = (error) => {
         console.error("❌ WebSocket error:", error);
-        setTimeout(setupWebSocket, 3000); // reconnect
+        setWsConnected(false); // Update connection status on error
+        setTimeout(setupWebSocket, 3000); // Try to reconnect
       };
 
       ws.onclose = () => {
         console.log("🔌 WebSocket closed. Reconnecting...");
-        setTimeout(setupWebSocket, 3000); // reconnect
+        setWsConnected(false); // Update connection status on close
+        setTimeout(setupWebSocket, 3000); // Try to reconnect
       };
     };
 
-    // Set up the WebSocket only once
     setupWebSocket();
 
-    // Cleanup the WebSocket connection on component unmount
     return () => {
       if (socketRef.current) {
-        console.log("❌ Cleaning up WebSocket connection...");
         socketRef.current.close();
       }
     };
@@ -240,11 +223,13 @@ function App() {
               path="/chat/:friendId" // This is where friendId is captured from the URL
               element={
                 <Chat
+                  socket={socketRef.current}
                   messages={messages}
                   isFriendTyping={isFriendTyping}
                   sendMessage={sendMessage}
                   setMessages={setMessages}
                   setActiveChatId={setActiveChatId}
+                  wsConnected={wsConnected}
                 />
               }
             />
