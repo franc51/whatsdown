@@ -280,6 +280,7 @@ app.post("/sendMessage", async (req, res) => {
       receiverId,
       message,
       createdAt,
+      isUnread: true,
     });
 
     // If message insertion fails, return an error
@@ -294,6 +295,7 @@ app.post("/sendMessage", async (req, res) => {
         $set: {
           "friends.$.lastMessage": message,
           "friends.$.lastMessageTime": createdAt,
+          "friends.$.isUnread": true,
         },
       }
     );
@@ -312,6 +314,7 @@ app.post("/sendMessage", async (req, res) => {
         $set: {
           "friends.$.lastMessage": message,
           "friends.$.lastMessageTime": createdAt,
+          "friends.$.isUnread": true,
         },
       }
     );
@@ -331,6 +334,7 @@ app.post("/sendMessage", async (req, res) => {
         receiverId,
         message,
         createdAt,
+        isUnread,
       },
     });
   } catch (err) {
