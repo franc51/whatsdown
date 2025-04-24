@@ -35,6 +35,11 @@ export default function Chat({ socket, setActiveChatId }) {
   const friendId = paramFriendId || location.state?.friendId;
 
   useEffect(() => {
+    friendIdRef.current = friendId;
+    yourUserIdRef.current = yourUserId;
+  }, [friendId, yourUserId]);
+
+  useEffect(() => {
     console.log("🧩 Chat component mounted");
   }, []);
 
@@ -124,11 +129,6 @@ export default function Chat({ socket, setActiveChatId }) {
 
     fetchMessages();
   }, [friendId]);
-
-  useEffect(() => {
-    friendIdRef.current = friendId;
-    yourUserIdRef.current = yourUserId;
-  }, [friendId, yourUserId]);
 
   useEffect(() => {
     if (!socket || !friendIdRef.current || !yourUserIdRef.current) return;
