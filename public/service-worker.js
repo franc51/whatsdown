@@ -17,7 +17,7 @@ self.addEventListener("push", (event) => {
   const data = event.data ? event.data.json() : {}; // Parse the push event data
 
   const options = {
-    body: data.body || "You have a new message", // Default message if none provided
+    body: data.body || "Someone sent you a message", // Default message if none provided
     icon: data.icon || "/default-icon.png", // Default icon if none provided
     badge: data.badge || "/default-badge.png", // Default badge if none provided
     data: data.url || "/", // URL to navigate to when the notification is clicked
@@ -30,15 +30,21 @@ self.addEventListener("push", (event) => {
     currentNotification.close(); // Close the previous notification
     // Recreate the notification with updated body
     event.waitUntil(
-      self.registration.showNotification(data.title || "New message", {
-        ...options,
-        body: currentNotification.body,
-      })
+      self.registration.showNotification(
+        data.title || "Someone sent you a message",
+        {
+          ...options,
+          body: currentNotification.body,
+        }
+      )
     );
   } else {
     // If no existing notification, show a new one
     event.waitUntil(
-      self.registration.showNotification(data.title || "New message", options)
+      self.registration.showNotification(
+        data.title || "Someone sent you a message",
+        options
+      )
     );
   }
 
