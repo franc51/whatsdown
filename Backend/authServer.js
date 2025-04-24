@@ -479,24 +479,44 @@ app.put("/markMessagesRead/:userId/:friendId", async (req, res) => {
   const { userId, friendId } = req.params;
 
   try {
-    // Mark all unread messages as read for this conversation
-    const result = await db.collection("messages").updateMany(
+    // Update the sender's friend entry to mark messages as read
+    const senderUpdateResult = await db.collection("users").updateOne(
+      { _id: new ObjectId(userId), "friends._id": new ObjectId(friendId) },
       {
-        senderId: friendId,
-        receiverId: userId,
-        isUnread: true, // Only update unread messages
-      },
-      { $set: { isUnread: false } }
+        $set: {
+          "friends.$.isUnread": false,
+        },
+      }
     );
 
-    if (result.modifiedCount > 0) {
-      res.status(200).send({ message: "Messages marked as read" });
-    } else {
-      res.status(404).send({ message: "No unread messages found" });
+    // If the sender update fails, return an error
+    if (senderUpdateResult.matchedCount === 0) {
+      return res
+        .status(500)
+        .json({ message: "Failed to update sender's last message" });
     }
+
+    // Update the receiver's friend entry to mark messages as read
+    const receiverUpdateResult = await db.collection("users").updateOne(
+      { _id: new ObjectId(friendId), "friends._id": new ObjectId(userId) },
+      {
+        $set: {
+          "friends.$.isUnread": false,
+        },
+      }
+    );
+
+    // If the receiver update fails, return an error
+    if (receiverUpdateResult.matchedCount === 0) {
+      return res
+        .status(500)
+        .json({ message: "Failed to update receiver's last message" });
+    }
+
+    res.status(200).json({ message: "Messages marked as read successfully" });
   } catch (err) {
-    console.error("❌ Error marking messages as read:", err);
-    res.status(500).send({ error: "Failed to mark messages as read" });
+    console.error("Error marking messages as read:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
