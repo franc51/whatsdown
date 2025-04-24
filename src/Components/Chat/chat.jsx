@@ -200,30 +200,20 @@ export default function Chat({ socket, setActiveChatId }) {
             if (
               isFromFriendToYou &&
               document.visibilityState !== "visible" &&
-              Notification.permission === "granted"
+              Notification.permission === "granted" &&
+              "serviceWorker" in navigator
             ) {
-              if ("serviceWorker" in navigator) {
-                navigator.serviceWorker.ready.then((registration) => {
-                  registration.showNotification(
-                    `New message from ${nickname}`,
-                    {
-                      body: parsed.message,
-                      icon: profilePicture
-                        ? `https://authservice-xemo.onrender.com${profilePicture}`
-                        : "https://xsgames.co/randomusers/avatar.php?g=female",
-                      vibrate: [100, 50, 100],
-                      data: { url: window.location.href },
-                    }
-                  );
-                });
-              } else {
-                new Notification(`New message from ${nickname}`, {
+              navigator.serviceWorker.ready.then((registration) => {
+                registration.showNotification(`New message from ${nickname}`, {
                   body: parsed.message,
                   icon: profilePicture
                     ? `https://authservice-xemo.onrender.com${profilePicture}`
                     : "https://xsgames.co/randomusers/avatar.php?g=female",
+                  data: {
+                    url: `/chat/${friendIdRef.current}`,
+                  },
                 });
-              }
+              });
             }
 
             // If it's from the friend to you, it should be marked as unread
