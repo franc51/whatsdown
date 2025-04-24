@@ -157,16 +157,12 @@ img {
   height: 10rem;
 }
 .chat_isTyping {
-  font-size: 0.9rem;
   display: flex;
   justify-content: flex-start;
   background-color: #8d4bcebb;
-  border-radius: 0.5rem;
-  color: white;
-  padding-left: 1rem !important;
-  padding: 0.3rem 0.4rem;
-  margin: 0.3rem;
-  border-radius: 0.5rem;
+  padding-left: 0.5rem !important;
+  margin: 0.1rem;
+  border-radius: 2rem;
   border-top-left-radius: 0;
 }
 

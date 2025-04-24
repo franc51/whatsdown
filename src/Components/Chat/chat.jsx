@@ -154,7 +154,7 @@ export default function Chat({ socket, setActiveChatId }) {
           typingTimeoutRef.current = setTimeout(() => {
             setIsFriendTyping(false);
             console.log("⌛ Typing timeout expired.");
-          }, 3000);
+          }, 1000);
         } else if (parsed.type === "message") {
           const isFromFriendToYou =
             parsed.senderId === friendIdRef.current &&
