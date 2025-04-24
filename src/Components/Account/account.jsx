@@ -76,7 +76,9 @@ export default function Account() {
           profilePicture: `https://authservice-xemo.onrender.com${data.url}`,
         }));
       } else {
-        setMessage(`Failed to upload picture: ${data.message || "Unknown error"}`);
+        setMessage(
+          `Failed to upload picture: ${data.message || "Unknown error"}`
+        );
       }
     } catch (err) {
       setMessage(`Error uploading profile picture: ${err.message}`);
@@ -109,19 +111,25 @@ export default function Account() {
 
       <div className="homepage_nav">
         <button
-          className={`homepage_chats link ${activeTab === "chats" ? "active_link" : ""}`}
+          className={`homepage_chats link ${
+            activeTab === "chats" ? "active_link" : ""
+          }`}
           onClick={(e) => handleTabChange(e, "chats")}
         >
           User
         </button>
         <button
-          className={`homepage_groups link ${activeTab === "groups" ? "active_link" : ""}`}
+          className={`homepage_groups link ${
+            activeTab === "groups" ? "active_link" : ""
+          }`}
           onClick={(e) => handleTabChange(e, "groups")}
         >
           Chat
         </button>
         <button
-          className={`homepage_contacts link ${activeTab === "addChat" ? "active_link" : ""}`}
+          className={`homepage_contacts link ${
+            activeTab === "addChat" ? "active_link" : ""
+          }`}
           onClick={(e) => handleTabChange(e, "addChat")}
         >
           Style

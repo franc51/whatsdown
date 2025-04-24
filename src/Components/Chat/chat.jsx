@@ -30,14 +30,27 @@ export default function Chat({ socket, setActiveChatId }) {
   } = location.state || {};
 
   const params = useParams();
-
-  const { friendId: paramFriendId } = useParams();
-  const friendId = paramFriendId || location.state?.friendId;
+  const friendId = params.friendId || location.state?.friendId;
 
   useEffect(() => {
     friendIdRef.current = friendId;
     yourUserIdRef.current = yourUserId;
   }, [friendId, yourUserId]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const token = localStorage.getItem("token");
+
+    const register = () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: "register", token }));
+        console.log("✅ Sent registration message on open");
+      }
+    };
+
+    socket.addEventListener("open", register);
+    return () => socket.removeEventListener("open", register);
+  }, [socket]);
 
   useEffect(() => {
     console.log("🧩 Chat component mounted");

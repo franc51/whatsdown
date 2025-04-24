@@ -16,7 +16,7 @@ import Login from "./Components/Login/login.jsx";
 
 function App() {
   const [wsConnected, setWsConnected] = useState(false);
-  const { friendId } = useParams(); // Using useParams to grab friendId from URL
+  const { friendId } = useParams();
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -230,6 +230,7 @@ function App() {
                   setMessages={setMessages}
                   setActiveChatId={setActiveChatId}
                   wsConnected={wsConnected}
+                  onlineUsers={onlineUsers}
                 />
               }
             />

@@ -46,8 +46,11 @@ wss.on("connection", (socket) => {
         const userId = decoded.userId;
         connectedUsers[userId] = socket;
         console.log(`✅ Registered user ${userId}`);
+
         broadcastStatus(userId, "online", socket);
         sendOnlineUsersList(userId);
+        broadcastOnlineUsers(userId); // ✅ Broadcast to others
+
         return;
       }
 
@@ -120,6 +123,7 @@ wss.on("connection", (socket) => {
         delete connectedUsers[userId];
         console.log(`🔌 User ${userId} disconnected`);
         broadcastStatus(userId, "offline");
+        broadcastOnlineUsers(); // ✅ Notify all clients of updated list
         break;
       }
     }
@@ -136,6 +140,22 @@ function sendOnlineUsersList(newUserId) {
   const newUserSocket = connectedUsers[newUserId];
   if (newUserSocket && newUserSocket.readyState === WebSocket.OPEN) {
     newUserSocket.send(onlineMessage);
+  }
+}
+
+function broadcastOnlineUsers(excludeUserId = null) {
+  const onlineUsers = Object.keys(connectedUsers);
+  const message = JSON.stringify({
+    type: "onlineUsers",
+    userIds: onlineUsers,
+  });
+
+  for (const id in connectedUsers) {
+    if (id === excludeUserId) continue;
+    const socket = connectedUsers[id];
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(message);
+    }
   }
 }
 
