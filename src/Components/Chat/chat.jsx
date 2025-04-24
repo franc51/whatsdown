@@ -197,19 +197,35 @@ export default function Chat({ socket, setActiveChatId }) {
             setMessages((prev) => [...prev, updatedMessage]);
             console.log("✅ Message added to UI.");
 
-            // 🎯 Show notification ONLY if it's from your friend AND page is not visible
             if (
               isFromFriendToYou &&
               document.visibilityState !== "visible" &&
               Notification.permission === "granted"
             ) {
-              new Notification(`New message from ${nickname}`, {
-                body: parsed.message,
-                icon: profilePicture
-                  ? `https://authservice-xemo.onrender.com${profilePicture}`
-                  : "https://xsgames.co/randomusers/avatar.php?g=female",
-              });
+              if ("serviceWorker" in navigator) {
+                navigator.serviceWorker.ready.then((registration) => {
+                  registration.showNotification(
+                    `New message from ${nickname}`,
+                    {
+                      body: parsed.message,
+                      icon: profilePicture
+                        ? `https://authservice-xemo.onrender.com${profilePicture}`
+                        : "https://xsgames.co/randomusers/avatar.php?g=female",
+                      vibrate: [100, 50, 100],
+                      data: { url: window.location.href },
+                    }
+                  );
+                });
+              } else {
+                new Notification(`New message from ${nickname}`, {
+                  body: parsed.message,
+                  icon: profilePicture
+                    ? `https://authservice-xemo.onrender.com${profilePicture}`
+                    : "https://xsgames.co/randomusers/avatar.php?g=female",
+                });
+              }
             }
+
             // If it's from the friend to you, it should be marked as unread
             if (isFromFriendToYou) {
               console.log("📥 New unread message from your friend");
