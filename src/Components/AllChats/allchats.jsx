@@ -16,6 +16,7 @@ export default function AllChats({ friends, onlineUsers, loading, error }) {
       },
     });
   };
+  console.log("🧪 onlineUsers object:", onlineUsers);
 
   return (
     <div className="homepage_chat_list">

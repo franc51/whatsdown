@@ -77,6 +77,13 @@ function App() {
               [userId]: status,
             }));
           }
+          if (parsed.type === "onlineUsers") {
+            const onlineMap = {};
+            parsed.userIds.forEach((id) => {
+              onlineMap[id] = "online";
+            });
+            setOnlineUsers((prev) => ({ ...prev, ...onlineMap }));
+          }
         };
 
         if (msg instanceof Blob) {
