@@ -264,7 +264,7 @@ app.post("/deleteFriend", async (req, res) => {
 });
 
 app.post("/sendMessage", async (req, res) => {
-  const { senderId, receiverId, message } = req.body;
+  const { senderId, receiverId, message, isUnread } = req.body;
 
   // Validate the inputs
   if (!senderId || !receiverId || !message || typeof message !== "string") {

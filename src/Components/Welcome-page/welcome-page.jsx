@@ -10,9 +10,9 @@ export default function WelcomePage() {
   return (
     <div className="homepage">
       <div className="homepage_user_welcome">
-          <img alt="logo" className="logo" src="Images/whatsdown-logo.png"></img>
-          <h3>Welcome</h3>
-          <h4>To start chatting create a new account</h4>
+        <img alt="logo" className="logo" src="Images/whatsdown-logo.png"></img>
+        <h3>Welcome</h3>
+        <h4>To start chatting create a new account or log in.</h4>
       </div>
 
       {/* Navigation Tabs */}
