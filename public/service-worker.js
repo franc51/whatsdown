@@ -7,6 +7,8 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   console.log("Service Worker Activated");
+  // Claim clients to ensure the service worker controls all open windows/tabs
+  event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener("push", (event) => {
@@ -40,14 +42,13 @@ self.addEventListener("push", (event) => {
     );
   }
 
-  // Store the current notification object
+  // Store the current notification object (just for tracking purposes)
   currentNotification = {
     ...options,
     body: options.body,
   };
 });
 
-// Handle the user clicking the notification
 self.addEventListener("notificationclick", (event) => {
   console.log("Notification clicked", event.notification);
 

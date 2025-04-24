@@ -26,7 +26,6 @@ function App() {
   const [friendsLoading, setFriendsLoading] = useState(true);
   const [friendsError, setFriendsError] = useState("");
   const [activeChatId, setActiveChatId] = useState(null);
-
   const socketRef = useRef(null);
 
   useEffect(() => {
@@ -69,6 +68,22 @@ function App() {
           }
           if (parsed.type === "message") {
             setMessages((prev) => [...prev, parsed]);
+
+            // Handle notification when on homepage or background
+            if (
+              document.visibilityState === "hidden" &&
+              Notification.permission === "granted"
+            ) {
+              navigator.serviceWorker.ready.then((registration) => {
+                registration.showNotification("New message", {
+                  body: parsed.content,
+                  icon: "default-avatar.png", // Set a default icon
+                  data: {
+                    url: `/chat/${parsed.senderId}`,
+                  },
+                });
+              });
+            }
           }
           if (parsed.type === "status") {
             const { userId, status } = parsed;
