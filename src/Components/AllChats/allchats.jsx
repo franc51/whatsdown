@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function AllChats({ onlineUsers, loading, error }) {
   const [friends, setFriends] = useState([]);
+  const [userId, setUserId] = useState(null); // State to hold the userId
   const navigate = useNavigate();
 
   // Fetch user info and set friends
@@ -32,6 +33,7 @@ export default function AllChats({ onlineUsers, loading, error }) {
 
       const data = await response.json();
       const user = data.user;
+      setUserId(user._id); // Set userId in state
 
       // Sort friends by createdAt or lastMessageTime
       const sortedFriends = user.friends.sort((a, b) => {
@@ -57,8 +59,44 @@ export default function AllChats({ onlineUsers, loading, error }) {
     fetchUserInfo(); // Fetch user info when the component mounts
   }, []);
 
-  const goToChat = (friendId, nickname, profilePicture) => {
+  const goToChat = async (friendId, nickname, profilePicture) => {
     const status = onlineUsers[friendId] === "online" ? "online" : "offline";
+
+    if (!userId) {
+      console.error("User ID is not available");
+      return;
+    }
+
+    // Make the API call to mark messages as read
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const response = await fetch(
+          `https://authservice-xemo.onrender.com/markMessagesRead/${userId}/${friendId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to mark messages as read");
+        }
+
+        // Update the friends list state to set `isUnread` to false for this friend
+        setFriends((prevFriends) =>
+          prevFriends.map((friend) =>
+            friend._id === friendId ? { ...friend, isUnread: false } : friend
+          )
+        );
+      } catch (err) {
+        console.error("Error marking messages as read:", err);
+      }
+    }
+
+    // Navigate to the chat
     navigate(`/chat/${friendId}`, {
       state: {
         friendId,

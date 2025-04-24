@@ -330,45 +330,6 @@ export default function Chat({ socket, setActiveChatId }) {
     }
   }, [socket]); // The effect runs whenever 'socket' state changes
 
-  useEffect(() => {
-    if (!socket || !friendId || !yourUserId) return;
-
-    // Mark all unread messages as read when the chat is opened
-    const markMessagesAsRead = async () => {
-      try {
-        const response = await fetch(
-          `https://authservice-xemo.onrender.com/markMessagesRead/${yourUserId}/${friendId}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        if (!response.ok)
-          throw new Error(
-            `Failed to mark messages as read: ${response.status}`
-          );
-
-        // Optimistically update local state to reflect the changes
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.isUnread && msg.receiverId === yourUserId
-              ? { ...msg, isUnread: false }
-              : msg
-          )
-        );
-
-        console.log("✅ Marked all messages as read");
-      } catch (err) {
-        console.error("❌ Error marking messages as read:", err);
-      }
-    };
-
-    markMessagesAsRead();
-  }, [friendId, yourUserId]);
-
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="chat_user">
