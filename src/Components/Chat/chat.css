@@ -216,3 +216,7 @@ img {
 .homepage_chat_profile_lastMessage {
   overflow: unset;
 }
+.messageBubble.unread {
+  font-weight: bold;
+  color: #000;
+}

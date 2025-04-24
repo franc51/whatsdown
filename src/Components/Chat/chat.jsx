@@ -132,7 +132,7 @@ export default function Chat({ socket, setActiveChatId }) {
           }
         );
         const data = await response.json();
-        setMessages(data);
+        setMessages(data.map((msg) => ({ ...msg, isUnread: false })));
       } catch (err) {
         console.error("❌ Error fetching message history:", err);
       } finally {
@@ -150,6 +150,8 @@ export default function Chat({ socket, setActiveChatId }) {
       try {
         const parsed = JSON.parse(event.data);
         console.log("📥 WS received:", parsed);
+
+        const { senderId, receiverId, type } = parsed;
         console.log(
           "👤 You (userId):",
           yourUserIdRef.current,
@@ -157,34 +159,48 @@ export default function Chat({ socket, setActiveChatId }) {
           friendIdRef.current
         );
 
-        if (
-          parsed.type === "typing" &&
-          parsed.senderId === friendIdRef.current
-        ) {
+        // Handle typing event
+        if (type === "typing" && senderId === friendIdRef.current) {
           console.log("✏️ Friend is typing...");
           setIsFriendTyping(true);
+
           clearTimeout(typingTimeoutRef.current);
           typingTimeoutRef.current = setTimeout(() => {
             setIsFriendTyping(false);
             console.log("⌛ Typing timeout expired.");
           }, 1000);
-        } else if (parsed.type === "message") {
+
+          // Handle message event
+        } else if (type === "message") {
           const isFromFriendToYou =
-            parsed.senderId === friendIdRef.current &&
-            parsed.receiverId === yourUserIdRef.current;
+            senderId === friendIdRef.current &&
+            receiverId === yourUserIdRef.current;
           const isFromYouToFriend =
-            parsed.senderId === yourUserIdRef.current &&
-            parsed.receiverId === friendIdRef.current;
+            senderId === yourUserIdRef.current &&
+            receiverId === friendIdRef.current;
 
           console.log(
-            `📨 Incoming message | From: ${parsed.senderId} To: ${
-              parsed.receiverId
-            } | Match: ${isFromFriendToYou || isFromYouToFriend}`
+            `📨 Incoming message | From: ${senderId} To: ${receiverId} | Match: ${
+              isFromFriendToYou || isFromYouToFriend
+            }`
           );
 
+          // If the message is part of the current chat, add it
           if (isFromFriendToYou || isFromYouToFriend) {
-            setMessages((prev) => [...prev, parsed]);
+            // Mark the message as unread if it's a new incoming message (and not sent by you)
+            const updatedMessage = {
+              ...parsed,
+              isUnread: senderId !== yourUserIdRef.current,
+            };
+
+            // Add new message to the chat history
+            setMessages((prev) => [...prev, updatedMessage]);
             console.log("✅ Message added to UI.");
+
+            // If it's from the friend to you, it should be marked as unread
+            if (isFromFriendToYou) {
+              console.log("📥 New unread message from your friend");
+            }
           } else {
             console.log("🚫 Message ignored (not part of current chat).");
           }
@@ -195,8 +211,8 @@ export default function Chat({ socket, setActiveChatId }) {
     };
 
     messageHandlerRef.current = handleMessage;
-
     console.log("🧲 Setting up socket message listener");
+
     socket.addEventListener("message", handleMessage);
 
     return () => {
@@ -205,7 +221,7 @@ export default function Chat({ socket, setActiveChatId }) {
         socket.removeEventListener("message", messageHandlerRef.current);
       }
     };
-  }, [socket]);
+  }, [socket, friendIdRef.current, yourUserIdRef.current]);
 
   const sendMessage = async () => {
     if (input.trim() === "") return;
@@ -314,6 +330,45 @@ export default function Chat({ socket, setActiveChatId }) {
     }
   }, [socket]); // The effect runs whenever 'socket' state changes
 
+  useEffect(() => {
+    if (!socket || !friendId || !yourUserId) return;
+
+    // Mark all unread messages as read when the chat is opened
+    const markMessagesAsRead = async () => {
+      try {
+        const response = await fetch(
+          `https://authservice-xemo.onrender.com/markMessagesRead/${yourUserId}/${friendId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        if (!response.ok)
+          throw new Error(
+            `Failed to mark messages as read: ${response.status}`
+          );
+
+        // Optimistically update local state to reflect the changes
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.isUnread && msg.receiverId === yourUserId
+              ? { ...msg, isUnread: false }
+              : msg
+          )
+        );
+
+        console.log("✅ Marked all messages as read");
+      } catch (err) {
+        console.error("❌ Error marking messages as read:", err);
+      }
+    };
+
+    markMessagesAsRead();
+  }, [friendId, yourUserId]);
+
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="chat_user">
@@ -328,7 +383,7 @@ export default function Chat({ socket, setActiveChatId }) {
             src={
               profilePicture
                 ? `https://authservice-xemo.onrender.com${profilePicture}`
-                : "/Images/human.png"
+                : "https://xsgames.co/randomusers/avatar.php?g=female"
             }
           />
           <div className={`statusIndicator_chat ${statusClass}`}></div>

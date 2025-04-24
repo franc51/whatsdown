@@ -81,7 +81,7 @@ app.post("/signup", async (req, res) => {
       phone,
       password: hashedPassword,
       friends: [],
-      profilePicture: "https://avatar.iran.liara.run/public",
+      profilePicture,
     };
 
     // Store user in MongoDB
@@ -468,6 +468,31 @@ app.get("/messages/:user1/:user2", async (req, res) => {
   } catch (err) {
     console.error("Error fetching messages:", err);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.put("/markMessagesRead/:userId/:friendId", async (req, res) => {
+  const { userId, friendId } = req.params;
+
+  try {
+    // Mark all unread messages as read for this conversation
+    const result = await db.collection("messages").updateMany(
+      {
+        senderId: friendId,
+        receiverId: userId,
+        isUnread: true, // Only update unread messages
+      },
+      { $set: { isUnread: false } }
+    );
+
+    if (result.modifiedCount > 0) {
+      res.status(200).send({ message: "Messages marked as read" });
+    } else {
+      res.status(404).send({ message: "No unread messages found" });
+    }
+  } catch (err) {
+    console.error("❌ Error marking messages as read:", err);
+    res.status(500).send({ error: "Failed to mark messages as read" });
   }
 });
 

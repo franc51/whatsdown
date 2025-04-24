@@ -84,6 +84,7 @@ wss.on("connection", (socket) => {
           message: text,
           createdAt: new Date(),
           tempId,
+          isUnread: receiverId !== senderId, // Mark as unread if the sender is not the receiver
         };
 
         const messageToSend = JSON.stringify(message);

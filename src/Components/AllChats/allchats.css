@@ -77,3 +77,24 @@
   align-items: center;
   text-align: center;
 }
+.boldMessage {
+  font-weight: bold;
+}
+
+.unreadIndicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.unreadBubble {
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+}

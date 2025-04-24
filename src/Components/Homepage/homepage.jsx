@@ -159,7 +159,7 @@ export default function Homepage({ friends, onlineUsers, loading, error }) {
       </div>
 
       <div>
-        <h2>Stories will show here</h2>
+        <h4>Stories will show here</h4>
       </div>
       <div className="homepage_nav">
         <button
