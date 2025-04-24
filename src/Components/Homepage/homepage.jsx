@@ -52,6 +52,51 @@ export default function Homepage({ friends, onlineUsers, loading, error }) {
     setActiveTab(tabName); // Set the active tab
   };
 
+  // Handle the "Delete Friend" button click
+  const handleDeleteFriend = async () => {
+    if (friendPhone.length !== 10 || !/^\d+$/.test(friendPhone)) {
+      setMessage("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token"); // Retrieve token from localStorage
+
+      if (!token) {
+        setMessage("You must be logged in to delete friends.");
+        return;
+      }
+
+      const response = await fetch(
+        "https://authservice-xemo.onrender.com/deleteFriend", // Update with actual endpoint
+        {
+          method: "POST", // Or DELETE depending on your backend
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
+          },
+          body: JSON.stringify({
+            friendPhoneNumber: friendPhone,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage("Friend deleted successfully!");
+        setFriendPhone(""); // Clear the input after success
+      } else {
+        setMessage(data.message || "An error occurred. Please try again.");
+      }
+    } catch (err) {
+      setMessage("An error occurred. Please try again.");
+    }
+
+    // Clear message after 5 seconds
+    setTimeout(() => setMessage(""), 5000);
+  };
+
   // Handle the "Add Friend" button click
   const handleAddFriend = async () => {
     if (friendPhone.length !== 10 || !/^\d+$/.test(friendPhone)) {
@@ -179,7 +224,10 @@ export default function Homepage({ friends, onlineUsers, loading, error }) {
                 onChange={(e) => setFriendPhone(e.target.value)}
                 maxLength={10}
               />
-              <button className="deleteFriend_btn btn_style"></button>
+              <button
+                className="deleteFriend_btn btn_style"
+                onClick={handleDeleteFriend}
+              ></button>
             </div>
             {message && <p>{message}</p>}
           </div>

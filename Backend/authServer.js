@@ -81,6 +81,7 @@ app.post("/signup", async (req, res) => {
       phone,
       password: hashedPassword,
       friends: [],
+      profilePicture: "https://avatar.iran.liara.run/public",
     };
 
     // Store user in MongoDB
@@ -195,6 +196,69 @@ app.post("/addFriend", async (req, res) => {
     res.status(200).json({ message: "Friend added successfully" });
   } catch (err) {
     console.error("Error adding friend:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Delete Friend Route
+app.post("/deleteFriend", async (req, res) => {
+  const { friendPhoneNumber } = req.body;
+
+  if (!friendPhoneNumber) {
+    return res.status(400).json({ message: "Phone number is required" });
+  }
+
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(403).json({ message: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = new ObjectId(decoded.userId);
+
+    const user = await db.collection("users").findOne({ _id: userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const friend = await db
+      .collection("users")
+      .findOne({ phone: friendPhoneNumber });
+    if (!friend) {
+      return res.status(404).json({ message: "Friend not found" });
+    }
+
+    // Check if the friend exists in user's friend list
+    const isFriend = user.friends?.some(
+      (f) => f._id.toString() === friend._id.toString()
+    );
+
+    if (!isFriend) {
+      return res
+        .status(400)
+        .json({ message: "You are not friends with this user" });
+    }
+
+    // Remove friend from user's friend list
+    await db
+      .collection("users")
+      .updateOne(
+        { _id: user._id },
+        { $pull: { friends: { _id: friend._id } } }
+      );
+
+    // Remove user from friend's friend list
+    await db
+      .collection("users")
+      .updateOne(
+        { _id: friend._id },
+        { $pull: { friends: { _id: user._id } } }
+      );
+
+    res.status(200).json({ message: "Friend deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting friend:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
