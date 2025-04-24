@@ -203,17 +203,24 @@ export default function Chat({ socket, setActiveChatId }) {
               Notification.permission === "granted" &&
               "serviceWorker" in navigator
             ) {
-              navigator.serviceWorker.ready.then((registration) => {
-                registration.showNotification(`New message from ${nickname}`, {
-                  body: parsed.message,
-                  icon: profilePicture
-                    ? `https://authservice-xemo.onrender.com${profilePicture}`
-                    : "https://xsgames.co/randomusers/avatar.php?g=female",
-                  data: {
-                    url: `/chat/${friendIdRef.current}`,
-                  },
+              navigator.serviceWorker.ready
+                .then((registration) => {
+                  registration.showNotification(
+                    `New message from ${nickname}`,
+                    {
+                      body: parsed.message,
+                      icon: profilePicture
+                        ? `https://authservice-xemo.onrender.com${profilePicture}`
+                        : "https://xsgames.co/randomusers/avatar.php?g=female",
+                      data: {
+                        url: `/chat/${friendIdRef.current}`,
+                      },
+                    }
+                  );
+                })
+                .catch((error) => {
+                  console.error("Error showing notification:", error);
                 });
-              });
             }
 
             // If it's from the friend to you, it should be marked as unread
