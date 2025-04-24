@@ -280,6 +280,7 @@ app.post("/sendMessage", async (req, res) => {
       receiverId,
       message,
       createdAt,
+      isUnread,
     });
 
     // If message insertion fails, return an error

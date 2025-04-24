@@ -159,7 +159,7 @@ export default function AllChats({ onlineUsers, loading, error }) {
                   </h4>
                   <p
                     className={`homepage_chat_profile_lastMessage ${
-                      friend.isUnread ? "boldMessage" : ""
+                      friend.isUnread ?? false ? "boldMessage" : ""
                     }`}
                   >
                     {friend.lastMessage || "No messages yet"}
