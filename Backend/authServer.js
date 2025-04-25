@@ -479,9 +479,15 @@ app.put("/markMessagesRead/:userId/:friendId", async (req, res) => {
   const { userId, friendId } = req.params;
 
   try {
-    // Update the sender's friend entry to mark messages as read
+    // Convert `friendId` to ObjectId
+    const friendObjectId = new ObjectId(friendId);
+
+    // Update sender's friend entry
     const senderUpdateResult = await db.collection("users").updateOne(
-      { _id: new ObjectId(userId), "friends._id": new ObjectId(friendId) },
+      {
+        _id: new ObjectId(userId),
+        "friends._id": friendObjectId, // Now using ObjectId for friendId
+      },
       {
         $set: {
           "friends.$.isUnread": false,
@@ -489,16 +495,18 @@ app.put("/markMessagesRead/:userId/:friendId", async (req, res) => {
       }
     );
 
-    // If the sender update fails, return an error
     if (senderUpdateResult.matchedCount === 0) {
       return res
         .status(500)
         .json({ message: "Failed to update sender's last message" });
     }
 
-    // Update the receiver's friend entry to mark messages as read
+    // Update receiver's friend entry
     const receiverUpdateResult = await db.collection("users").updateOne(
-      { _id: new ObjectId(friendId), "friends._id": new ObjectId(userId) },
+      {
+        _id: friendObjectId, // Use ObjectId for the friend
+        "friends._id": new ObjectId(userId), // Use ObjectId for userId
+      },
       {
         $set: {
           "friends.$.isUnread": false,
@@ -506,7 +514,6 @@ app.put("/markMessagesRead/:userId/:friendId", async (req, res) => {
       }
     );
 
-    // If the receiver update fails, return an error
     if (receiverUpdateResult.matchedCount === 0) {
       return res
         .status(500)

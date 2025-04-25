@@ -7,7 +7,6 @@ export default function AllChats({ onlineUsers, loading, error }) {
   const [userId, setUserId] = useState(null); // State to hold the userId
   const navigate = useNavigate();
 
-  // Fetch user info and set friends
   const fetchUserInfo = async () => {
     const token = localStorage.getItem("token");
 
@@ -33,23 +32,16 @@ export default function AllChats({ onlineUsers, loading, error }) {
 
       const data = await response.json();
       const user = data.user;
-      setUserId(user._id); // Set userId in state
+      setUserId(user._id);
 
-      // Sort friends by createdAt or lastMessageTime
       const sortedFriends = user.friends.sort((a, b) => {
-        return new Date(b.lastMessageTime) - new Date(a.lastMessageTime);
+        const aTime = a.lastMessageTime || a.createdAt || 0;
+        const bTime = b.lastMessageTime || b.createdAt || 0;
+        return new Date(bTime) - new Date(aTime);
       });
 
-      // Add unread message flag
-      const friendsWithUnreadStatus = sortedFriends.map((friend) => {
-        // Mark the friend as having unread messages if the last message is from the friend
-        const isUnread =
-          friend.lastMessage && friend.lastMessage.senderId !== user._id;
-        return { ...friend, isUnread };
-      });
-
-      // Set the sorted friends state with unread status
-      setFriends(friendsWithUnreadStatus);
+      console.log("Friends with unread status:", sortedFriends);
+      setFriends(sortedFriends); // ✅ isUnread is already included
     } catch (err) {
       console.error("Error fetching user info:", err);
     }
