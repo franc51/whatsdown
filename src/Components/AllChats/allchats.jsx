@@ -54,11 +54,6 @@ export default function AllChats({ onlineUsers, loading, error }) {
   const goToChat = async (friendId, nickname, profilePicture) => {
     const status = onlineUsers[friendId] === "online" ? "online" : "offline";
 
-    if (!userId) {
-      console.error("User ID is not available");
-      return;
-    }
-
     // Make the API call to mark messages as read
     const token = localStorage.getItem("token");
     if (token) {
