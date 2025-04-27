@@ -4,10 +4,10 @@ import {
   Route,
   useParams,
 } from "react-router-dom";
-
-import { jwtDecode } from "jwt-decode";
-import "./App.css";
 import { useEffect, useRef, useState, createContext, useContext } from "react";
+import { jwtDecode } from "jwt-decode";
+
+import "./App.css";
 import WelcomePage from "./Components/Welcome-page/welcome-page.jsx";
 import Homepage from "./Components/Homepage/homepage.jsx";
 import Chat from "./Components/Chat/chat.jsx";
@@ -29,6 +29,7 @@ function App() {
   const [activeChatId, setActiveChatId] = useState(null);
   const [callAccepted, setCallAccepted] = useState(false);
   const socketRef = useRef(null);
+
   // ✅ Setup WebSocket singleton
   useEffect(() => {
     const setupWebSocket = () => {
@@ -53,7 +54,11 @@ function App() {
 
       ws.onmessage = (event) => {
         const msg = event.data;
+
+        // Function to handle the parsed data
         const handleParsed = (parsed) => {
+          if (!parsed) return; // Safeguard: don't proceed if parsed is not defined
+
           if (parsed.type === "typing") {
             if (parsed.fromId === activeChatId) {
               setIsFriendTyping(true);
@@ -90,40 +95,42 @@ function App() {
 
           // Handling Video Call Events:
           if (parsed.type === "start-call") {
-            // Handle start call event
             if (parsed.friendId === activeChatId) {
-              // Automatically prompt user with a call dialog
-              console.log(`Incoming call from ${parsed.friendId}`);
-              // Optionally: set up UI for answering the call here
+              console.log(`Incoming call from ${parsed.senderId}`);
+              // Here, trigger the UI to show an "Accept" and "Decline" button
+              // Example: set state to show the modal or buttons
+              setIsInCall(false); // Not yet in call, waiting for the user to accept
+              setIncomingCall(true); // Show "Accept/Decline" buttons on UI
+              setSenderId(parsed.senderId); // Store the senderId to use in the accept/answer call
+              setOffer(parsed.offer); // Store the offer to set as remote description
+            }
+          }
+
+          if (parsed.type === "answer") {
+            // Handle the answer
+            if (peerConnection.current) {
+              peerConnection.current.setRemoteDescription(
+                new RTCSessionDescription(parsed.answer)
+              );
             }
           }
 
           if (parsed.type === "end-call") {
-            // Handle end call event
             console.log(`Call with ${parsed.friendId} has ended.`);
-            // Optionally: Clean up UI and state when call ends
           }
         };
 
-        if (parsed.type === "accept-call") {
-          console.log(`Call accepted by ${parsed.senderId}`);
-          // You can navigate to the call page here
-          navigate("/call", {
-            state: { friendId: parsed.senderId, yourUserId: yourUserId },
-          });
-        }
-
-        if (parsed.type === "reject-call") {
-          console.log(`Call rejected by ${parsed.senderId}`);
-          // Optionally: Show a "Call Rejected" popup or notification
-        }
-
+        // Check if msg is a Blob (binary data)
         if (msg instanceof Blob) {
           const reader = new FileReader();
           reader.onload = () => handleParsed(JSON.parse(reader.result));
           reader.readAsText(msg);
         } else {
-          handleParsed(JSON.parse(msg));
+          try {
+            handleParsed(JSON.parse(msg)); // Try parsing and handle
+          } catch (error) {
+            console.error("Error parsing WebSocket message", error); // Catch parsing errors
+          }
         }
       };
 
@@ -140,14 +147,14 @@ function App() {
       };
     };
 
-    setupWebSocket();
+    setupWebSocket(); // Initialize the WebSocket connection
 
     return () => {
       if (socketRef.current) {
         socketRef.current.close();
       }
     };
-  }, []); // Empty dependency array to run only once
+  }, [activeChatId]); // Dependency array to ensure WebSocket setup is re-triggered when `activeChatId` changes
 
   // Fetch friends when the user is logged in
   useEffect(() => {

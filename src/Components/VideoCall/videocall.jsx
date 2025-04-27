@@ -16,7 +16,7 @@ export default function VideoCall({ onEndCall, socket }) {
 
   // Handle incoming call
   const handleIncomingCall = (data) => {
-    console.log("Received incoming call:", data); // Log to verify
+    console.log("Received incoming call:", data);
     if (data.friendId === friendId) {
       setIsCalling(false);
       setIsInCall(true);
@@ -49,6 +49,9 @@ export default function VideoCall({ onEndCall, socket }) {
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
       }
+      if (peerConnection.current) {
+        peerConnection.current.close();
+      }
     };
   }, [isCalling, isInCall]);
 
@@ -57,6 +60,18 @@ export default function VideoCall({ onEndCall, socket }) {
     setIsCalling(true);
     console.log("Sending start-call message to friend:", friendId);
 
+    // Send the start-call message to the friend's WebSocket via the server
+    socket.send(
+      JSON.stringify({
+        type: "start-call",
+        friendId: friendId,
+        yourUserId: yourUserId, // Make sure yourUserId is passed correctly
+      })
+    );
+
+    if (peerConnection.current) {
+      peerConnection.current.close(); // Close previous connection if exists
+    }
     peerConnection.current = new RTCPeerConnection();
 
     peerConnection.current.onicecandidate = (event) => {
@@ -93,8 +108,11 @@ export default function VideoCall({ onEndCall, socket }) {
   const endCall = () => {
     setIsCalling(false);
     setIsInCall(false);
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
     if (onEndCall) onEndCall();
-    socket.send(JSON.stringify({ type: "end-call", friendId, yourUserId })); // Pass yourUserId here
+    socket.send(JSON.stringify({ type: "end-call", friendId, yourUserId }));
   };
 
   // Toggle camera on/off
@@ -121,7 +139,9 @@ export default function VideoCall({ onEndCall, socket }) {
       if (data.type === "end-call" && data.friendId === friendId) {
         setIsInCall(false);
       }
+
       if (data.type === "offer") {
+        if (peerConnection.current) peerConnection.current.close(); // Close existing connection
         peerConnection.current = new RTCPeerConnection();
 
         peerConnection.current.onicecandidate = (event) => {
@@ -148,13 +168,18 @@ export default function VideoCall({ onEndCall, socket }) {
           });
         }
 
-        await peerConnection.current.setRemoteDescription(
-          new RTCSessionDescription(data.offer)
-        );
-        const answer = await peerConnection.current.createAnswer();
-        await peerConnection.current.setLocalDescription(answer);
-
-        socket.send(JSON.stringify({ type: "answer", answer, to: data.from }));
+        try {
+          await peerConnection.current.setRemoteDescription(
+            new RTCSessionDescription(data.offer)
+          );
+          const answer = await peerConnection.current.createAnswer();
+          await peerConnection.current.setLocalDescription(answer);
+          socket.send(
+            JSON.stringify({ type: "answer", answer, to: data.from })
+          );
+        } catch (error) {
+          console.error("Error processing WebRTC offer/answer:", error);
+        }
       }
 
       if (data.type === "answer") {

@@ -168,6 +168,7 @@ export default function Chat({ socket, setActiveChatId }) {
           "| 👥 Chatting with:",
           friendIdRef.current
         );
+        console.log(parsed);
 
         if (
           type === "start-call" &&
