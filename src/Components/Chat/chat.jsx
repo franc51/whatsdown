@@ -15,6 +15,7 @@ export default function Chat({ socket, setActiveChatId }) {
   const [hasMore, setHasMore] = useState(true);
   const [friendPhone, setFriendPhone] = useState(""); // To store phone number input
   const [isInCall, setIsInCall] = useState(false);
+  const [isReceivingCall, setIsReceivingCall] = useState(false);
   const yourUserIdRef = useRef(null);
   const friendIdRef = useRef(null);
   const [message, setMessage] = useState(""); // For showing success/error messages
@@ -168,8 +169,11 @@ export default function Chat({ socket, setActiveChatId }) {
           friendIdRef.current
         );
 
-        if (type === "start-call" && receiverId === yourUserId) {
-          // Show the modal (set state to show it)
+        if (
+          type === "start-call" &&
+          parsed.friendId === yourUserIdRef.current
+        ) {
+          console.log("🚨 Incoming call detected! Showing call modal.");
           setIsInCall(true);
         }
 
@@ -412,14 +416,35 @@ export default function Chat({ socket, setActiveChatId }) {
   // Define handleAcceptCall
   const handleAcceptCall = () => {
     console.log("Call accepted!");
-    // You can navigate or perform an action here
+
+    // Send a WebSocket message to the caller to notify call is accepted
+    socket.current?.send(
+      JSON.stringify({
+        type: "accept-call",
+        senderId: yourUserId,
+        friendId: friendId,
+      })
+    );
+
+    // Optionally, navigate to the call page, or start WebRTC setup
     // navigate("/call", { state: { friendId, yourUserId } });
   };
 
   // Define handleRejectCall
   const handleRejectCall = () => {
     console.log("Call rejected!");
-    // Handle call rejection logic, for example, notify the other person or close the modal
+
+    // Send a WebSocket message to notify rejection
+    socket.current?.send(
+      JSON.stringify({
+        type: "reject-call",
+        senderId: yourUserId,
+        friendId: friendId,
+      })
+    );
+
+    // Hide the call modal (you probably have a state like setIsReceivingCall(false))
+    setIsReceivingCall(false);
   };
 
   return (
@@ -543,7 +568,7 @@ export default function Chat({ socket, setActiveChatId }) {
         </div>
         {isInCall && (
           <div className="callModal">
-            <p>Incoming call from {nickname}!</p>
+            <h2>Incoming call from {nickname}!</h2>
             <button onClick={handleAcceptCall}>Accept</button>
             <button onClick={handleRejectCall}>Reject</button>
           </div>

@@ -27,8 +27,8 @@ function App() {
   const [friendsLoading, setFriendsLoading] = useState(true);
   const [friendsError, setFriendsError] = useState("");
   const [activeChatId, setActiveChatId] = useState(null);
+  const [callAccepted, setCallAccepted] = useState(false);
   const socketRef = useRef(null);
-
   // ✅ Setup WebSocket singleton
   useEffect(() => {
     const setupWebSocket = () => {
@@ -104,6 +104,19 @@ function App() {
             // Optionally: Clean up UI and state when call ends
           }
         };
+
+        if (parsed.type === "accept-call") {
+          console.log(`Call accepted by ${parsed.senderId}`);
+          // You can navigate to the call page here
+          navigate("/call", {
+            state: { friendId: parsed.senderId, yourUserId: yourUserId },
+          });
+        }
+
+        if (parsed.type === "reject-call") {
+          console.log(`Call rejected by ${parsed.senderId}`);
+          // Optionally: Show a "Call Rejected" popup or notification
+        }
 
         if (msg instanceof Blob) {
           const reader = new FileReader();

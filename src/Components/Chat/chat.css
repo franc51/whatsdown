@@ -237,14 +237,38 @@ img {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.664);
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   color: white;
   z-index: 1000;
 }
-
 .callModal button {
   margin: 10px;
+  padding: 1rem 5rem;
+  background-color: #1cff07;
+  color: rgb(0, 0, 0);
+  font-weight: 600;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  animation: pulse 1.5s infinite;
+}
+.callModal button:nth-child(3) {
+  background-color: #ff0000;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(0.9);
+  }
 }
