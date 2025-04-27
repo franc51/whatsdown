@@ -15,7 +15,6 @@ p {
 body {
   height: 100vh;
   margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 .homepage_chat_list_openedChat {
@@ -32,7 +31,7 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0;
-  padding: 1rem 0.7rem;
+  padding: 0.3rem 0.7rem;
   border-bottom: 2px solid #8d4bce3d;
 }
 .chat_account {
@@ -64,10 +63,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0rem 0.7rem;
-  padding-top: 1rem;
+  padding: 0.5rem 0.7rem;
   text-align: right;
   border-top: 2px solid rgba(128, 0, 128, 0.096);
+  background-color: #000;
 }
 .chat_sender_input {
   border-radius: 2rem;
@@ -129,13 +128,13 @@ img {
 .incoming {
   align-self: flex-start;
   border-top-left-radius: 0;
-  background-color: rgba(68, 68, 68, 0.473) !important;
+  background-color: rgba(68, 68, 68, 0.719) !important;
   color: rgba(255, 255, 255, 0.911);
 }
 .outgoing {
   align-self: flex-end;
   border-top-right-radius: 0;
-  background-color: rgba(132, 98, 211, 0.658);
+  background-color: rgba(132, 98, 211, 0.767);
   color: rgb(255, 255, 255);
 }
 .homepage_goBackToAllChats {
