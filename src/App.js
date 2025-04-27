@@ -30,6 +30,12 @@ function App() {
   const [callAccepted, setCallAccepted] = useState(false);
   const socketRef = useRef(null);
 
+  const [isInCall, setIsInCall] = useState(false);
+  const [incomingCall, setIncomingCall] = useState(false);
+  const [senderId, setSenderId] = useState(false);
+  const [Offer, setOffer] = useState(false);
+  const [peerConnection, setPeerConnection] = useState(false);
+
   // ✅ Setup WebSocket singleton
   useEffect(() => {
     const setupWebSocket = () => {
