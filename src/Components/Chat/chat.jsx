@@ -12,10 +12,14 @@ export default function Chat({ socket, setActiveChatId }) {
   const [isFriendTyping, setIsFriendTyping] = useState(false);
   const [skip, setSkip] = useState(50);
   const [hasMore, setHasMore] = useState(true);
+  const [friendPhone, setFriendPhone] = useState(""); // To store phone number input
+
   const yourUserIdRef = useRef(null);
   const friendIdRef = useRef(null);
+  const [message, setMessage] = useState(""); // For showing success/error messages
 
   const bottomRef = useRef(null);
+  const inputRef = useRef(null);
   const messagesRef = useRef([]);
   const chatContainerRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -241,6 +245,7 @@ export default function Chat({ socket, setActiveChatId }) {
 
     setMessages((prev) => [...prev, messageData]);
     setInput("");
+    inputRef.current?.focus();
 
     // Check if WebSocket is defined and open
     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -342,6 +347,58 @@ export default function Chat({ socket, setActiveChatId }) {
     }
   }, []);
 
+  const handleDeleteFriend = async () => {
+    const friendId = location.state?.friendId; // 👈 Make sure you pass the friend's _id when opening the chat!
+
+    if (!friendId) {
+      setMessage("Friend ID not found.");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this friend?")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setMessage("You must be logged in to delete friends.");
+        return;
+      }
+
+      const response = await fetch(
+        "https://authservice-xemo.onrender.com/deleteFriend",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            friendId: friendId, // 👈 pass friend ID
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage("Friend deleted successfully!");
+        setTimeout(() => {
+          setMessage("");
+          navigate("/"); // go back to home or friends list
+        }, 2000);
+      } else {
+        setMessage(data.message || "An error occurred. Please try again.");
+      }
+    } catch (err) {
+      setMessage("An error occurred. Please try again.");
+    }
+
+    setTimeout(() => setMessage(""), 5000);
+  };
+
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="chat_user">
@@ -353,11 +410,7 @@ export default function Chat({ socket, setActiveChatId }) {
           <img
             className="homepage_chat_profileImg"
             alt="profileImg"
-            src={
-              profilePicture
-                ? `https://authservice-xemo.onrender.com${profilePicture}`
-                : "https://xsgames.co/randomusers/avatar.php?g=female"
-            }
+            src="/Images/user_default.png"
           />
           <div className={`statusIndicator_chat ${statusClass}`}></div>
           <div className="homepage_chat_profile">
@@ -365,9 +418,13 @@ export default function Chat({ socket, setActiveChatId }) {
             <p className="homepage_chat_profile_lastMessage">{friendStatus}</p>
           </div>
         </div>
-        <div>
-          <button className="chat_videoCall searchMenuBtn_style" />
-          <button className="chat_account searchMenuBtn_style" />
+        <div className="videocall_deleteFriend">
+          <button className="chat_videoCall searchMenuBtn_style"></button>
+          <button
+            title="Delete friend"
+            className="deleteFriend_btn btn_style"
+            onClick={handleDeleteFriend}
+          ></button>
         </div>
       </div>
 
@@ -436,6 +493,7 @@ export default function Chat({ socket, setActiveChatId }) {
 
         <div className="chat_sender">
           <input
+            ref={inputRef}
             className="chat_sender_input"
             type="text"
             placeholder="Message"

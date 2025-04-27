@@ -18,7 +18,7 @@ body {
 .homepage {
   background-color: rgba(255, 255, 255, 0);
   border-radius: 2rem;
-  padding: 0.5rem;
+  padding: 0 0.7rem;
   box-shadow: unset;
 }
 .homepage_user {
@@ -26,6 +26,7 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  padding: 1rem 0;
 }
 .homepage_greeting {
   color: gray !important;
@@ -67,7 +68,7 @@ body {
   background-size: 1.2rem;
 }
 .active_link {
-  background-color: rgb(114, 73, 209);
+  background-color: rgb(132, 98, 211);
   color: white !important;
 }
 .link {
@@ -93,12 +94,11 @@ a {
   padding-bottom: 1rem;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 .homepage_chat_profileImg {
   border-radius: 50%;
-  height: 4rem;
-  width: 4rem;
+  height: 3.5rem;
+  width: 3.5rem;
   background-size: 3rem;
 }
 .picAndName {
@@ -141,12 +141,7 @@ p {
   border: none;
   background-color: rgba(240, 248, 255, 0);
 }
-.deleteFriend_btn {
-  background-image: url(/public/Images/delete-friend.png);
-  background-size: 2.3rem;
-  height: 2.3rem;
-  width: 2.3rem;
-}
+
 .input_and_btns {
   display: flex;
   align-items: center;

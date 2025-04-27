@@ -10,7 +10,7 @@ label {
 input {
   height: 1.6rem;
   border: none;
-  background-color: rgb(243, 243, 243) ;
+  background-color: rgb(243, 243, 243);
   padding: 0.8rem;
   color: black;
   font-weight: 600;
@@ -26,12 +26,13 @@ input::placeholder {
 .signup_button_submit {
   border: none;
   border-radius: 2rem;
-  background-color: rgb(68, 68, 160);
+  background-color: rgb(132, 98, 211);
   color: white;
   font-size: 1rem;
   font-weight: 900;
-  padding-bottom: 2.4rem;
-  margin: 1rem 6rem;
+  padding: 0.5rem;
+  margin: 1rem 7rem;
+  height: unset;
 }
 .error {
   color: red;
@@ -39,7 +40,7 @@ input::placeholder {
   background-color: rgba(255, 255, 255, 0);
 }
 .login_info {
-  margin-top: 6rem;
+  margin-top: 3rem;
 }
 .success {
   color: rgb(0, 0, 0);

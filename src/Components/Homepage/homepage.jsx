@@ -52,51 +52,6 @@ export default function Homepage({ friends, onlineUsers, loading, error }) {
     setActiveTab(tabName); // Set the active tab
   };
 
-  // Handle the "Delete Friend" button click
-  const handleDeleteFriend = async () => {
-    if (friendPhone.length !== 10 || !/^\d+$/.test(friendPhone)) {
-      setMessage("Please enter a valid 10-digit phone number.");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token"); // Retrieve token from localStorage
-
-      if (!token) {
-        setMessage("You must be logged in to delete friends.");
-        return;
-      }
-
-      const response = await fetch(
-        "https://authservice-xemo.onrender.com/deleteFriend", // Update with actual endpoint
-        {
-          method: "POST", // Or DELETE depending on your backend
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
-          },
-          body: JSON.stringify({
-            friendPhoneNumber: friendPhone,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage("Friend deleted successfully!");
-        setFriendPhone(""); // Clear the input after success
-      } else {
-        setMessage(data.message || "An error occurred. Please try again.");
-      }
-    } catch (err) {
-      setMessage("An error occurred. Please try again.");
-    }
-
-    // Clear message after 5 seconds
-    setTimeout(() => setMessage(""), 5000);
-  };
-
   // Handle the "Add Friend" button click
   const handleAddFriend = async () => {
     if (friendPhone.length !== 10 || !/^\d+$/.test(friendPhone)) {
@@ -158,9 +113,7 @@ export default function Homepage({ friends, onlineUsers, loading, error }) {
         </div>
       </div>
 
-      <div>
-        <h4>Stories will show here</h4>
-      </div>
+      <div></div>
       <div className="homepage_nav">
         <button
           className={`homepage_chats link ${
@@ -213,20 +166,6 @@ export default function Homepage({ friends, onlineUsers, loading, error }) {
               <button
                 className="addFriend_btn btn_style"
                 onClick={handleAddFriend}
-              ></button>
-            </div>
-            <label>Delete friend</label>
-            <div className="input_and_btns">
-              <input
-                type="text"
-                placeholder="Phone number"
-                value={friendPhone}
-                onChange={(e) => setFriendPhone(e.target.value)}
-                maxLength={10}
-              />
-              <button
-                className="deleteFriend_btn btn_style"
-                onClick={handleDeleteFriend}
               ></button>
             </div>
             {message && <p>{message}</p>}

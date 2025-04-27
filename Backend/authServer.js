@@ -202,10 +202,10 @@ app.post("/addFriend", async (req, res) => {
 
 // Delete Friend Route
 app.post("/deleteFriend", async (req, res) => {
-  const { friendPhoneNumber } = req.body;
+  const { friendId } = req.body;
 
-  if (!friendPhoneNumber) {
-    return res.status(400).json({ message: "Phone number is required" });
+  if (!friendId) {
+    return res.status(400).json({ message: "Friend ID is required" });
   }
 
   try {
@@ -224,12 +224,11 @@ app.post("/deleteFriend", async (req, res) => {
 
     const friend = await db
       .collection("users")
-      .findOne({ phone: friendPhoneNumber });
+      .findOne({ _id: new ObjectId(friendId) }); // 👈 use the ID here
     if (!friend) {
       return res.status(404).json({ message: "Friend not found" });
     }
 
-    // Check if the friend exists in user's friend list
     const isFriend = user.friends?.some(
       (f) => f._id.toString() === friend._id.toString()
     );

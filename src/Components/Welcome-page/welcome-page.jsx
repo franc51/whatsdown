@@ -12,7 +12,7 @@ export default function WelcomePage() {
       <div className="homepage_user_welcome">
         <img alt="logo" className="logo" src="Images/whatsdown-logo.png"></img>
         <h3>Welcome</h3>
-        <h4>To start chatting create a new account or log in.</h4>
+        <h4>To start chatting log in or create a new account</h4>
       </div>
 
       {/* Navigation Tabs */}

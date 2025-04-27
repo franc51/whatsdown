@@ -31,6 +31,7 @@ body {
   align-items: center;
   margin-bottom: 2rem;
   gap: 1rem;
+  text-align: center;
 }
 .logo {
   margin-bottom: 2rem;
@@ -60,7 +61,7 @@ a {
   cursor: pointer;
   color: gray;
 }
-@media only screen and (min-width: 1440px){
+@media only screen and (min-width: 1440px) {
   body {
     margin: 0 35% !important;
     box-sizing: border-box;

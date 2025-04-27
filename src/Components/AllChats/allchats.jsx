@@ -127,12 +127,13 @@ export default function AllChats({ onlineUsers, loading, error }) {
                   className="homepage_chat_profileImg"
                   alt="profileImg"
                   src={
-                    friend.profilePicture ||
-                    "https://xsgames.co/randomusers/avatar.php?g=female"
+                    friend.profilePicture || (
+                      <img src="/Images/user_default.png"></img>
+                    )
                   }
                   onError={(e) => {
                     console.error("Image failed to load:", e.target.src);
-                    e.target.src = "/Images/human.png";
+                    e.target.src = "/Images/user_default.png";
                   }}
                 />
                 <div
@@ -165,11 +166,6 @@ export default function AllChats({ onlineUsers, loading, error }) {
                     })
                   : "No date yet"}
               </p>
-              {friend.isUnread && (
-                <div className="unreadIndicator">
-                  <span className="unreadBubble">🔴</span>
-                </div>
-              )}
             </div>
           );
         })
