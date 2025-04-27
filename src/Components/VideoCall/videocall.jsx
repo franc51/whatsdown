@@ -15,13 +15,67 @@ export default function VideoCall({ onEndCall, socket }) {
   const { friendId, yourUserId } = location.state || {}; // Extract both friendId and yourUserId
 
   // Handle incoming call
-  const handleIncomingCall = (data) => {
+  const handleIncomingCall = async (data) => {
     console.log("Received incoming call:", data);
+
     if (data.friendId === friendId) {
       setIsCalling(false);
       setIsInCall(true);
-      if (data.remoteStream && remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = data.remoteStream;
+
+      // Close existing peer connection if any
+      if (peerConnection.current) peerConnection.current.close();
+
+      // Create new peer connection
+      peerConnection.current = new RTCPeerConnection({
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          // Optionally add TURN server if required
+        ],
+      });
+
+      peerConnection.current.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.send(
+            JSON.stringify({
+              type: "ice-candidate",
+              candidate: event.candidate,
+              to: data.yourUserId, // Send ICE candidate back to the caller
+            })
+          );
+        }
+      };
+
+      peerConnection.current.ontrack = (event) => {
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = event.streams[0];
+        }
+      };
+
+      if (stream) {
+        stream.getTracks().forEach((track) => {
+          peerConnection.current.addTrack(track, stream);
+        });
+      }
+
+      try {
+        // Set the remote offer received from the caller
+        await peerConnection.current.setRemoteDescription(
+          new RTCSessionDescription(data.offer)
+        );
+
+        // Create an answer and send it back to the caller
+        const answer = await peerConnection.current.createAnswer();
+        await peerConnection.current.setLocalDescription(answer);
+
+        socket.send(
+          JSON.stringify({
+            type: "answer",
+            answer: answer,
+            to: data.yourUserId, // Send answer back to the caller
+          })
+        );
+      } catch (error) {
+        console.error("Error processing incoming call offer:", error);
       }
     }
   };
@@ -57,23 +111,37 @@ export default function VideoCall({ onEndCall, socket }) {
 
   // Start video call
   const startCall = async () => {
+    // Always create a new peer connection before starting a new call
+    if (peerConnection.current) {
+      peerConnection.current.close(); // Close any existing connection
+    }
+
+    // Initialize a new peer connection
+    peerConnection.current = new RTCPeerConnection({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        // Optionally add TURN server if required
+      ],
+    });
+
     setIsCalling(true);
     console.log("Sending start-call message to friend:", friendId);
+    // Create the offer
+    const offer = await peerConnection.current.createOffer();
+    await peerConnection.current.setLocalDescription(offer);
+    console.log("Offer created", offer);
 
-    // Send the start-call message to the friend's WebSocket via the server
+    // Send the offer to the friend over WebSocket
     socket.send(
       JSON.stringify({
         type: "start-call",
         friendId: friendId,
         yourUserId: yourUserId, // Make sure yourUserId is passed correctly
+        offer: offer,
       })
     );
 
-    if (peerConnection.current) {
-      peerConnection.current.close(); // Close previous connection if exists
-    }
-    peerConnection.current = new RTCPeerConnection();
-
+    // Handle ICE candidates
     peerConnection.current.onicecandidate = (event) => {
       if (event.candidate) {
         socket.send(
@@ -86,32 +154,34 @@ export default function VideoCall({ onEndCall, socket }) {
       }
     };
 
-    peerConnection.current.ontrack = (event) => {
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = event.streams[0];
-        console.log(event.streams[0]);
-      }
-    };
-
+    // Add media tracks to peer connection
     if (stream) {
       stream.getTracks().forEach((track) => {
         peerConnection.current.addTrack(track, stream);
       });
     }
 
-    const offer = await peerConnection.current.createOffer();
-    await peerConnection.current.setLocalDescription(offer);
-
-    socket.send(JSON.stringify({ type: "offer", offer: offer, to: friendId }));
+    // Handle the remote stream when it is received
+    peerConnection.current.ontrack = (event) => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      }
+    };
   };
 
   // End video call
   const endCall = () => {
     setIsCalling(false);
     setIsInCall(false);
+
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
+
+    if (peerConnection.current) {
+      peerConnection.current.close();
+    }
+
     if (onEndCall) onEndCall();
     socket.send(JSON.stringify({ type: "end-call", friendId, yourUserId }));
   };
@@ -134,6 +204,7 @@ export default function VideoCall({ onEndCall, socket }) {
       const data = JSON.parse(event.data);
 
       if (data.type === "start-call") {
+        console.log("Received start-call message");
         handleIncomingCall(data);
       }
 

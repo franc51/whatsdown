@@ -54,17 +54,12 @@ export default function Chat({ socket, setActiveChatId }) {
     const register = () => {
       if (socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({ type: "register", token }));
-        console.log("✅ Sent registration message on open");
       }
     };
 
     socket.addEventListener("open", register);
     return () => socket.removeEventListener("open", register);
   }, [socket]);
-
-  useEffect(() => {
-    console.log("🧩 Chat component mounted");
-  }, []);
 
   useEffect(() => {
     setActiveChatId(friendId);
@@ -162,13 +157,6 @@ export default function Chat({ socket, setActiveChatId }) {
         console.log("📥 WS received:", parsed);
 
         const { senderId, receiverId, type } = parsed;
-        console.log(
-          "👤 You (userId):",
-          yourUserIdRef.current,
-          "| 👥 Chatting with:",
-          friendIdRef.current
-        );
-        console.log(parsed);
 
         if (
           type === "start-call" &&
@@ -229,13 +217,11 @@ export default function Chat({ socket, setActiveChatId }) {
     };
 
     messageHandlerRef.current = handleMessage;
-    console.log("🧲 Setting up socket message listener");
 
     socket.addEventListener("message", handleMessage);
 
     return () => {
       if (messageHandlerRef.current) {
-        console.log("🧹 Removing socket message listener");
         socket.removeEventListener("message", messageHandlerRef.current);
       }
     };
@@ -331,9 +317,6 @@ export default function Chat({ socket, setActiveChatId }) {
       console.warn("❌ Socket is not passed to the Chat component");
       return;
     }
-
-    console.log("✅ Socket is passed to Chat component:", socket);
-
     // Handle WebSocket events, like 'message', etc.
   }, [socket]); // Effect to check socket once it's passed
   useEffect(() => {
@@ -345,7 +328,6 @@ export default function Chat({ socket, setActiveChatId }) {
   const statusClass = friendStatus === "online" ? "online" : "offline";
   useEffect(() => {
     if (socket) {
-      console.log("WebSocket readyState:", socket.readyState); // This will show the state of the WebSocket connection
     }
   }, [socket]); // The effect runs whenever 'socket' state changes
 

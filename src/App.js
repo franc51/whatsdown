@@ -17,7 +17,6 @@ import VideoCall from "./Components/VideoCall/videocall.jsx";
 
 function App() {
   const [wsConnected, setWsConnected] = useState(false);
-  const { friendId } = useParams();
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -53,7 +52,6 @@ function App() {
         setWsConnected(true); // Update WebSocket connection status to open
         const token = localStorage.getItem("token");
         if (token) {
-          console.log("Sending registration message with token");
           ws.send(JSON.stringify({ type: "register", token }));
         }
       };
@@ -168,8 +166,6 @@ function App() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-
-        console.log("🔄 Fetching friends list...");
         const response = await fetch(
           "https://authservice-xemo.onrender.com/getFriends",
           {
@@ -219,7 +215,6 @@ function App() {
           localStorage.removeItem("token");
           setIsLoggedIn(false);
         } else {
-          console.log("✅ Token valid, user logged in.");
           setIsLoggedIn(true);
         }
       } catch (e) {

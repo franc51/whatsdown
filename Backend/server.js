@@ -79,6 +79,8 @@ wss.on("connection", (socket) => {
           });
           recipientSocket.send(offerMessage);
           console.log(`📞 Sending start call to ${friendId}`);
+        } else {
+          console.log(`❌ User ${friendId} not available for call.`);
         }
         return;
       }
@@ -98,6 +100,8 @@ wss.on("connection", (socket) => {
           });
           recipientSocket.send(answerMessage);
           console.log(`✅ Call answered by ${friendId}`);
+        } else {
+          console.log(`❌ User ${friendId} not available to answer the call.`);
         }
         return;
       }
@@ -116,6 +120,8 @@ wss.on("connection", (socket) => {
           });
           recipientSocket.send(endCallMessage);
           console.log(`🔴 Call ended with ${friendId}`);
+        } else {
+          console.log(`❌ User ${friendId} not available to end the call.`);
         }
         return;
       }
@@ -134,6 +140,10 @@ wss.on("connection", (socket) => {
           });
           recipientSocket.send(iceCandidateMessage);
           console.log(`➡️ Sending ICE candidate to ${friendId}`);
+        } else {
+          console.log(
+            `❌ User ${friendId} not available to receive ICE candidate.`
+          );
         }
       }
 
@@ -146,6 +156,8 @@ wss.on("connection", (socket) => {
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
           recipientSocket.send(JSON.stringify({ type: "typing", senderId }));
           console.log(`✍️ Sent typing event from ${senderId} to ${to}`);
+        } else {
+          console.log(`❌ User ${to} not available to receive typing event.`);
         }
         return;
       }
@@ -223,6 +235,7 @@ function sendOnlineUsersList(newUserId) {
   const newUserSocket = connectedUsers[newUserId];
   if (newUserSocket && newUserSocket.readyState === WebSocket.OPEN) {
     newUserSocket.send(onlineMessage);
+    console.log(`📡 Sent online users list to ${newUserId}`);
   }
 }
 
@@ -238,6 +251,7 @@ function broadcastOnlineUsers(excludeUserId = null) {
     const socket = connectedUsers[id];
     if (socket.readyState === WebSocket.OPEN) {
       socket.send(message);
+      console.log(`📡 Sent online users update to ${id}`);
     }
   }
 }
@@ -253,10 +267,9 @@ function broadcastStatus(userId, status, excludeSocket = null) {
     const socket = connectedUsers[otherId];
     if (socket !== excludeSocket && socket.readyState === WebSocket.OPEN) {
       socket.send(statusMessage);
+      console.log(`📡 Broadcasted ${status} status for ${userId}`);
     }
   }
-
-  console.log(`📡 Broadcasted ${status} status for ${userId}`);
 }
 
 // Start the server
