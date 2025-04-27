@@ -126,15 +126,7 @@ export default function AllChats({ onlineUsers, loading, error }) {
                 <img
                   className="homepage_chat_profileImg"
                   alt="profileImg"
-                  src={
-                    friend.profilePicture || (
-                      <img src="/Images/user_default.png"></img>
-                    )
-                  }
-                  onError={(e) => {
-                    console.error("Image failed to load:", e.target.src);
-                    e.target.src = "/Images/user_default.png";
-                  }}
+                  src="/Images/user_default.png"
                 />
                 <div
                   className={`allChats_statusIndicator ${
