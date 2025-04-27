@@ -43,6 +43,7 @@ export default function VideoCall({ socket, onEndCall, friendId }) {
 
   const startCall = () => {
     setIsCalling(true);
+    // Sending a start-call message via WebSocket
     socket.send(JSON.stringify({ type: "start-call", friendId }));
   };
 
@@ -50,6 +51,7 @@ export default function VideoCall({ socket, onEndCall, friendId }) {
     setIsCalling(false);
     setIsInCall(false);
     if (onEndCall) onEndCall();
+    // Sending an end-call message via WebSocket
     socket.send(JSON.stringify({ type: "end-call", friendId }));
   };
 
@@ -64,14 +66,30 @@ export default function VideoCall({ socket, onEndCall, friendId }) {
     }
   };
 
+  // Listening to WebSocket messages directly using the native WebSocket API
   useEffect(() => {
-    // Listen for incoming call
-    socket.on("start-call", handleIncomingCall);
+    const handleMessage = (event) => {
+      const data = JSON.parse(event.data); // Parse the incoming message
 
-    return () => {
-      socket.off("start-call", handleIncomingCall);
+      // Handle the start-call message
+      if (data.type === "start-call") {
+        handleIncomingCall(data);
+      }
+      // Handle other message types (e.g., end-call, etc.)
+      if (data.type === "end-call" && data.friendId === friendId) {
+        console.log("Call ended by the other party.");
+        setIsInCall(false);
+      }
     };
-  }, [friendId, socket]); // Dependency array includes friendId and socket
+
+    // Add WebSocket message listener
+    socket.addEventListener("message", handleMessage);
+
+    // Cleanup listener on component unmount or when socket changes
+    return () => {
+      socket.removeEventListener("message", handleMessage);
+    };
+  }, [friendId, socket]);
 
   return (
     <div className="video-call">

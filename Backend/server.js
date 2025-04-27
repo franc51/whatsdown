@@ -39,8 +39,17 @@ wss.on("connection", (socket) => {
     try {
       console.log("📥 Received message:", data);
       const parsed = JSON.parse(data);
-      const { type, token, receiverId, message: text, to, tempId } = parsed;
+      const {
+        type,
+        token,
+        receiverId,
+        message: text,
+        to,
+        tempId,
+        friendId,
+      } = parsed;
       console.log("📥 Parsed data:", parsed);
+
       if (type === "register" && token) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.userId;
@@ -59,15 +68,16 @@ wss.on("connection", (socket) => {
         const senderId = Object.keys(connectedUsers).find(
           (id) => connectedUsers[id] === socket
         );
-
         const recipientSocket = connectedUsers[friendId];
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          const startCallMessage = JSON.stringify({
+          // Send WebRTC offer
+          const offerMessage = JSON.stringify({
             type: "start-call",
             senderId: senderId,
             friendId: friendId,
+            offer: parsed.offer, // This will contain the WebRTC offer (SDP)
           });
-          recipientSocket.send(startCallMessage);
+          recipientSocket.send(offerMessage);
           console.log(`📞 Sending start call to ${friendId}`);
         }
         return;
@@ -77,15 +87,16 @@ wss.on("connection", (socket) => {
         const senderId = Object.keys(connectedUsers).find(
           (id) => connectedUsers[id] === socket
         );
-
         const recipientSocket = connectedUsers[friendId];
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          const answerCallMessage = JSON.stringify({
+          // Send WebRTC answer
+          const answerMessage = JSON.stringify({
             type: "answer-call",
             senderId: senderId,
             friendId: friendId,
+            answer: parsed.answer, // This will contain the WebRTC answer (SDP)
           });
-          recipientSocket.send(answerCallMessage);
+          recipientSocket.send(answerMessage);
           console.log(`✅ Call answered by ${friendId}`);
         }
         return;
@@ -95,9 +106,9 @@ wss.on("connection", (socket) => {
         const senderId = Object.keys(connectedUsers).find(
           (id) => connectedUsers[id] === socket
         );
-
         const recipientSocket = connectedUsers[friendId];
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
+          // Inform other party the call is ended
           const endCallMessage = JSON.stringify({
             type: "end-call",
             senderId: senderId,
@@ -107,6 +118,23 @@ wss.on("connection", (socket) => {
           console.log(`🔴 Call ended with ${friendId}`);
         }
         return;
+      }
+
+      if (type === "ice-candidate" && friendId) {
+        const senderId = Object.keys(connectedUsers).find(
+          (id) => connectedUsers[id] === socket
+        );
+        const recipientSocket = connectedUsers[friendId];
+        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
+          const iceCandidateMessage = JSON.stringify({
+            type: "ice-candidate",
+            senderId: senderId,
+            friendId: friendId,
+            candidate: parsed.candidate, // ICE candidate
+          });
+          recipientSocket.send(iceCandidateMessage);
+          console.log(`➡️ Sending ICE candidate to ${friendId}`);
+        }
       }
 
       if (type === "typing" && to) {
@@ -160,7 +188,6 @@ wss.on("connection", (socket) => {
         const recipientSocket = connectedUsers[receiverId];
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
           console.log(`➡️ Sending message to ${receiverId}`);
-          console.log("Message content:", messageToSend);
           recipientSocket.send(messageToSend);
         } else {
           console.log(`⚠️ User ${receiverId} is not connected.`);
