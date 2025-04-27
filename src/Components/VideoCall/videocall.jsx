@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import "./videocall.css";
 
-export default function VideoCall({ socket, onEndCall, friendId }) {
+export default function VideoCall({ onEndCall, socket }) {
   const [isCalling, setIsCalling] = useState(false);
   const [isInCall, setIsInCall] = useState(false);
   const [stream, setStream] = useState(null);
@@ -8,30 +10,38 @@ export default function VideoCall({ socket, onEndCall, friendId }) {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
 
-  // Define the function to handle incoming calls
+  const location = useLocation();
+  const { friendId, yourUserId } = location.state || {}; // Extract both friendId and yourUserId
+
+  // Handle incoming call
   const handleIncomingCall = (data) => {
+    console.log("Received incoming call:", data); // Log to verify
     if (data.friendId === friendId) {
       setIsCalling(false);
       setIsInCall(true);
-      // Assuming the remote stream is part of the incoming data
-      if (data.remoteStream) {
+      if (data.remoteStream && remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = data.remoteStream;
       }
     }
   };
 
-  // Set up the video stream
+  // Media stream setup and cleanup
   useEffect(() => {
     if (isCalling || isInCall) {
       navigator.mediaDevices
         .getUserMedia({ video: true, audio: true })
         .then((mediaStream) => {
           setStream(mediaStream);
-          localVideoRef.current.srcObject = mediaStream;
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = mediaStream;
+          }
         })
-        .catch((err) =>
-          console.error("Failed to access webcam and microphone:", err)
-        );
+        .catch((err) => {
+          console.error("Failed to access webcam and microphone:", err);
+          alert(
+            "Failed to access webcam and microphone. Please check your permissions."
+          );
+        });
     }
 
     return () => {
@@ -41,20 +51,22 @@ export default function VideoCall({ socket, onEndCall, friendId }) {
     };
   }, [isCalling, isInCall]);
 
+  // Start video call
   const startCall = () => {
     setIsCalling(true);
-    // Sending a start-call message via WebSocket
-    socket.send(JSON.stringify({ type: "start-call", friendId }));
+    console.log("Sending start-call message to friend:", friendId);
+    socket.send(JSON.stringify({ type: "start-call", friendId, yourUserId })); // Pass yourUserId here
   };
 
+  // End video call
   const endCall = () => {
     setIsCalling(false);
     setIsInCall(false);
     if (onEndCall) onEndCall();
-    // Sending an end-call message via WebSocket
-    socket.send(JSON.stringify({ type: "end-call", friendId }));
+    socket.send(JSON.stringify({ type: "end-call", friendId, yourUserId })); // Pass yourUserId here
   };
 
+  // Toggle camera on/off
   const toggleCamera = () => {
     setIsCameraOn((prev) => !prev);
     if (stream) {
@@ -66,26 +78,22 @@ export default function VideoCall({ socket, onEndCall, friendId }) {
     }
   };
 
-  // Listening to WebSocket messages directly using the native WebSocket API
+  // Handle incoming WebSocket messages
   useEffect(() => {
     const handleMessage = (event) => {
-      const data = JSON.parse(event.data); // Parse the incoming message
+      const data = JSON.parse(event.data);
 
-      // Handle the start-call message
       if (data.type === "start-call") {
         handleIncomingCall(data);
       }
-      // Handle other message types (e.g., end-call, etc.)
+
       if (data.type === "end-call" && data.friendId === friendId) {
-        console.log("Call ended by the other party.");
         setIsInCall(false);
       }
     };
 
-    // Add WebSocket message listener
     socket.addEventListener("message", handleMessage);
 
-    // Cleanup listener on component unmount or when socket changes
     return () => {
       socket.removeEventListener("message", handleMessage);
     };
@@ -101,17 +109,23 @@ export default function VideoCall({ socket, onEndCall, friendId }) {
           <video ref={remoteVideoRef} autoPlay />
         </div>
       </div>
+
       <div className="video-call-controls">
         {isInCall && (
           <>
-            <button onClick={toggleCamera}>
+            <div className="control-button" onClick={toggleCamera}>
               {isCameraOn ? "Turn Off Camera" : "Turn On Camera"}
-            </button>
-            <button onClick={endCall}>End Call</button>
+            </div>
+            <div className="control-button" onClick={endCall}>
+              End Call
+            </div>
           </>
         )}
+
         {!isInCall && !isCalling && (
-          <button onClick={startCall}>Start Call</button>
+          <div className="control-button" onClick={startCall}>
+            Start Call
+          </div>
         )}
       </div>
     </div>

@@ -168,6 +168,11 @@ export default function Chat({ socket, setActiveChatId }) {
           friendIdRef.current
         );
 
+        if (type === "start-call" && receiverId === yourUserId) {
+          // Show the modal (set state to show it)
+          setIsInCall(true);
+        }
+
         // Handle typing event
         if (type === "typing" && senderId === friendIdRef.current) {
           console.log("✏️ Friend is typing...");
@@ -404,6 +409,19 @@ export default function Chat({ socket, setActiveChatId }) {
     setTimeout(() => setMessage(""), 5000);
   };
 
+  // Define handleAcceptCall
+  const handleAcceptCall = () => {
+    console.log("Call accepted!");
+    // You can navigate or perform an action here
+    // navigate("/call", { state: { friendId, yourUserId } });
+  };
+
+  // Define handleRejectCall
+  const handleRejectCall = () => {
+    console.log("Call rejected!");
+    // Handle call rejection logic, for example, notify the other person or close the modal
+  };
+
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="chat_user">
@@ -425,23 +443,12 @@ export default function Chat({ socket, setActiveChatId }) {
         </div>
         <div className="videocall_deleteFriend">
           {/* Button to start the call */}
-          {!isInCall && (
-            <button
-              className="chat_videoCall"
-              onClick={() => setIsInCall(true)} // Start the video call
-            >
-              Start Call
-            </button>
-          )}
-
-          {/* Render VideoCall component if the call has started */}
-          {isInCall && (
-            <VideoCall
-              onEndCall={handleEndCall}
-              friendId={friendId}
-              socket={socket}
-            />
-          )}
+          <button
+            className="chat_videoCall"
+            onClick={() =>
+              navigate("/videocall", { state: { friendId, yourUserId } })
+            }
+          ></button>
 
           {/* Button to delete the friend */}
           <button
@@ -534,6 +541,13 @@ export default function Chat({ socket, setActiveChatId }) {
             onClick={sendMessage}
           ></button>
         </div>
+        {isInCall && (
+          <div className="callModal">
+            <p>Incoming call from {nickname}!</p>
+            <button onClick={handleAcceptCall}>Accept</button>
+            <button onClick={handleRejectCall}>Reject</button>
+          </div>
+        )}
       </div>
     </div>
   );

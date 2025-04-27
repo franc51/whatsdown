@@ -3,16 +3,17 @@ import {
   Routes,
   Route,
   useParams,
-} from "react-router-dom"; // Make sure to import useParams here
+} from "react-router-dom";
 
 import { jwtDecode } from "jwt-decode";
 import "./App.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, createContext, useContext } from "react";
 import WelcomePage from "./Components/Welcome-page/welcome-page.jsx";
 import Homepage from "./Components/Homepage/homepage.jsx";
 import Chat from "./Components/Chat/chat.jsx";
 import Account from "./Components/Account/account.jsx";
 import Login from "./Components/Login/login.jsx";
+import VideoCall from "./Components/VideoCall/videocall.jsx";
 
 function App() {
   const [wsConnected, setWsConnected] = useState(false);
@@ -27,13 +28,6 @@ function App() {
   const [friendsError, setFriendsError] = useState("");
   const [activeChatId, setActiveChatId] = useState(null);
   const socketRef = useRef(null);
-
-  useEffect(() => {
-    console.log("Friend ID in Chat component:", friendId);
-    if (friendId) {
-      setActiveChatId(friendId);
-    }
-  }, [friendId]);
 
   // ✅ Setup WebSocket singleton
   useEffect(() => {
@@ -240,6 +234,10 @@ function App() {
       <div>
         <Router>
           <Routes>
+            <Route
+              path="/videocall"
+              element={<VideoCall socket={socketRef.current} />}
+            ></Route>
             <Route
               path="/"
               element={
