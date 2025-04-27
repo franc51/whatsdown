@@ -24,7 +24,7 @@
   background-color: #ffffff; /* Default is offline (gray) */
   position: absolute;
   top: 0.1rem;
-  left: 2.5rem;
+  left: 2rem;
 }
 
 /* Online Status - Green */

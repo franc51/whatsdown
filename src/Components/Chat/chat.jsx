@@ -419,16 +419,14 @@ export default function Chat({ socket, setActiveChatId }) {
     console.log("Call accepted!");
 
     // Send a WebSocket message to the caller to notify call is accepted
-    socket.current?.send(
+    socket?.send(
       JSON.stringify({
         type: "accept-call",
         senderId: yourUserId,
         friendId: friendId,
       })
     );
-
-    // Optionally, navigate to the call page, or start WebRTC setup
-    // navigate("/call", { state: { friendId, yourUserId } });
+    navigate("/videocall", { state: { friendId, yourUserId } });
   };
 
   // Define handleRejectCall
@@ -436,7 +434,7 @@ export default function Chat({ socket, setActiveChatId }) {
     console.log("Call rejected!");
 
     // Send a WebSocket message to notify rejection
-    socket.current?.send(
+    socket?.send(
       JSON.stringify({
         type: "reject-call",
         senderId: yourUserId,
@@ -445,7 +443,7 @@ export default function Chat({ socket, setActiveChatId }) {
     );
 
     // Hide the call modal (you probably have a state like setIsReceivingCall(false))
-    setIsReceivingCall(false);
+    isInCall(false);
   };
 
   return (

@@ -36,6 +36,7 @@ p {
 }
 .chat_videoCall {
   background-image: url("/public/Images/video.png");
+  background-color: #00000000;
   background-size: 2rem;
   height: 2rem;
   width: 2rem;
