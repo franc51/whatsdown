@@ -69,7 +69,6 @@ function App() {
           if (parsed.type === "message") {
             setMessages((prev) => [...prev, parsed]);
 
-            // Handle notification when on homepage or background
             if (
               document.visibilityState === "hidden" &&
               Notification.permission === "granted"
@@ -78,19 +77,14 @@ function App() {
                 registration.showNotification("New message", {
                   body: parsed.content,
                   icon: "default-avatar.png", // Set a default icon
-                  data: {
-                    url: `/chat/${parsed.senderId}`,
-                  },
+                  data: { url: `/chat/${parsed.senderId}` },
                 });
               });
             }
           }
           if (parsed.type === "status") {
             const { userId, status } = parsed;
-            setOnlineUsers((prev) => ({
-              ...prev,
-              [userId]: status,
-            }));
+            setOnlineUsers((prev) => ({ ...prev, [userId]: status }));
           }
           if (parsed.type === "onlineUsers") {
             const onlineMap = {};
@@ -98,6 +92,22 @@ function App() {
               onlineMap[id] = "online";
             });
             setOnlineUsers((prev) => ({ ...prev, ...onlineMap }));
+          }
+
+          // Handling Video Call Events:
+          if (parsed.type === "start-call") {
+            // Handle start call event
+            if (parsed.friendId === activeChatId) {
+              // Automatically prompt user with a call dialog
+              console.log(`Incoming call from ${parsed.friendId}`);
+              // Optionally: set up UI for answering the call here
+            }
+          }
+
+          if (parsed.type === "end-call") {
+            // Handle end call event
+            console.log(`Call with ${parsed.friendId} has ended.`);
+            // Optionally: Clean up UI and state when call ends
           }
         };
 
@@ -112,13 +122,13 @@ function App() {
 
       ws.onerror = (error) => {
         console.error("❌ WebSocket error:", error);
-        setWsConnected(false); // Update connection status on error
+        setWsConnected(false);
         setTimeout(setupWebSocket, 3000); // Try to reconnect
       };
 
       ws.onclose = () => {
         console.log("🔌 WebSocket closed. Reconnecting...");
-        setWsConnected(false); // Update connection status on close
+        setWsConnected(false);
         setTimeout(setupWebSocket, 3000); // Try to reconnect
       };
     };

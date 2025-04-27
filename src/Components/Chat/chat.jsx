@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./chat.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import VideoCall from "../VideoCall/videocall";
 
 export default function Chat({ socket, setActiveChatId }) {
   const [messages, setMessages] = useState([]);
@@ -13,7 +14,7 @@ export default function Chat({ socket, setActiveChatId }) {
   const [skip, setSkip] = useState(50);
   const [hasMore, setHasMore] = useState(true);
   const [friendPhone, setFriendPhone] = useState(""); // To store phone number input
-
+  const [isInCall, setIsInCall] = useState(false);
   const yourUserIdRef = useRef(null);
   const friendIdRef = useRef(null);
   const [message, setMessage] = useState(""); // For showing success/error messages
@@ -35,6 +36,10 @@ export default function Chat({ socket, setActiveChatId }) {
 
   const params = useParams();
   const friendId = params.friendId || location.state?.friendId;
+
+  const handleEndCall = () => {
+    setIsInCall(false);
+  };
 
   useEffect(() => {
     friendIdRef.current = friendId;
@@ -419,7 +424,26 @@ export default function Chat({ socket, setActiveChatId }) {
           </div>
         </div>
         <div className="videocall_deleteFriend">
-          <button className="chat_videoCall searchMenuBtn_style"></button>
+          {/* Button to start the call */}
+          {!isInCall && (
+            <button
+              className="chat_videoCall"
+              onClick={() => setIsInCall(true)} // Start the video call
+            >
+              Start Call
+            </button>
+          )}
+
+          {/* Render VideoCall component if the call has started */}
+          {isInCall && (
+            <VideoCall
+              onEndCall={handleEndCall}
+              friendId={friendId}
+              socket={socket}
+            />
+          )}
+
+          {/* Button to delete the friend */}
           <button
             title="Delete friend"
             className="deleteFriend_btn btn_style"

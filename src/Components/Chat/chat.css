@@ -11,14 +11,8 @@ p {
 p {
   color: gray;
 }
-
-body {
-  height: 100vh;
-  margin: 0;
-  box-sizing: border-box;
-}
 .homepage_chat_list_openedChat {
-  height: 98vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

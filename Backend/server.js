@@ -54,6 +54,61 @@ wss.on("connection", (socket) => {
         return;
       }
 
+      // Handle video call events
+      if (type === "start-call" && friendId) {
+        const senderId = Object.keys(connectedUsers).find(
+          (id) => connectedUsers[id] === socket
+        );
+
+        const recipientSocket = connectedUsers[friendId];
+        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
+          const startCallMessage = JSON.stringify({
+            type: "start-call",
+            senderId: senderId,
+            friendId: friendId,
+          });
+          recipientSocket.send(startCallMessage);
+          console.log(`📞 Sending start call to ${friendId}`);
+        }
+        return;
+      }
+
+      if (type === "answer-call" && friendId) {
+        const senderId = Object.keys(connectedUsers).find(
+          (id) => connectedUsers[id] === socket
+        );
+
+        const recipientSocket = connectedUsers[friendId];
+        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
+          const answerCallMessage = JSON.stringify({
+            type: "answer-call",
+            senderId: senderId,
+            friendId: friendId,
+          });
+          recipientSocket.send(answerCallMessage);
+          console.log(`✅ Call answered by ${friendId}`);
+        }
+        return;
+      }
+
+      if (type === "end-call" && friendId) {
+        const senderId = Object.keys(connectedUsers).find(
+          (id) => connectedUsers[id] === socket
+        );
+
+        const recipientSocket = connectedUsers[friendId];
+        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
+          const endCallMessage = JSON.stringify({
+            type: "end-call",
+            senderId: senderId,
+            friendId: friendId,
+          });
+          recipientSocket.send(endCallMessage);
+          console.log(`🔴 Call ended with ${friendId}`);
+        }
+        return;
+      }
+
       if (type === "typing" && to) {
         const senderId = Object.keys(connectedUsers).find(
           (id) => connectedUsers[id] === socket

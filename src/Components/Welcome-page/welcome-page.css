@@ -11,12 +11,6 @@ p {
 p {
   color: gray;
 }
-
-body {
-  margin: 0;
-  box-sizing: border-box;
-  height: 100vh;
-}
 .homepage {
   height: 88vh;
   background-color: rgb(255, 255, 255);
