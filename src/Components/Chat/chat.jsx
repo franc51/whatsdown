@@ -452,9 +452,15 @@ export default function Chat({ socket, setActiveChatId }) {
           <button
             className="chat_videoCall"
             onClick={() =>
-              navigate("/videocall", { state: { friendId, yourUserId } })
+              navigate("/videocall", {
+                state: {
+                  friendId,
+                  yourUserId,
+                  isCaller: true, // explicitly mark as caller
+                },
+              })
             }
-          ></button>
+          />
 
           {/* Button to delete the friend */}
           <button
