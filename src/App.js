@@ -28,6 +28,8 @@ function App() {
   const [activeChatId, setActiveChatId] = useState(null);
   const [callAccepted, setCallAccepted] = useState(false);
   const socketRef = useRef(null);
+  const [socketError, setSocketError] = useState(null); // To track socket errors (e.g., duplicate connection)
+  
 
   const [isInCall, setIsInCall] = useState(false);
   const [incomingCall, setIncomingCall] = useState(false);
@@ -42,6 +44,12 @@ function App() {
       if (!token) {
         console.log("❌ No token found, WebSocket setup aborted");
         return;
+      }
+
+       // Only create a new WebSocket if one doesn't already exist
+       if (socketRef.current) {
+        console.log("⚠️ WebSocket already connected.");
+        return; // Prevent creating a new connection
       }
 
       const ws = new WebSocket("wss://websocket-service-30vz.onrender.com");
@@ -141,13 +149,16 @@ function App() {
       ws.onerror = (error) => {
         console.error("❌ WebSocket error:", error);
         setWsConnected(false);
+        setSocketError("WebSocket error, retrying...");
         setTimeout(setupWebSocket, 3000); // Try to reconnect
       };
 
       ws.onclose = () => {
-        console.log("🔌 WebSocket closed. Reconnecting...");
+        console.log("🔌 WebSocket closed.");
         setWsConnected(false);
-        setTimeout(setupWebSocket, 3000); // Try to reconnect
+        if (!socketError) {
+          setTimeout(setupWebSocket, 3000); // Attempt reconnect if not duplicate connection
+        }
       };
     };
 
@@ -158,7 +169,7 @@ function App() {
         socketRef.current.close();
       }
     };
-  }, [activeChatId]); // Dependency array to ensure WebSocket setup is re-triggered when `activeChatId` changes
+  }, [activeChatId, socketError]); // Dependency array to ensure WebSocket setup is re-triggered when `activeChatId` changes
 
   // Fetch friends when the user is logged in
   useEffect(() => {
