@@ -53,15 +53,27 @@ wss.on("connection", (socket) => {
       if (type === "register" && token) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.userId;
+      
+        // Prevent duplicate connections
+        if (connectedUsers[userId]) {
+          console.warn(`⚠️ Duplicate registration attempt by ${userId}`);
+          socket.send(
+            JSON.stringify({ type: "error", message: "User already connected." })
+          );
+          socket.close(); // Close the duplicate connection
+          return;
+        }
+      
         connectedUsers[userId] = socket;
         console.log(`✅ Registered user ${userId}`);
-
+      
         broadcastStatus(userId, "online", socket);
         sendOnlineUsersList(userId);
-        broadcastOnlineUsers(userId); // ✅ Broadcast to others
-
+        broadcastOnlineUsers(userId);
+      
         return;
       }
+      
       if (type === "start-call" && friendId) {
         const senderId = Object.keys(connectedUsers).find(
           (id) => connectedUsers[id] === socket
