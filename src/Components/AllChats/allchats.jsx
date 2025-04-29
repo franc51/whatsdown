@@ -39,8 +39,6 @@ export default function AllChats({ onlineUsers, loading, error }) {
         const bTime = b.lastMessageTime || b.createdAt || 0;
         return new Date(bTime) - new Date(aTime);
       });
-
-      console.log("Friends with unread status:", sortedFriends);
       setFriends(sortedFriends); // ✅ isUnread is already included
     } catch (err) {
       console.error("Error fetching user info:", err);

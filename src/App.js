@@ -126,6 +126,13 @@ function App() {
           }
         };
 
+        // Handle error messages
+      if (msg.type === "error" && msg.message === "User already connected.") {
+        console.warn("⚠️ Duplicate connection detected. Please check your session.");
+        // Prevent further actions from being taken after this error
+        return;
+      }
+
         // Check if msg is a Blob (binary data)
         if (msg instanceof Blob) {
           const reader = new FileReader();
