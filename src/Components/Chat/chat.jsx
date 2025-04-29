@@ -158,10 +158,7 @@ export default function Chat({ socket, setActiveChatId }) {
 
         const { senderId, receiverId, type } = parsed;
 
-        if (
-          type === "start-call" &&
-          parsed.senderId === friendIdRef.current
-        ) {
+        if (type === "start-call" && parsed.senderId === friendIdRef.current) {
           console.log("🚨 Incoming call detected! Showing call modal.");
           setIsInCall(true);
         }
@@ -261,7 +258,7 @@ export default function Chat({ socket, setActiveChatId }) {
         })
       );
     } else {
-      console.warn("❌ WebSocket is not open or socket is undefined");
+      console.warn("❌ WebSocket is not open or socket is undefineeeeeed");
     }
 
     try {
