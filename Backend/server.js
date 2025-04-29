@@ -60,7 +60,6 @@ wss.on("connection", (socket) => {
           socket.send(
             JSON.stringify({ type: "error", message: "User already connected." })
           );
-          socket.close(); // Close the duplicate connection
           return;
         }
       
