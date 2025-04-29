@@ -272,13 +272,6 @@ function broadcastStatus(userId, status, excludeSocket = null) {
   }
 }
 
-const testMessage = JSON.stringify({
-  type: "start-call",
-  friendId: "recipientId",
-  offer: "testOffer",
-});
-connectedUsers["recipientId"].send(testMessage);
-
 // Start the server
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ WebSocket server listening on port ${PORT}`);
