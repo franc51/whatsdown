@@ -37,10 +37,18 @@ export default function VideoCall({ onEndCall, socket }) {
         if (peerConnection.current) peerConnection.current.close();
 
         // Create a new peer connection
-        peerConnection.current = new RTCPeerConnection({
-          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-        });
-
+        const configuration = {
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" },
+            {
+              urls: "turn:TURN_SERVER_URL",
+              username: "USERNAME",
+              credential: "CREDENTIAL",
+            },
+          ],
+        };
+        peerConnection.current = new RTCPeerConnection(configuration);
         // Send ICE candidates to the caller
         peerConnection.current.onicecandidate = (event) => {
           if (event.candidate) {
@@ -110,6 +118,7 @@ export default function VideoCall({ onEndCall, socket }) {
         video: true,
         audio: true,
       });
+
       setStream(mediaStream);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = mediaStream;
@@ -121,15 +130,13 @@ export default function VideoCall({ onEndCall, socket }) {
       }
 
       // Initialize peer connection
-      peerConnection.current = new RTCPeerConnection({
+      const configuration = {
         iceServers: [
           { urls: "stun:stun.l.google.com:19302" },
           // Optionally add TURN server here
         ],
-      });
-
-      setIsCalling(true);
-      console.log("Sending start-call message to friend:", friendId);
+      };
+      peerConnection.current = new RTCPeerConnection(configuration);
 
       // Add media tracks to peer connection
       mediaStream.getTracks().forEach((track) => {
@@ -156,10 +163,12 @@ export default function VideoCall({ onEndCall, socket }) {
         }
       };
 
-      // Create offer and send to friend
+      console.log("Creating offer...");
       const offer = await peerConnection.current.createOffer();
       await peerConnection.current.setLocalDescription(offer);
+      console.log("Offer created:", offer);
 
+      // Send the offer to the other peer via the server
       socket.send(
         JSON.stringify({
           type: "start-call",
@@ -168,6 +177,9 @@ export default function VideoCall({ onEndCall, socket }) {
           offer,
         })
       );
+
+      setIsCalling(true);
+      console.log("Offer sent to friend:", friendId);
     } catch (error) {
       console.error("Failed to start call:", error);
       alert(
@@ -218,9 +230,8 @@ export default function VideoCall({ onEndCall, socket }) {
       if (data.type === "end-call" && data.friendId === friendId) {
         setIsInCall(false);
       }
-
       if (data.type === "offer") {
-        if (peerConnection.current) peerConnection.current.close(); // Close existing connection
+        if (peerConnection.current) peerConnection.current.close(); // Close any existing connection
         peerConnection.current = new RTCPeerConnection();
 
         peerConnection.current.onicecandidate = (event) => {
@@ -241,6 +252,7 @@ export default function VideoCall({ onEndCall, socket }) {
           }
         };
 
+        // Add the local tracks to the peer connection
         if (stream) {
           stream.getTracks().forEach((track) => {
             peerConnection.current.addTrack(track, stream);
