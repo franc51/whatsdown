@@ -160,7 +160,7 @@ export default function Chat({ socket, setActiveChatId }) {
 
         if (
           type === "start-call" &&
-          parsed.friendId === yourUserIdRef.current
+          parsed.senderId === friendIdRef.current
         ) {
           console.log("🚨 Incoming call detected! Showing call modal.");
           setIsInCall(true);

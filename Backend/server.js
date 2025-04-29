@@ -62,28 +62,38 @@ wss.on("connection", (socket) => {
 
         return;
       }
-
-      // Handle video call events
       if (type === "start-call" && friendId) {
         const senderId = Object.keys(connectedUsers).find(
           (id) => connectedUsers[id] === socket
         );
-        const recipientSocket = connectedUsers[friendId];
-        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          // Send WebRTC offer
-          const offerMessage = JSON.stringify({
-            type: "start-call",
-            senderId: senderId,
-            friendId: friendId,
-            offer: parsed.offer, // This will contain the WebRTC offer (SDP)
-          });
-          recipientSocket.send(offerMessage);
-          console.log(`📞 Sending start call to ${friendId}`);
-        } else {
-          console.log(`❌ User ${friendId} not available for call.`);
+        
+        if (!senderId) {
+          console.warn("❌ Could not determine senderId");
+          return;
         }
+      
+        const recipientSocket = connectedUsers[friendId];
+      
+        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
+          try {
+            const offerMessage = JSON.stringify({
+              type: "start-call",
+              senderId,
+              friendId,
+              offer: parsed.offer,
+            });
+            recipientSocket.send(offerMessage);
+            console.log(`📞 Sent call offer to ${friendId}`);
+          } catch (err) {
+            console.error(`🚨 Failed to send offer to ${friendId}:`, err);
+          }
+        } else {
+          console.log(`❌ User ${friendId} is not available for call.`);
+        }
+      
         return;
       }
+      
 
       if (type === "answer-call" && friendId) {
         const senderId = Object.keys(connectedUsers).find(
