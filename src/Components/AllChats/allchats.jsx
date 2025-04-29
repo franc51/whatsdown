@@ -163,8 +163,8 @@ export default function AllChats({ onlineUsers, loading, error }) {
         })
       ) : (
         <p>
-          Your friends will appear here once you add them — do so on the Chat
-          Settings tab.
+          Your friends will appear here once you add them — do so on the
+          Contacts tab.
         </p>
       )}
     </div>
