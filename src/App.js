@@ -46,12 +46,6 @@ function App() {
         return;
       }
 
-       // Only create a new WebSocket if one doesn't already exist
-       if (socketRef.current) {
-        console.log("⚠️ WebSocket already connected.");
-        return; // Prevent creating a new connection
-      }
-
       const ws = new WebSocket("wss://websocket-service-30vz.onrender.com");
       socketRef.current = ws;
 
@@ -153,11 +147,11 @@ function App() {
         setTimeout(setupWebSocket, 3000); // Try to reconnect
       };
 
-      ws.onclose = () => {
-        console.log("🔌 WebSocket closed.");
+      ws.onclose = (event) => {
+        console.log("🔌 WebSocket closed. Reconnecting...");
         setWsConnected(false);
-        if (!socketError) {
-          setTimeout(setupWebSocket, 3000); // Attempt reconnect if not duplicate connection
+        if (event.code !== 4000) { // Avoid reconnecting due to duplicate connection
+          setTimeout(setupWebSocket, 3000); // Try to reconnect
         }
       };
     };
