@@ -17,157 +17,169 @@ export default function VideoCall({ onEndCall, socket }) {
   // Handle incoming call
   const handleIncomingCall = async (data) => {
     console.log("Received incoming call:", data);
-
+  
     if (data.friendId === friendId) {
       setIsCalling(false);
       setIsInCall(true);
+  
+      try {
+        // Request access to camera and microphone
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+        setStream(mediaStream);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = mediaStream;
+        }
+  
+        // Close any existing peer connection
+        if (peerConnection.current) peerConnection.current.close();
+  
+        // Create a new peer connection
+        peerConnection.current = new RTCPeerConnection({
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+          ],
+        });
+  
+        // Send ICE candidates to the caller
+        peerConnection.current.onicecandidate = (event) => {
+          if (event.candidate) {
+            socket.send(
+              JSON.stringify({
+                type: "ice-candidate",
+                candidate: event.candidate,
+                to: data.yourUserId,
+              })
+            );
+          }
+        };
+  
+        // Receive remote media stream
+        peerConnection.current.ontrack = (event) => {
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = event.streams[0];
+          }
+        };
+  
+        // Add local tracks to the peer connection
+        mediaStream.getTracks().forEach((track) => {
+          peerConnection.current.addTrack(track, mediaStream);
+        });
+  
+        // Set the remote offer and respond with an answer
+        await peerConnection.current.setRemoteDescription(
+          new RTCSessionDescription(data.offer)
+        );
+  
+        const answer = await peerConnection.current.createAnswer();
+        await peerConnection.current.setLocalDescription(answer);
+  
+        socket.send(
+          JSON.stringify({
+            type: "answer",
+            answer,
+            to: data.yourUserId,
+          })
+        );
+      } catch (error) {
+        console.error("Error handling incoming call:", error);
+        alert(
+          "Unable to access camera or microphone for incoming call. Please check your permissions."
+        );
+      }
+    }
+  };
+  
 
-      // Close existing peer connection if any
-      if (peerConnection.current) peerConnection.current.close();
+// Media stream cleanup
+useEffect(() => {
+  return () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+    if (peerConnection.current) {
+      peerConnection.current.close();
+    }
+  };
+}, [stream]);
 
-      // Create new peer connection
+
+  // Start video call
+  const startCall = async () => {
+    try {
+      // Request media access first (camera + mic)
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      setStream(mediaStream);
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = mediaStream;
+      }
+  
+      // Always create a new peer connection before starting a new call
+      if (peerConnection.current) {
+        peerConnection.current.close();
+      }
+  
+      // Initialize peer connection
       peerConnection.current = new RTCPeerConnection({
         iceServers: [
           { urls: "stun:stun.l.google.com:19302" },
-          // Optionally add TURN server if required
+          // Optionally add TURN server here
         ],
       });
-
+  
+      setIsCalling(true);
+      console.log("Sending start-call message to friend:", friendId);
+  
+      // Add media tracks to peer connection
+      mediaStream.getTracks().forEach((track) => {
+        peerConnection.current.addTrack(track, mediaStream);
+      });
+  
+      // Handle remote stream
+      peerConnection.current.ontrack = (event) => {
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = event.streams[0];
+        }
+      };
+  
+      // Handle ICE candidates
       peerConnection.current.onicecandidate = (event) => {
         if (event.candidate) {
           socket.send(
             JSON.stringify({
               type: "ice-candidate",
               candidate: event.candidate,
-              to: data.yourUserId, // Send ICE candidate back to the caller
+              to: friendId,
             })
           );
         }
       };
-
-      peerConnection.current.ontrack = (event) => {
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = event.streams[0];
-        }
-      };
-
-      if (stream) {
-        stream.getTracks().forEach((track) => {
-          peerConnection.current.addTrack(track, stream);
-        });
-      }
-
-      try {
-        // Set the remote offer received from the caller
-        await peerConnection.current.setRemoteDescription(
-          new RTCSessionDescription(data.offer)
-        );
-
-        // Create an answer and send it back to the caller
-        const answer = await peerConnection.current.createAnswer();
-        await peerConnection.current.setLocalDescription(answer);
-
-        socket.send(
-          JSON.stringify({
-            type: "answer",
-            answer: answer,
-            to: data.yourUserId, // Send answer back to the caller
-          })
-        );
-      } catch (error) {
-        console.error("Error processing incoming call offer:", error);
-      }
-    }
-  };
-
-  // Media stream setup and cleanup
-  useEffect(() => {
-    if (isCalling || isInCall) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
-        .then((mediaStream) => {
-          setStream(mediaStream);
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = mediaStream;
-          }
+  
+      // Create offer and send to friend
+      const offer = await peerConnection.current.createOffer();
+      await peerConnection.current.setLocalDescription(offer);
+  
+      socket.send(
+        JSON.stringify({
+          type: "start-call",
+          friendId,
+          yourUserId,
+          offer,
         })
-        .catch((err) => {
-          console.error("Failed to access webcam and microphone:", err);
-          alert(
-            "Failed to access webcam and microphone. Please check your permissions."
-          );
-        });
+      );
+    } catch (error) {
+      console.error("Failed to start call:", error);
+      alert(
+        "Unable to access camera or microphone. Please check your permissions."
+      );
     }
-
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-      if (peerConnection.current) {
-        peerConnection.current.close();
-      }
-    };
-  }, [isCalling, isInCall]);
-
-  // Start video call
-  const startCall = async () => {
-    // Always create a new peer connection before starting a new call
-    if (peerConnection.current) {
-      peerConnection.current.close(); // Close any existing connection
-    }
-
-    // Initialize a new peer connection
-    peerConnection.current = new RTCPeerConnection({
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        // Optionally add TURN server if required
-      ],
-    });
-
-    setIsCalling(true);
-    console.log("Sending start-call message to friend:", friendId);
-    // Create the offer
-    const offer = await peerConnection.current.createOffer();
-    await peerConnection.current.setLocalDescription(offer);
-    console.log("Offer created", offer);
-
-    // Send the offer to the friend over WebSocket
-    socket.send(
-      JSON.stringify({
-        type: "start-call",
-        friendId: friendId,
-        yourUserId: yourUserId, // Make sure yourUserId is passed correctly
-        offer: offer,
-      })
-    );
-
-    // Handle ICE candidates
-    peerConnection.current.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.send(
-          JSON.stringify({
-            type: "ice-candidate",
-            candidate: event.candidate,
-            to: friendId,
-          })
-        );
-      }
-    };
-
-    // Add media tracks to peer connection
-    if (stream) {
-      stream.getTracks().forEach((track) => {
-        peerConnection.current.addTrack(track, stream);
-      });
-    }
-
-    // Handle the remote stream when it is received
-    peerConnection.current.ontrack = (event) => {
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = event.streams[0];
-      }
-    };
   };
+  
 
   // End video call
   const endCall = () => {
