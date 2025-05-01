@@ -17,7 +17,10 @@ const path = require("path");
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
-const allowedOrigins = ["https://whatsdown-wngp.onrender.com"];
+const allowedOrigins = [
+  "https://whatsdown-wngp.onrender.com",
+  "https://localhost:3000",
+];
 
 app.use(
   cors({
