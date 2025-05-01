@@ -19,7 +19,7 @@ app.use("/uploads", express.static("uploads"));
 
 const allowedOrigins = [
   "https://whatsdown-wngp.onrender.com",
-  "https://localhost:3000",
+  "http://localhost:3000",
 ];
 
 app.use(
