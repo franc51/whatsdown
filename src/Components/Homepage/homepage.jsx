@@ -121,7 +121,7 @@ export default function Homepage({ friends, onlineUsers, loading, error }) {
           }`}
           onClick={(e) => handleTabChange(e, "chats")}
         >
-          All Chats
+          Chats
         </button>
         <button
           className={`homepage_groups link ${
@@ -137,7 +137,7 @@ export default function Homepage({ friends, onlineUsers, loading, error }) {
           }`}
           onClick={(e) => handleTabChange(e, "addChat")}
         >
-          Chat Settings
+          Contacts
         </button>
       </div>
 
@@ -151,7 +151,7 @@ export default function Homepage({ friends, onlineUsers, loading, error }) {
             error={error}
           />
         )}
-        {activeTab === "groups" && <p>Groups</p>}
+        {activeTab === "groups" && <p>Feature Groups</p>}
         {activeTab === "addChat" && (
           <div className="newChat_addFriend">
             <label>Add friend</label>

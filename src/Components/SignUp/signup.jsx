@@ -33,8 +33,7 @@ export default function SignUp() {
         setError(""); // Clear any previous error
 
         // 🔁 Wait a bit to show success message, then navigate
-        setTimeout(() => {
-        }, 1500); // Delay optional (1.5 sec here)
+        setTimeout(() => {}, 1500); // Delay optional (1.5 sec here)
       } else {
         setError(data.message);
         setSuccess(""); // Clear any previous success message

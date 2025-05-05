@@ -1,14 +1,12 @@
-Frontend Stack:
-React v18
-HTML5
-CSS3
-JavaScript
-Backend Stack:
-Node v18
-JavaScript
-Websockets
-DevOps Stack:
-Render web service
-This service deploys my frontend, and 2 backend servers
-authService
-webSocketsService
+React chat app with real time status and messaging features. Mobile-first design.<br/><br/>
+
+Frontend Stack:<br/>
+React v18<br/>
+HTML5<br/>
+CSS3<br/>
+JavaScript<br/><br/>
+Backend Stack:<br/>
+Node v18<br/>
+Websockets<br/><br/>
+DevOps Stack:<br/>
+Render web services

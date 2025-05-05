@@ -12,12 +12,15 @@ export default function VideoCall({ onEndCall, socket }) {
   const peerConnection = useRef(null);
 
   const location = useLocation();
-  const { friendId, yourUserId } = location.state || {}; // Extract both friendId and yourUserId
+  const { friendId, yourUserId, isCaller } = location.state || {};
 
   // Use useCallback to memoize handleIncomingCall to prevent unnecessary re-renders
   const handleIncomingCall = useCallback(async (data) => {
     console.log("Received incoming call:", data);
+<<<<<<< HEAD
     console.log("friendId from URL state:", friendId, "message says friendId:", data.friendId);
+=======
+>>>>>>> 7d3ad8663ab9a8e792b8e9b6740bbcf84b80b1ff
 
     if (data.friendId === friendId) {
       setIsCalling(false);
@@ -36,13 +39,23 @@ export default function VideoCall({ onEndCall, socket }) {
 
         // Close any existing peer connection
         if (peerConnection.current) peerConnection.current.close();
+<<<<<<< HEAD
         console.log("Closed existing peer connection.");
+=======
+>>>>>>> 7d3ad8663ab9a8e792b8e9b6740bbcf84b80b1ff
 
         // Create a new peer connection
-        peerConnection.current = new RTCPeerConnection({
+        const configuration = {
           iceServers: [
             { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" },
+            {
+              urls: "turn:TURN_SERVER_URL",
+              username: "USERNAME",
+              credential: "CREDENTIAL",
+            },
           ],
+<<<<<<< HEAD
         });
 
         // Log peer connection state changes
@@ -54,6 +67,10 @@ export default function VideoCall({ onEndCall, socket }) {
           console.log("ICE connection state change:", peerConnection.current.iceConnectionState);
         };
 
+=======
+        };
+        peerConnection.current = new RTCPeerConnection(configuration);
+>>>>>>> 7d3ad8663ab9a8e792b8e9b6740bbcf84b80b1ff
         // Send ICE candidates to the caller
         peerConnection.current.onicecandidate = (event) => {
           if (event.candidate) {
@@ -105,18 +122,28 @@ export default function VideoCall({ onEndCall, socket }) {
         );
       }
     }
+<<<<<<< HEAD
   }, [friendId, socket]);
+=======
+  };
+>>>>>>> 7d3ad8663ab9a8e792b8e9b6740bbcf84b80b1ff
 
   // Media stream cleanup
   useEffect(() => {
     return () => {
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
+<<<<<<< HEAD
         console.log("Stopped media stream tracks.");
       }
       if (peerConnection.current) {
         peerConnection.current.close();
         console.log("Closed peer connection during cleanup.");
+=======
+      }
+      if (peerConnection.current) {
+        peerConnection.current.close();
+>>>>>>> 7d3ad8663ab9a8e792b8e9b6740bbcf84b80b1ff
       }
     };
   }, [stream]);
@@ -129,6 +156,7 @@ export default function VideoCall({ onEndCall, socket }) {
         video: true,
         audio: true,
       });
+
       setStream(mediaStream);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = mediaStream;
@@ -141,11 +169,12 @@ export default function VideoCall({ onEndCall, socket }) {
       }
 
       // Initialize peer connection
-      peerConnection.current = new RTCPeerConnection({
+      const configuration = {
         iceServers: [
           { urls: "stun:stun.l.google.com:19302" },
           // Optionally add TURN server here
         ],
+<<<<<<< HEAD
       });
 
       // Log peer connection state changes
@@ -159,6 +188,10 @@ export default function VideoCall({ onEndCall, socket }) {
 
       setIsCalling(true);
       console.log("Sending start-call message to friend:", friendId);
+=======
+      };
+      peerConnection.current = new RTCPeerConnection(configuration);
+>>>>>>> 7d3ad8663ab9a8e792b8e9b6740bbcf84b80b1ff
 
       // Add media tracks to peer connection
       mediaStream.getTracks().forEach((track) => {
@@ -188,10 +221,19 @@ export default function VideoCall({ onEndCall, socket }) {
         }
       };
 
+<<<<<<< HEAD
       // Create offer and send to friend
       const offer = await peerConnection.current.createOffer();
       await peerConnection.current.setLocalDescription(offer);
 
+=======
+      console.log("Creating offer...");
+      const offer = await peerConnection.current.createOffer();
+      await peerConnection.current.setLocalDescription(offer);
+      console.log("Offer created:", offer);
+
+      // Send the offer to the other peer via the server
+>>>>>>> 7d3ad8663ab9a8e792b8e9b6740bbcf84b80b1ff
       socket.send(
         JSON.stringify({
           type: "start-call",
@@ -200,7 +242,13 @@ export default function VideoCall({ onEndCall, socket }) {
           offer,
         })
       );
+<<<<<<< HEAD
       console.log("Sent offer to the friend.");
+=======
+
+      setIsCalling(true);
+      console.log("Offer sent to friend:", friendId);
+>>>>>>> 7d3ad8663ab9a8e792b8e9b6740bbcf84b80b1ff
     } catch (error) {
       console.error("Failed to start call:", error);
       alert(
@@ -259,10 +307,13 @@ export default function VideoCall({ onEndCall, socket }) {
         setIsInCall(false);
         console.log("Ending call as received in WebSocket message.");
       }
-
       if (data.type === "offer") {
+<<<<<<< HEAD
         console.log("Received offer message.");
         if (peerConnection.current) peerConnection.current.close(); // Close existing connection
+=======
+        if (peerConnection.current) peerConnection.current.close(); // Close any existing connection
+>>>>>>> 7d3ad8663ab9a8e792b8e9b6740bbcf84b80b1ff
         peerConnection.current = new RTCPeerConnection();
 
         // Log peer connection state changes
@@ -294,6 +345,7 @@ export default function VideoCall({ onEndCall, socket }) {
           }
         };
 
+        // Add the local tracks to the peer connection
         if (stream) {
           stream.getTracks().forEach((track) => {
             peerConnection.current.addTrack(track, stream);

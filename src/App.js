@@ -50,7 +50,7 @@ function App() {
       socketRef.current = ws;
 
       ws.onopen = () => {
-        console.log("✅ WebSocket connected");
+        console.log("✅ WebSocket connectedddd");
         setWsConnected(true); // Update WebSocket connection status to open
         const token = localStorage.getItem("token");
         if (token) {
