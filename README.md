@@ -1,11 +1,11 @@
-React chat app with real time status and messaging features.<br/>
+React chat app with real time status and messaging features.<br/><br/>
 Frontend Stack:<br/>
 React v18<br/>
 HTML5<br/>
 CSS3<br/>
 JavaScript<br/><br/>
-Backend Stack:<br/><br/>
+Backend Stack:<br/>
 Node v18<br/>
-Websockets<br/>
-DevOps Stack:<br/><br/>
+Websockets<br/><br/>
+DevOps Stack:<br/>
 Render web services
