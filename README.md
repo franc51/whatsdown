@@ -1,4 +1,5 @@
-React chat app with real time status and messaging features.<br/><br/>
+React chat app with real time status and messaging features. Mobile-first design.<br/><br/>
+
 Frontend Stack:<br/>
 React v18<br/>
 HTML5<br/>
