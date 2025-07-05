@@ -54,22 +54,11 @@ wss.on("connection", (socket) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.userId;
 
-        // Prevent duplicate connections
         if (connectedUsers[userId]) {
-          console.warn(`⚠️ Duplicate registration attempt by ${userId}`);
-
-          // Send error message before closing
-          socket.send(
-            JSON.stringify({
-              type: "error",
-              message: "User already connected.",
-            })
+          console.log(
+            `⚠️ Duplicate connection detected for user ${userId}. Closing old connection.`
           );
-
-          // Close the socket with custom close code 4000 (application-defined)
-          socket.close(4000, "Duplicate connection");
-
-          return;
+          connectedUsers[userId].close(4000, "Duplicate connection replaced");
         }
 
         connectedUsers[userId] = socket;
@@ -80,100 +69,6 @@ wss.on("connection", (socket) => {
         broadcastOnlineUsers(userId);
 
         return;
-      }
-
-      if (type === "start-call" && friendId) {
-        const senderId = Object.keys(connectedUsers).find(
-          (id) => connectedUsers[id] === socket
-        );
-
-        if (!senderId) {
-          console.warn("❌ Could not determine senderId");
-          return;
-        }
-
-        const recipientSocket = connectedUsers[friendId];
-
-        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          try {
-            const offerMessage = JSON.stringify({
-              type: "start-call",
-              senderId,
-              friendId,
-              offer: parsed.offer,
-            });
-            recipientSocket.send(offerMessage);
-            console.log(`📞 Sent call offer to ${friendId}`);
-          } catch (err) {
-            console.error(`🚨 Failed to send offer to ${friendId}:`, err);
-          }
-        } else {
-          console.log(`❌ User ${friendId} is not available for call.`);
-        }
-
-        return;
-      }
-
-      if (type === "answer-call" && friendId) {
-        const senderId = Object.keys(connectedUsers).find(
-          (id) => connectedUsers[id] === socket
-        );
-        const recipientSocket = connectedUsers[friendId];
-        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          // Send WebRTC answer
-          const answerMessage = JSON.stringify({
-            type: "answer-call",
-            senderId: senderId,
-            friendId: friendId,
-            answer: parsed.answer, // This will contain the WebRTC answer (SDP)
-          });
-          recipientSocket.send(answerMessage);
-          console.log(`✅ Call answered by ${friendId}`);
-        } else {
-          console.log(`❌ User ${friendId} not available to answer the call.`);
-        }
-        return;
-      }
-
-      if (type === "end-call" && friendId) {
-        const senderId = Object.keys(connectedUsers).find(
-          (id) => connectedUsers[id] === socket
-        );
-        const recipientSocket = connectedUsers[friendId];
-        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          // Inform other party the call is ended
-          const endCallMessage = JSON.stringify({
-            type: "end-call",
-            senderId: senderId,
-            friendId: friendId,
-          });
-          recipientSocket.send(endCallMessage);
-          console.log(`🔴 Call ended with ${friendId}`);
-        } else {
-          console.log(`❌ User ${friendId} not available to end the call.`);
-        }
-        return;
-      }
-
-      if (type === "ice-candidate" && friendId) {
-        const senderId = Object.keys(connectedUsers).find(
-          (id) => connectedUsers[id] === socket
-        );
-        const recipientSocket = connectedUsers[friendId];
-        if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-          const iceCandidateMessage = JSON.stringify({
-            type: "ice-candidate",
-            senderId: senderId,
-            friendId: friendId,
-            candidate: parsed.candidate, // ICE candidate
-          });
-          recipientSocket.send(iceCandidateMessage);
-          console.log(`➡️ Sending ICE candidate to ${friendId}`);
-        } else {
-          console.log(
-            `❌ User ${friendId} not available to receive ICE candidate.`
-          );
-        }
       }
 
       if (type === "typing" && to) {
