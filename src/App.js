@@ -13,7 +13,6 @@ import Homepage from "./Components/Homepage/homepage.jsx";
 import Chat from "./Components/Chat/chat.jsx";
 import Account from "./Components/Account/account.jsx";
 import Login from "./Components/Login/login.jsx";
-import VideoCall from "./Components/VideoCall/videocall.jsx";
 
 function App() {
   const [wsConnected, setWsConnected] = useState(false);
@@ -29,7 +28,6 @@ function App() {
   const [callAccepted, setCallAccepted] = useState(false);
   const socketRef = useRef(null);
   const [socketError, setSocketError] = useState(null); // To track socket errors (e.g., duplicate connection)
-  
 
   const [isInCall, setIsInCall] = useState(false);
   const [incomingCall, setIncomingCall] = useState(false);
@@ -39,20 +37,22 @@ function App() {
 
   // ✅ Setup WebSocket singleton
   useEffect(() => {
-    const setupWebSocket = () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.log("❌ No token found, WebSocket setup aborted");
-        return;
-      }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.log("❌ No token found, WebSocket setup aborted");
+      return;
+    }
 
-      const ws = new WebSocket("wss://websocket-service-30vz.onrender.com");
+    let ws;
+    let reconnectTimeout;
+
+    const setupWebSocket = () => {
+      ws = new WebSocket("wss://websocket-service-30vz.onrender.com");
       socketRef.current = ws;
 
       ws.onopen = () => {
         console.log("✅ WebSocket connectedddd");
         setWsConnected(true); // Update WebSocket connection status to open
-        const token = localStorage.getItem("token");
         if (token) {
           ws.send(JSON.stringify({ type: "register", token }));
         }
@@ -98,52 +98,20 @@ function App() {
             });
             setOnlineUsers((prev) => ({ ...prev, ...onlineMap }));
           }
-
-          // Handling Video Call Events:
-          if (parsed.type === "start-call") {
-            if (parsed.friendId === activeChatId) {
-              console.log(`Incoming call from ${parsed.senderId}`);
-              // Here, trigger the UI to show an "Accept" and "Decline" button
-              // Example: set state to show the modal or buttons
-              setIsInCall(false); // Not yet in call, waiting for the user to accept
-              setIncomingCall(true); // Show "Accept/Decline" buttons on UI
-              setSenderId(parsed.senderId); // Store the senderId to use in the accept/answer call
-              setOffer(parsed.offer); // Store the offer to set as remote description
-            }
-          }
-
-          if (parsed.type === "answer") {
-            // Handle the answer
-            if (peerConnection.current) {
-              peerConnection.current.setRemoteDescription(
-                new RTCSessionDescription(parsed.answer)
-              );
-            }
-          }
-
-          if (parsed.type === "end-call") {
-            console.log(`Call with ${parsed.friendId} has ended.`);
-          }
         };
 
         // Handle error messages
-      if (msg.type === "error" && msg.message === "User already connected.") {
-        console.warn("⚠️ Duplicate connection detected. Please check your session.");
-        // Prevent further actions from being taken after this error
-        return;
-      }
-
-        // Check if msg is a Blob (binary data)
-        if (msg instanceof Blob) {
-          const reader = new FileReader();
-          reader.onload = () => handleParsed(JSON.parse(reader.result));
-          reader.readAsText(msg);
-        } else {
-          try {
+        try {
+          // Check if msg is a Blob (binary data)
+          if (msg instanceof Blob) {
+            const reader = new FileReader();
+            reader.onload = () => handleParsed(JSON.parse(reader.result));
+            reader.readAsText(msg);
+          } else {
             handleParsed(JSON.parse(msg)); // Try parsing and handle
-          } catch (error) {
-            console.error("Error parsing WebSocket message", error); // Catch parsing errors
           }
+        } catch (error) {
+          console.error("Error parsing WebSocket message", error); // Catch parsing errors
         }
       };
 
@@ -151,14 +119,19 @@ function App() {
         console.error("❌ WebSocket error:", error);
         setWsConnected(false);
         setSocketError("WebSocket error, retrying...");
-        setTimeout(setupWebSocket, 3000); // Try to reconnect
       };
 
       ws.onclose = (event) => {
-        console.log("🔌 WebSocket closed. Reconnecting...");
+        console.log("🔌 WebSocket closed. Code:", event.code);
         setWsConnected(false);
-        if (event.code !== 4000) { // Avoid reconnecting due to duplicate connection
-          setTimeout(setupWebSocket, 3000); // Try to reconnect
+
+        if (event.code !== 4000) {
+          // Only reconnect if NOT duplicate connection close code
+          setTimeout(() => setupWebSocket(), 3000);
+        } else {
+          console.warn(
+            "Duplicate connection close received, not reconnecting."
+          );
         }
       };
     };
@@ -166,11 +139,10 @@ function App() {
     setupWebSocket(); // Initialize the WebSocket connection
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (ws) ws.close();
     };
-  }, [activeChatId, socketError]); // Dependency array to ensure WebSocket setup is re-triggered when `activeChatId` changes
+  }, []); // Empty dependency array to run only once on mount
 
   // Fetch friends when the user is logged in
   useEffect(() => {
@@ -267,10 +239,6 @@ function App() {
       <div>
         <Router>
           <Routes>
-            <Route
-              path="/videocall"
-              element={<VideoCall socket={socketRef.current} />}
-            ></Route>
             <Route
               path="/"
               element={

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import "./chat.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import VideoCall from "../VideoCall/videocall";
 
 export default function Chat({ socket, setActiveChatId }) {
   const [messages, setMessages] = useState([]);
@@ -14,8 +13,6 @@ export default function Chat({ socket, setActiveChatId }) {
   const [skip, setSkip] = useState(50);
   const [hasMore, setHasMore] = useState(true);
   const [friendPhone, setFriendPhone] = useState(""); // To store phone number input
-  const [isInCall, setIsInCall] = useState(false);
-  const [isReceivingCall, setIsReceivingCall] = useState(false);
   const yourUserIdRef = useRef(null);
   const friendIdRef = useRef(null);
   const [message, setMessage] = useState(""); // For showing success/error messages
@@ -37,10 +34,6 @@ export default function Chat({ socket, setActiveChatId }) {
 
   const params = useParams();
   const friendId = params.friendId || location.state?.friendId;
-
-  const handleEndCall = () => {
-    setIsInCall(false);
-  };
 
   useEffect(() => {
     friendIdRef.current = friendId;
@@ -149,7 +142,7 @@ export default function Chat({ socket, setActiveChatId }) {
   }, [friendId]);
 
   useEffect(() => {
-    if (!socket || !friendIdRef.current || !yourUserIdRef.current) return;
+    if (!socket || !friendId || !yourUserId) return;
 
     const handleMessage = (event) => {
       try {
@@ -158,16 +151,7 @@ export default function Chat({ socket, setActiveChatId }) {
 
         const { senderId, receiverId, type } = parsed;
 
-        if (
-          type === "start-call" &&
-          parsed.senderId === friendIdRef.current
-        ) {
-          console.log("🚨 Incoming call detected! Showing call modal.");
-          setIsInCall(true);
-        }
-
-        // Handle typing event
-        if (type === "typing" && senderId === friendIdRef.current) {
+        if (type === "typing" && senderId === friendId) {
           console.log("✏️ Friend is typing...");
           setIsFriendTyping(true);
 
@@ -176,15 +160,11 @@ export default function Chat({ socket, setActiveChatId }) {
             setIsFriendTyping(false);
             console.log("⌛ Typing timeout expired.");
           }, 1000);
-
-          // Handle message event
         } else if (type === "message") {
           const isFromFriendToYou =
-            senderId === friendIdRef.current &&
-            receiverId === yourUserIdRef.current;
+            senderId === friendId && receiverId === yourUserId;
           const isFromYouToFriend =
-            senderId === yourUserIdRef.current &&
-            receiverId === friendIdRef.current;
+            senderId === yourUserId && receiverId === friendId;
 
           console.log(
             `📨 Incoming message | From: ${senderId} To: ${receiverId} | Match: ${
@@ -192,18 +172,15 @@ export default function Chat({ socket, setActiveChatId }) {
             }`
           );
 
-          // If the message is part of the current chat, add it
           if (isFromFriendToYou || isFromYouToFriend) {
-            // Mark the message as unread if it's a new incoming message (and not sent by you)
             const updatedMessage = {
               ...parsed,
-              isUnread: senderId !== yourUserIdRef.current,
+              isUnread: senderId !== yourUserId,
             };
 
-            // Add new message to the chat history
             setMessages((prev) => [...prev, updatedMessage]);
             console.log("✅ Message added to UI.");
-            // If it's from the friend to you, it should be marked as unread
+
             if (isFromFriendToYou) {
               console.log("📥 New unread message from your friend");
             }
@@ -216,16 +193,12 @@ export default function Chat({ socket, setActiveChatId }) {
       }
     };
 
-    messageHandlerRef.current = handleMessage;
-
     socket.addEventListener("message", handleMessage);
 
     return () => {
-      if (messageHandlerRef.current) {
-        socket.removeEventListener("message", messageHandlerRef.current);
-      }
+      socket.removeEventListener("message", handleMessage);
     };
-  }, [socket, friendIdRef.current, yourUserIdRef.current]);
+  }, [socket, friendId, yourUserId]);
 
   const sendMessage = async () => {
     if (input.trim() === "") return;
@@ -396,38 +369,6 @@ export default function Chat({ socket, setActiveChatId }) {
     setTimeout(() => setMessage(""), 5000);
   };
 
-  // Define handleAcceptCall
-  const handleAcceptCall = () => {
-    console.log("Call accepted!");
-
-    // Send a WebSocket message to the caller to notify call is accepted
-    socket?.send(
-      JSON.stringify({
-        type: "accept-call",
-        senderId: yourUserId,
-        friendId: friendId,
-      })
-    );
-    navigate("/videocall", { state: { friendId, yourUserId } });
-  };
-
-  // Define handleRejectCall
-  const handleRejectCall = () => {
-    console.log("Call rejected!");
-
-    // Send a WebSocket message to notify rejection
-    socket?.send(
-      JSON.stringify({
-        type: "reject-call",
-        senderId: yourUserId,
-        friendId: friendId,
-      })
-    );
-
-    // Hide the call modal (you probably have a state like setIsReceivingCall(false))
-    isInCall(false);
-  };
-
   return (
     <div className="homepage_chat_list_openedChat">
       <div className="chat_user">
@@ -449,18 +390,7 @@ export default function Chat({ socket, setActiveChatId }) {
         </div>
         <div className="videocall_deleteFriend">
           {/* Button to start the call */}
-          <button
-            className="chat_videoCall"
-            onClick={() =>
-              navigate("/videocall", {
-                state: {
-                  friendId,
-                  yourUserId,
-                  isCaller: true, // explicitly mark as caller
-                },
-              })
-            }
-          />
+          <button className="chat_videoCall" />
 
           {/* Button to delete the friend */}
           <button
@@ -553,13 +483,6 @@ export default function Chat({ socket, setActiveChatId }) {
             onClick={sendMessage}
           ></button>
         </div>
-        {isInCall && (
-          <div className="callModal">
-            <h2>Incoming call from {nickname}!</h2>
-            <button onClick={handleAcceptCall}>Accept</button>
-            <button onClick={handleRejectCall}>Reject</button>
-          </div>
-        )}
       </div>
     </div>
   );

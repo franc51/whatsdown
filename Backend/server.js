@@ -53,38 +53,47 @@ wss.on("connection", (socket) => {
       if (type === "register" && token) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.userId;
-      
+
         // Prevent duplicate connections
         if (connectedUsers[userId]) {
           console.warn(`⚠️ Duplicate registration attempt by ${userId}`);
+
+          // Send error message before closing
           socket.send(
-            JSON.stringify({ type: "error", message: "User already connected." })
+            JSON.stringify({
+              type: "error",
+              message: "User already connected.",
+            })
           );
+
+          // Close the socket with custom close code 4000 (application-defined)
+          socket.close(4000, "Duplicate connection");
+
           return;
         }
-      
+
         connectedUsers[userId] = socket;
         console.log(`✅ Registered user ${userId}`);
-      
+
         broadcastStatus(userId, "online", socket);
         sendOnlineUsersList(userId);
         broadcastOnlineUsers(userId);
-      
+
         return;
       }
-      
+
       if (type === "start-call" && friendId) {
         const senderId = Object.keys(connectedUsers).find(
           (id) => connectedUsers[id] === socket
         );
-        
+
         if (!senderId) {
           console.warn("❌ Could not determine senderId");
           return;
         }
-      
+
         const recipientSocket = connectedUsers[friendId];
-      
+
         if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
           try {
             const offerMessage = JSON.stringify({
@@ -101,10 +110,9 @@ wss.on("connection", (socket) => {
         } else {
           console.log(`❌ User ${friendId} is not available for call.`);
         }
-      
+
         return;
       }
-      
 
       if (type === "answer-call" && friendId) {
         const senderId = Object.keys(connectedUsers).find(
