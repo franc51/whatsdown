@@ -36,22 +36,46 @@ wss.on("connection", (socket) => {
   console.log("New client connected:", socket._socket.remoteAddress);
 
   socket.on("message", async (data) => {
+    let parsed;
     try {
-      console.log("📥 Received message:", data);
-      const parsed = JSON.parse(data);
-      const {
-        type,
-        token,
-        receiverId,
-        message: text,
-        to,
-        tempId,
-        friendId,
-      } = parsed;
-      console.log("📥 Parsed data:", parsed);
+      parsed = JSON.parse(data);
+    } catch (err) {
+      console.error("❌ Malformed JSON received:", err.message);
+      socket.close(4000, "Malformed JSON");
+      return;
+    }
 
-      if (type === "register" && token) {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const {
+      type,
+      token,
+      receiverId,
+      message: text,
+      to,
+      tempId,
+      friendId,
+    } = parsed;
+
+    try {
+      if (type === "ping") {
+        // Respond to ping to keep connection alive
+        socket.send(JSON.stringify({ type: "pong" }));
+        return;
+      }
+
+      if (type === "register") {
+        if (!token) {
+          socket.close(4002, "Missing token");
+          return;
+        }
+        let decoded;
+        try {
+          decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (err) {
+          console.error("❌ JWT verification failed:", err.message);
+          socket.close(4001, "Invalid token");
+          return;
+        }
+
         const userId = decoded.userId;
 
         if (connectedUsers[userId]) {
@@ -91,7 +115,19 @@ wss.on("connection", (socket) => {
         type === "forward" ||
         (token && text && receiverId)
       ) {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!token) {
+          socket.close(4002, "Missing token");
+          return;
+        }
+        let decoded;
+        try {
+          decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (err) {
+          console.error("❌ JWT verification failed:", err.message);
+          socket.close(4001, "Invalid token");
+          return;
+        }
+
         const senderId = decoded.userId;
         const senderNickname = decoded.nickname || "Anonymous";
 
@@ -131,18 +167,25 @@ wss.on("connection", (socket) => {
 
         return;
       }
+
+      // Optionally close connection on unknown message type or missing data
+      // socket.close(4003, "Unknown message type or missing data");
     } catch (err) {
       console.error("❌ Error processing message:", err.message);
+      socket.close(4000, "Error processing message");
     }
   });
 
-  socket.on("close", () => {
+  socket.on("close", (code, reason) => {
+    // Clean up user from connectedUsers
     for (const userId in connectedUsers) {
       if (connectedUsers[userId] === socket) {
         delete connectedUsers[userId];
-        console.log(`🔌 User ${userId} disconnected`);
+        console.log(
+          `🔌 User ${userId} disconnected (code: ${code}, reason: ${reason})`
+        );
         broadcastStatus(userId, "offline");
-        broadcastOnlineUsers(); // ✅ Notify all clients of updated list
+        broadcastOnlineUsers(); // Notify all clients of updated list
         break;
       }
     }
