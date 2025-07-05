@@ -34,6 +34,12 @@ export function useWebSocket({
 
   const connect = useCallback(() => {
     const token = localStorage.getItem("token");
+
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      console.log("⚡️ WebSocket already connected, skipping connect.");
+      return;
+    }
+
     if (!token) return;
 
     try {
