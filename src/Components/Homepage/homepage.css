@@ -16,6 +16,7 @@ body {
   color: white;
   padding: 0 0.7rem;
   box-shadow: unset;
+  padding: 1rem 1.5rem;
 }
 .homepage_user {
   display: flex;

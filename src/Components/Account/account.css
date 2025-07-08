@@ -1,5 +1,7 @@
 .account_settings_backBtn {
   display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 .account_changeNickname {
   display: flex;
@@ -9,7 +11,6 @@
 }
 .account_logOut {
   padding: 1rem;
-  margin: 0 8rem;
   border: none;
   color: #002fff59;
   font-size: 1rem;
@@ -20,7 +21,7 @@
   background-size: 2.2rem;
   background-repeat: no-repeat;
   background-position: 6rem center;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
 }
 .account_content {

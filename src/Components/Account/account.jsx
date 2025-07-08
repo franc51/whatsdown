@@ -143,7 +143,7 @@ export default function Account() {
               className="account_logOut"
               onClick={() => {
                 localStorage.removeItem("token");
-                navigate("/login");
+                navigate("/");
               }}
             >
               Log Out
